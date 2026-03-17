@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Contas a Pagar</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -42,7 +43,7 @@ body{font-family:'Inter',sans-serif;background:#f5f6f8;color:#1a1d23;min-height:
 .fsp{width:1px;height:18px;background:#e2e5ea;margin:0 2px}
 .tw{overflow-x:auto;padding:0 28px 90px}
 table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e8eaed}
-thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e8eaed;white-space:nowrap;background:#f9fafb;position:sticky;top:105px;z-index:10}
+thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e8eaed;white-space:nowrap;background:#f9fafb}
 thead th.st{cursor:pointer;user-select:none}thead th.st:hover{color:#374151;background:#f3f4f6}
 tbody tr{border-bottom:1px solid #f3f4f6;transition:background .1s}
 tbody tr:hover{background:#f9fafb}
@@ -93,6 +94,12 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 .mobs{display:flex;gap:7px;justify-content:flex-end}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#f5f6f8}::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
 @media(max-width:768px){.hd,.sum,.fb,.tw,.bb,.fbar2,.tabs,.hw{padding-left:14px;padding-right:14px}}
+
+#ffn-drop div{padding:8px 14px;font-size:13px;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ffn-drop div:last-child{border-bottom:none}
+#ffn-drop div:hover,#ffn-drop div.ac-sel{background:#eff6ff;color:#1d4ed8}
+#ffn-drop .ac-emp{font-size:10px;color:#9ca3af;margin-left:6px;font-weight:400}
+.fixo-tag{display:inline-block;font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;margin-left:6px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -125,6 +132,7 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 <div class="tabs">
   <div class="tab on" data-tab="p">Painel do dia</div>
   <div class="tab" data-tab="h">Histórico <span id="hc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
+  <div class="tab" data-tab="f">Fluxo de Caixa</div>
 </div>
 
 <div id="tp">
@@ -148,7 +156,10 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
       <input type="date" id="fdi" title="Vencimento de">
       <input type="date" id="fdf" title="Vencimento até">
       <div class="fsp"></div>
-      <input type="text" id="ffn" placeholder="Buscar fornecedor..." style="width:185px">
+      <div style="position:relative;display:inline-block">
+        <input type="text" id="ffn" placeholder="Buscar fornecedor..." style="width:220px" autocomplete="off">
+        <div id="ffn-drop" style="display:none;position:absolute;top:36px;left:0;width:320px;background:#fff;border:1px solid #e2e5ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:999;max-height:260px;overflow-y:auto"></div>
+      </div>
       <select id="fem"><option value="">Todas as empresas</option></select>
       <select id="fst"><option value="">Todos os status</option><option value="atrasado">Atrasados</option><option value="hoje">Vence hoje</option><option value="futuro">A vencer</option></select>
       <div class="fsp"></div>
@@ -177,6 +188,54 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
   <div class="hw">
     <div class="hh"><h2>Histórico de aprovações</h2><button class="btn btn-d btn-sm" id="bch">Limpar tudo</button></div>
     <div id="hl"></div>
+  </div>
+</div>
+
+<div id="tf" style="display:none">
+  <div class="hw">
+    <div class="hh">
+      <h2>Fluxo de caixa — aprovações</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="fcPeriodo" class="btn btn-sm" style="height:30px;font-size:12px">
+          <option value="30">Últimos 30 dias</option>
+          <option value="60">Últimos 60 dias</option>
+          <option value="90">Últimos 90 dias</option>
+          <option value="0">Tudo</option>
+        </select>
+        <select id="fcEmp" class="btn btn-sm" style="height:30px;font-size:12px">
+          <option value="">Todas as empresas</option>
+          <option value="ROSIL">ROSIL</option>
+          <option value="RSL">RSL</option>
+          <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
+        </select>
+      </div>
+    </div>
+    <!-- SUMMARY CARDS -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px">
+      <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="fcTot">R$ 0,00</div><div class="ssb" id="fcTotN">0 aprovações</div></div>
+      <div class="sc"><div class="slb">Maior dia</div><div class="sv" id="fcMax">R$ 0,00</div><div class="ssb" id="fcMaxD">—</div></div>
+      <div class="sc"><div class="slb">Média por dia</div><div class="sv" id="fcMedia">R$ 0,00</div></div>
+      <div class="sc"><div class="slb">Dias com pagamento</div><div class="sv" id="fcDias">0</div></div>
+    </div>
+    <!-- CHART -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
+      <canvas id="fcChart" height="90"></canvas>
+      <div id="fcEmpty" style="display:none;text-align:center;padding:3rem;color:#9ca3af;font-size:13px">Nenhuma aprovação salva ainda.<br>Salve aprovações no painel para ver o fluxo aqui.</div>
+    </div>
+    <!-- TABLE -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;margin-top:14px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid #e8eaed;font-size:13px;font-weight:600;color:#1a1d23">Detalhamento por dia</div>
+      <table class="ht" id="fcTable" style="margin:0">
+        <thead><tr>
+          <th>Data</th>
+          <th>Aprovações</th>
+          <th>Lançamentos</th>
+          <th style="text-align:right">Total aprovado</th>
+          <th style="text-align:right">Acumulado</th>
+        </tr></thead>
+        <tbody id="fcTbody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -286,6 +345,29 @@ async function load(){
     }catch(e){fs[fn]='error';console.error(fn,e);}
   }
   if(!ok){serr('Não foi possível carregar os arquivos. Verifique se estão na pasta do Drive.');return;}
+
+  // LANÇAMENTOS FIXOS DIÁRIOS — RSL
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const diasUteis = [1,2,3,4,5,6,0]; // todos os dias da semana
+  const diaSemana = hoje.getDay();
+  // Adiciona sempre (todos os dias da semana)
+  const fixos = [
+    {forn:'LALAMOVE',        dsc:'FRETE DIÁRIO',        val:200.00},
+    {forn:'ABASTECIMENTO DIVERSOS', dsc:'COMBUSTÍVEL DIÁRIO', val:1200.00},
+    {forn:'CONECTCAR',       dsc:'PEDÁGIO DIÁRIO',       val:100.00},
+  ];
+  fixos.forEach(f=>{
+    D.push({
+      id: ni++,
+      emp: 'RSL',
+      forn: f.forn,
+      dt: new Date(hoje),
+      dts: hoje.toLocaleDateString('pt-BR'),
+      dsc: f.dsc,
+      val: f.val,
+      fixo: true
+    });
+  });
   smn();ren();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
   const n=Object.values(fs).filter(s=>s==='ok').length;
@@ -363,7 +445,7 @@ function ren(){
       return`<tr class="${sel?'sl':''}" data-id="${r.id}">
         <td><input type="checkbox" class="rc" data-id="${r.id}" ${sel?'checked':''}></td>
         <td><span class="et ${ec(r.emp)}">${esc(r.emp)}</span></td>
-        <td style="font-weight:500;color:#111827">${esc(r.forn)}</td>
+        <td style="font-weight:500;color:#111827">${esc(r.forn)}${r.fixo?'<span class="fixo-tag">fixo</span>':''}</td>
         <td class="mn">${r.dts}</td>
         <td><span class="bg ${bc}">${bl}</span></td>
         <td style="color:#6b7280;font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.dsc)}">${esc(r.dsc)}</td>
@@ -455,13 +537,61 @@ function stab(t){
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
   document.getElementById('tp').style.display=t==='p'?'block':'none';
   document.getElementById('th2').style.display=t==='h'?'block':'none';
+  document.getElementById('tf').style.display=t==='f'?'block':'none';
   document.getElementById('bb').style.display=(t==='p'&&D.length)?'flex':'none';
+  if(t==='f') renderFluxo();
 }
 document.querySelectorAll('.tab').forEach(x=>x.addEventListener('click',()=>stab(x.dataset.tab)));
 
 // EVENTS
 document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>{if(e.target.checked)ci.add(r.id);else ci.delete(r.id);});ren();});
-document.getElementById('ffn').addEventListener('keydown',e=>{if(e.key==='Enter')ren();});
+// AUTOCOMPLETE FORNECEDOR
+(function(){
+  const inp = document.getElementById('ffn');
+  const drop = document.getElementById('ffn-drop');
+  let selIdx = -1;
+
+  function getFornList(q){
+    const seen = new Map();
+    D.forEach(r=>{
+      const k = r.forn.toLowerCase();
+      if(!seen.has(k)) seen.set(k,{forn:r.forn,emps:[r.emp]});
+      else if(!seen.get(k).emps.includes(r.emp)) seen.get(k).emps.push(r.emp);
+    });
+    const all = [...seen.values()].sort((a,b)=>a.forn.localeCompare(b.forn));
+    if(!q) return all.slice(0,50);
+    return all.filter(x=>x.forn.toLowerCase().includes(q)).slice(0,50);
+  }
+
+  function renderDrop(items){
+    if(!items.length){drop.style.display='none';return;}
+    selIdx=-1;
+    drop.innerHTML = items.map((x,i)=>{
+      const empTags = x.emps.map(e=>`<span class="ac-emp">${e}</span>`).join('');
+      return `<div data-val="${x.forn.replace(/"/g,'&quot;')}" data-i="${i}">${x.forn}${empTags}</div>`;
+    }).join('');
+    drop.style.display='block';
+    drop.querySelectorAll('div').forEach(el=>{
+      el.addEventListener('mousedown',e=>{
+        e.preventDefault();
+        inp.value = el.dataset.val;
+        drop.style.display='none';
+        ren();
+      });
+    });
+  }
+
+  inp.addEventListener('focus',()=>renderDrop(getFornList(inp.value.toLowerCase().trim())));
+  inp.addEventListener('input',()=>{renderDrop(getFornList(inp.value.toLowerCase().trim()));selIdx=-1;});
+  inp.addEventListener('keydown',e=>{
+    const items=drop.querySelectorAll('div');
+    if(e.key==='ArrowDown'){e.preventDefault();selIdx=Math.min(selIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('ac-sel',i===selIdx));if(items[selIdx])items[selIdx].scrollIntoView({block:'nearest'});}
+    else if(e.key==='ArrowUp'){e.preventDefault();selIdx=Math.max(selIdx-1,0);items.forEach((el,i)=>el.classList.toggle('ac-sel',i===selIdx));if(items[selIdx])items[selIdx].scrollIntoView({block:'nearest'});}
+    else if(e.key==='Enter'){if(selIdx>=0&&items[selIdx]){inp.value=items[selIdx].dataset.val;drop.style.display='none';}ren();}
+    else if(e.key==='Escape'){drop.style.display='none';}
+  });
+  document.addEventListener('click',e=>{if(!inp.contains(e.target)&&!drop.contains(e.target))drop.style.display='none';});
+})();
 document.getElementById('bfil').addEventListener('click',ren);
 document.getElementById('bcf').addEventListener('click',()=>{
   ['fdi','fdf','ffn'].forEach(id=>document.getElementById(id).value='');
@@ -489,6 +619,115 @@ document.getElementById('bexp').addEventListener('click',()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
   a.download=`contas_pagar_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;a.click();
 });
+
+// =============================================
+// FLUXO DE CAIXA
+// =============================================
+let fcChartObj = null;
+
+function renderFluxo(){
+  const periodo = parseInt(document.getElementById('fcPeriodo').value);
+  const empF = document.getElementById('fcEmp').value;
+
+  // Flatten all history items with date
+  const now = new Date(); now.setHours(23,59,59,999);
+  const cutoff = periodo > 0 ? new Date(now - periodo * 86400000) : new Date(0);
+
+  // Group by day
+  const dayMap = {};
+  H.forEach(entry => {
+    // Parse entry date: "dd/mm/yyyy, hh:mm:ss"
+    const parts = entry.dt.split(',')[0].trim().split('/');
+    if(parts.length < 3) return;
+    const dayKey = parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0');
+    const dayDate = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+    if(dayDate < cutoff || dayDate > now) return;
+
+    const items = empF ? entry.items.filter(i=>i.emp===empF) : entry.items;
+    if(!items.length) return;
+    const tot = items.reduce((a,i)=>a+i.va,0);
+
+    if(!dayMap[dayKey]) dayMap[dayKey] = {label: parts[0]+'/'+parts[1]+'/'+parts[2], total:0, count:0, entries:0};
+    dayMap[dayKey].total += tot;
+    dayMap[dayKey].count += items.length;
+    dayMap[dayKey].entries += 1;
+  });
+
+  const days = Object.keys(dayMap).sort();
+  const labels = days.map(d=>dayMap[d].label);
+  const values = days.map(d=>dayMap[d].total);
+  const totAll = values.reduce((a,v)=>a+v,0);
+  const maxVal = values.length ? Math.max(...values) : 0;
+  const maxIdx = values.indexOf(maxVal);
+  const media = days.length ? totAll/days.length : 0;
+
+  // Summary cards
+  document.getElementById('fcTot').textContent = brl(totAll);
+  document.getElementById('fcTotN').textContent = H.length + ' aprovações';
+  document.getElementById('fcMax').textContent = brl(maxVal);
+  document.getElementById('fcMaxD').textContent = maxIdx>=0 ? labels[maxIdx] : '—';
+  document.getElementById('fcMedia').textContent = brl(media);
+  document.getElementById('fcDias').textContent = days.length;
+
+  const canvas = document.getElementById('fcChart');
+  const empty = document.getElementById('fcEmpty');
+
+  if(!days.length){
+    canvas.style.display='none';
+    empty.style.display='block';
+    document.getElementById('fcTbody').innerHTML='<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#9ca3af">Sem dados no período</td></tr>';
+    return;
+  }
+  canvas.style.display='block';
+  empty.style.display='none';
+
+  // Chart
+  if(fcChartObj) fcChartObj.destroy();
+  fcChartObj = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets:[{
+        label: 'Total aprovado',
+        data: values,
+        backgroundColor: values.map(v => v === maxVal ? '#3b82f6' : '#93c5fd'),
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label: ctx => ' ' + brl(ctx.raw)
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11},color:'#6b7280'}},
+        y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},color:'#6b7280',callback:v=>'R$ '+v.toLocaleString('pt-BR')},border:{display:false}}
+      }
+    }
+  });
+
+  // Table with cumulative
+  let acum = 0;
+  document.getElementById('fcTbody').innerHTML = days.map(d=>{
+    acum += dayMap[d].total;
+    return `<tr>
+      <td class="mn">${dayMap[d].label}</td>
+      <td>${dayMap[d].entries}</td>
+      <td>${dayMap[d].count} lançamentos</td>
+      <td class="mn" style="text-align:right;font-weight:500;color:#3b82f6">${brl(dayMap[d].total)}</td>
+      <td class="mn" style="text-align:right;color:#6b7280">${brl(acum)}</td>
+    </tr>`;
+  }).reverse().join('');
+}
+
+document.getElementById('fcPeriodo').addEventListener('change', renderFluxo);
+document.getElementById('fcEmp').addEventListener('change', renderFluxo);
 
 rh();uhc();load();
 </script>
