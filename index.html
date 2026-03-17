@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Contas a Pagar</title>
+<title>Contas a Pagar — Rosil</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -118,7 +118,7 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 
 <div class="hd">
   <div>
-    <h1>Contas a Pagar</h1>
+    <h1>Contas a Pagar — Rosil</h1>
     <p id="hsub">Carregando arquivos do Drive...</p>
   </div>
   <div class="hbtns">
@@ -701,28 +701,47 @@ function getFilteredHistory(){
 function renderFluxo(){
   const periodo = parseInt(document.getElementById('fcPeriodo').value);
   const anoF = document.getElementById('fcAno').value;
+  const empF = document.getElementById('fcEmp').value;
   const now = new Date(); now.setHours(23,59,59,999);
   const cutoff = periodo > 0 ? new Date(now - periodo * 86400000) : new Date(0);
 
   const hist = getFilteredHistory();
 
-  // Populate year filter
-  const anos = [...new Set(hist.map(e=>e.parsed.year))].sort().reverse();
+  // Populate year filter with years from both D and H
+  const anosH = hist.map(e=>e.parsed.year);
+  const anosD = D.map(r=>String(r.dt.getFullYear()));
+  const anos = [...new Set([...anosH,...anosD])].sort().reverse();
   const anoSel = document.getElementById('fcAno').value;
   document.getElementById('fcAno').innerHTML = '<option value="0">Todos os anos</option>' +
     anos.map(a=>`<option value="${a}" ${anoSel===a?'selected':''}>${a}</option>`).join('');
 
   // ---- DIÁRIO ----
+  // Previsto: from D (open items grouped by vencimento date)
+  // Aprovado: from H (approved items grouped by approval date)
   const dayMap = {};
+
+  // Add PREVISTO from D (open items — vencimento date)
+  const dFilt = empF ? D.filter(r=>r.emp===empF) : D;
+  dFilt.forEach(r=>{
+    const d = r.dt; if(!d) return;
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yy = String(d.getFullYear());
+    if(periodo>0 && d < cutoff) return;
+    if(anoF && anoF!=='0' && yy!==anoF) return;
+    const key = dd+'/'+mm+'/'+yy;
+    if(!dayMap[key]) dayMap[key]={label:key,aprovado:0,previsto:0,count:0,entries:0};
+    dayMap[key].previsto += r.val;
+    dayMap[key].count += 1;
+  });
+
+  // Add APROVADO from H (approved items — approval date)
   hist.forEach(entry=>{
     if(entry.parsed.date < cutoff || entry.parsed.date > now) return;
+    if(anoF && anoF!=='0' && entry.parsed.year!==anoF) return;
     const key = entry.parsed.day;
     if(!dayMap[key]) dayMap[key]={label:key,aprovado:0,previsto:0,count:0,entries:0};
-    entry.filteredItems.forEach(i=>{
-      dayMap[key].aprovado += i.va;
-      dayMap[key].previsto += i.vp;
-    });
-    dayMap[key].count += entry.filteredItems.length;
+    entry.filteredItems.forEach(i=>{ dayMap[key].aprovado += i.va; });
     dayMap[key].entries += 1;
   });
 
@@ -732,18 +751,19 @@ function renderFluxo(){
   });
 
   const totAprov = days.reduce((a,d)=>a+dayMap[d].aprovado,0);
-  const totPrev  = days.reduce((a,d)=>a+dayMap[d].previsto,0);
+  const totPrev  = dFilt.reduce((a,r)=>a+r.val,0);
   const diff = totPrev - totAprov;
   const diffPct = totPrev>0 ? ((diff/totPrev)*100).toFixed(1) : 0;
   const maxAprov = days.length ? Math.max(...days.map(d=>dayMap[d].aprovado)) : 0;
   const maxDay = days.find(d=>dayMap[d].aprovado===maxAprov)||'';
-  const media = days.length ? totAprov/days.length : 0;
+  const mediaDias = days.filter(d=>dayMap[d].aprovado>0).length;
+  const media = mediaDias ? totAprov/mediaDias : 0;
 
   document.getElementById('fcTot').textContent = brl(totAprov);
-  document.getElementById('fcTotN').textContent = H.length+' aprovações';
+  document.getElementById('fcTotN').textContent = hist.length+' aprovações salvas';
   document.getElementById('fcPrev').textContent = brl(totPrev);
   document.getElementById('fcDiff').textContent = brl(diff);
-  document.getElementById('fcDiffPct').textContent = diffPct+'% de desconto/ajuste';
+  document.getElementById('fcDiffPct').textContent = totPrev>0 ? diffPct+'% ainda em aberto' : '';
   document.getElementById('fcMax').textContent = brl(maxAprov);
   document.getElementById('fcMaxD').textContent = maxDay||'—';
   document.getElementById('fcMedia').textContent = brl(media);
@@ -787,16 +807,27 @@ function renderFluxo(){
 
   // ---- MENSAL ----
   const monMap = {};
+
+  // Previsto mensal: from D grouped by vencimento month
+  dFilt.forEach(r=>{
+    const d = r.dt; if(!d) return;
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yy = String(d.getFullYear());
+    if(anoF && anoF!=='0' && yy!==anoF) return;
+    const mKey = yy+'-'+mm;
+    const mLabel = mm+'/'+yy;
+    if(!monMap[mKey]) monMap[mKey]={label:mLabel,aprovado:0,previsto:0,count:0};
+    monMap[mKey].previsto += r.val;
+  });
+
+  // Aprovado mensal: from H grouped by approval month
   hist.forEach(entry=>{
     const mKey = entry.parsed.monthKey;
     const mLabel = entry.parsed.month;
     const yr = entry.parsed.year;
     if(anoF && anoF!=='0' && yr!==anoF) return;
     if(!monMap[mKey]) monMap[mKey]={label:mLabel,aprovado:0,previsto:0,count:0};
-    entry.filteredItems.forEach(i=>{
-      monMap[mKey].aprovado += i.va;
-      monMap[mKey].previsto += i.vp;
-    });
+    entry.filteredItems.forEach(i=>{ monMap[mKey].aprovado += i.va; });
     monMap[mKey].count += entry.filteredItems.length;
   });
 
