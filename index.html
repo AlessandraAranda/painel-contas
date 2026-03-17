@@ -194,8 +194,8 @@ input[type=checkbox]{width:14px;height:14px;accent-color:var(--ac);cursor:pointe
 </div>
 
 <script>
-const FID='1QvT709fhhECmC6oVbdm_jDy8fnu4c8gR';
 const FILES=['ROSIL.xlsx','RSL.xlsx','LUCRO PRESUMIDO.xlsx'];
+const FIDS={'ROSIL.xlsx':'1ULrpnXeLIB2ThXXdTXszD786Nngn4F7K','RSL.xlsx':'1WOhSEmSjH7w64ENxh-NzJopTkzIn2MQ8','LUCRO PRESUMIDO.xlsx':'1FY-ErcTcXhRS4zGFK59wf6FHO4_jHmTt'};
 const BK={
   'ROSIL':{1:'Caixa Recebimento',2:'Caixa Pagamentos',3:'Bradesco',4:'Santander AG0296',5:'Itaú 45232-6',6:'Banco do Brasil 1982-8',7:'Bradesco 6614-1',8:'Itaú Conta Garantida',9:'BB Aplicação',10:'Bradesco Aplicação',11:'Bradesco Trianon',12:'Itaú Aplicação',13:'Grafeno Rosil',14:'Davos',15:'Iosan (inut.)',16:'R3 (inut.)',21:'Iosan',22:'Valorem',24:'Queiroz',25:'Nobel',26:'R3',27:'Marcos',28:'BCD',29:'GFM',30:'Del Monte',31:'Silvia (Nubank)',32:'Pague Seguro',33:'Finan Factoring',34:'Leba',35:'Fidmaislux',36:'Valecred',37:'Sofisa',38:'FIDC Lotus',39:'BRR FIDC',40:'Acerto de Caixa',41:'Araguaya Fomento',42:'Premium Plastic',43:'Petlook/Itaú',44:'CB',45:'Profac',46:'Raízes',47:'FIDC Comprocred',48:'Banco Unique',49:'F2 Bank',50:'Matarazzo',51:'Unique Julia 8790',52:'Unique Julia 8792',53:'Unique Rosil',54:'BMP Money Plus',55:'Socred Service',56:'Fama Fundo',57:'Go Bank',58:'Genebra',59:'IOX Securitizadora',60:'Exact Securitizadora',61:'Oliplast'},
   'RSL':{1:'Caixa/Recebimento',2:'Caixa/Pagamentos',5:'Itaú',6:'Bradesco RSL 0593',7:'Grafeno RSL',11:'Iosan (inut.)',12:'Davos (inut.)',13:'R3 (inut.)',20:'R3',21:'Iosan',22:'Valorem',24:'Queiroz',25:'Davos',26:'Smart Factor',27:'Del Monte',28:'Silvia (Nubank)',30:'Nubank RSL',31:'Pague Seguro',32:'Finan Factoring',33:'Leba',34:'Valecred',35:'FIDC Lotus',36:'BRR FIDC',37:'Sofisa',38:'Acerto de Caixa',39:'Cheque/Dinheiro',40:'Araguaya Fomento',41:'Bradesco Silvia',42:'Grafeno Rosil',43:'Matarazzo',44:'Unique RSL',45:'FIDC Comprocred',46:'CB Securitizadora',47:'Raízes Fundo',48:'Socred Service',49:'Fama Fundo',50:'Go Bank',51:'Genebra',52:'IOX Securitizadora'},
@@ -213,21 +213,13 @@ let H=JSON.parse(localStorage.getItem('cp_h')||'[]');
 
 async function load(){
   sld();D=[];fs={};ci=new Set();pv={};ni=1;
-  let html='';
-  try{const r=await fetch(`https://drive.google.com/embeddedfolderview?id=${FID}#list`);html=await r.text();}
-  catch(e){serr('Não foi possível acessar a pasta do Google Drive. Verifique se o compartilhamento é público.');return;}
-  const fm={};let m;
-  const r1=/\["([^"]*?\.xlsx)","([a-zA-Z0-9_\-]{20,})"/g;
-  while((m=r1.exec(html))!==null)fm[m[1]]=m[2];
-  const r2=/"name":"([^"]+\.xlsx)","id":"([^"]+)"/g;
-  while((m=r2.exec(html))!==null)fm[m[1]]=m[2];
   let ok=false;
   for(const fn of FILES){
     const emp=fn.replace('.xlsx','').trim().toUpperCase();
-    const id=fm[fn];
+    const id=FIDS[fn];
     if(!id){fs[fn]='not_found';continue;}
     try{
-      const res=await fetch(`https://drive.google.com/uc?export=download&id=${id}`);
+      const res=await fetch(`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`);
       if(!res.ok)throw new Error();
       const wb=XLSX.read(await res.arrayBuffer(),{type:'array',cellDates:true});
       const ws=wb.Sheets[wb.SheetNames[0]];
