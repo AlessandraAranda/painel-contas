@@ -193,49 +193,102 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 
 <div id="tf" style="display:none">
   <div class="hw">
-    <div class="hh">
-      <h2>Fluxo de caixa — aprovações</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <select id="fcPeriodo" class="btn btn-sm" style="height:30px;font-size:12px">
+
+    <!-- ===== FILTRO GLOBAL ===== -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:500;color:#6b7280">Filtrar:</span>
+      <select id="fcEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
+        <option value="">Todas as empresas</option>
+        <option value="ROSIL">ROSIL</option>
+        <option value="RSL">RSL</option>
+        <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
+      </select>
+    </div>
+
+    <!-- ===== CARDS RESUMO ===== -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px">
+      <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="fcTot">R$ 0,00</div><div class="ssb" id="fcTotN">0 aprovações</div></div>
+      <div class="sc"><div class="slb">Total previsto pago</div><div class="sv" id="fcPrev">R$ 0,00</div><div class="ssb">valor original dos itens</div></div>
+      <div class="sc"><div class="slb">Diferença (desconto)</div><div class="sv g" id="fcDiff">R$ 0,00</div><div class="ssb" id="fcDiffPct">0%</div></div>
+      <div class="sc"><div class="slb">Maior dia</div><div class="sv" id="fcMax">R$ 0,00</div><div class="ssb" id="fcMaxD">—</div></div>
+      <div class="sc"><div class="slb">Média diária</div><div class="sv" id="fcMedia">R$ 0,00</div></div>
+    </div>
+
+    <!-- ===== GRÁFICO DIÁRIO ===== -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#1a1d23">Fluxo diário — previsto vs aprovado</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:2px">Comparativo por dia de aprovação</div>
+        </div>
+        <select id="fcPeriodo" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
           <option value="30">Últimos 30 dias</option>
           <option value="60">Últimos 60 dias</option>
           <option value="90">Últimos 90 dias</option>
           <option value="0">Tudo</option>
         </select>
-        <select id="fcEmp" class="btn btn-sm" style="height:30px;font-size:12px">
-          <option value="">Todas as empresas</option>
-          <option value="ROSIL">ROSIL</option>
-          <option value="RSL">RSL</option>
-          <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
-        </select>
       </div>
-    </div>
-    <!-- SUMMARY CARDS -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px">
-      <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="fcTot">R$ 0,00</div><div class="ssb" id="fcTotN">0 aprovações</div></div>
-      <div class="sc"><div class="slb">Maior dia</div><div class="sv" id="fcMax">R$ 0,00</div><div class="ssb" id="fcMaxD">—</div></div>
-      <div class="sc"><div class="slb">Média por dia</div><div class="sv" id="fcMedia">R$ 0,00</div></div>
-      <div class="sc"><div class="slb">Dias com pagamento</div><div class="sv" id="fcDias">0</div></div>
-    </div>
-    <!-- CHART -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
+      <!-- Legenda -->
+      <div style="display:flex;gap:16px;margin-bottom:14px">
+        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#93c5fd;border-radius:3px"></span>Valor previsto</span>
+        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:3px"></span>Valor aprovado</span>
+      </div>
       <canvas id="fcChart" height="90"></canvas>
       <div id="fcEmpty" style="display:none;text-align:center;padding:3rem;color:#9ca3af;font-size:13px">Nenhuma aprovação salva ainda.<br>Salve aprovações no painel para ver o fluxo aqui.</div>
     </div>
-    <!-- TABLE -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;margin-top:14px;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid #e8eaed;font-size:13px;font-weight:600;color:#1a1d23">Detalhamento por dia</div>
-      <table class="ht" id="fcTable" style="margin:0">
+
+    <!-- ===== GRÁFICO MENSAL ===== -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#1a1d23">Fluxo mensal — previsto vs aprovado</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:2px">Consolidado por mês</div>
+        </div>
+        <select id="fcAno" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
+          <option value="0">Todos os anos</option>
+        </select>
+      </div>
+      <!-- Legenda -->
+      <div style="display:flex;gap:16px;margin-bottom:14px">
+        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#fca5a5;border-radius:3px"></span>Valor previsto</span>
+        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#ef4444;border-radius:3px"></span>Valor aprovado</span>
+      </div>
+      <canvas id="fcChartMensal" height="80"></canvas>
+      <div id="fcEmptyMensal" style="display:none;text-align:center;padding:2rem;color:#9ca3af;font-size:13px">Sem dados para exibir.</div>
+    </div>
+
+    <!-- ===== TABELA DIÁRIA ===== -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden;margin-bottom:16px">
+      <div style="padding:12px 16px;border-bottom:1px solid #e8eaed;font-size:13px;font-weight:600;color:#1a1d23">Detalhamento diário</div>
+      <table class="ht" style="margin:0">
         <thead><tr>
           <th>Data</th>
           <th>Aprovações</th>
           <th>Lançamentos</th>
-          <th style="text-align:right">Total aprovado</th>
-          <th style="text-align:right">Acumulado</th>
+          <th style="text-align:right">Previsto</th>
+          <th style="text-align:right">Aprovado</th>
+          <th style="text-align:right">Diferença</th>
+          <th style="text-align:right">Acumulado aprovado</th>
         </tr></thead>
         <tbody id="fcTbody"></tbody>
       </table>
     </div>
+
+    <!-- ===== TABELA MENSAL ===== -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid #e8eaed;font-size:13px;font-weight:600;color:#1a1d23">Detalhamento mensal</div>
+      <table class="ht" style="margin:0">
+        <thead><tr>
+          <th>Mês</th>
+          <th style="text-align:right">Previsto</th>
+          <th style="text-align:right">Aprovado</th>
+          <th style="text-align:right">Diferença</th>
+          <th style="text-align:right">% pago</th>
+        </tr></thead>
+        <tbody id="fcTbodyMensal"></tbody>
+      </table>
+    </div>
+
   </div>
 </div>
 
@@ -624,110 +677,168 @@ document.getElementById('bexp').addEventListener('click',()=>{
 // FLUXO DE CAIXA
 // =============================================
 let fcChartObj = null;
+let fcChartMensalObj = null;
+
+function parseHistDate(dtStr){
+  // "dd/mm/yyyy, hh:mm:ss" or "dd/mm/yyyy hh:mm:ss"
+  const parts = dtStr.split(',')[0].trim().split('/');
+  if(parts.length < 3) return null;
+  const y = parseInt(parts[2]); const m = parseInt(parts[1])-1; const d = parseInt(parts[0]);
+  return {date: new Date(y,m,d), day: parts[0].padStart(2,'0')+'/'+parts[1].padStart(2,'0')+'/'+parts[2], month: parts[1].padStart(2,'0')+'/'+parts[2], monthKey: parts[2]+'-'+parts[1].padStart(2,'0'), year: parts[2]};
+}
+
+function getFilteredHistory(){
+  const empF = document.getElementById('fcEmp').value;
+  return H.map(entry=>{
+    const parsed = parseHistDate(entry.dt);
+    if(!parsed) return null;
+    const items = empF ? entry.items.filter(i=>i.emp===empF) : entry.items;
+    if(!items.length) return null;
+    return {...entry, parsed, filteredItems: items};
+  }).filter(Boolean);
+}
 
 function renderFluxo(){
   const periodo = parseInt(document.getElementById('fcPeriodo').value);
-  const empF = document.getElementById('fcEmp').value;
-
-  // Flatten all history items with date
+  const anoF = document.getElementById('fcAno').value;
   const now = new Date(); now.setHours(23,59,59,999);
   const cutoff = periodo > 0 ? new Date(now - periodo * 86400000) : new Date(0);
 
-  // Group by day
+  const hist = getFilteredHistory();
+
+  // Populate year filter
+  const anos = [...new Set(hist.map(e=>e.parsed.year))].sort().reverse();
+  const anoSel = document.getElementById('fcAno').value;
+  document.getElementById('fcAno').innerHTML = '<option value="0">Todos os anos</option>' +
+    anos.map(a=>`<option value="${a}" ${anoSel===a?'selected':''}>${a}</option>`).join('');
+
+  // ---- DIÁRIO ----
   const dayMap = {};
-  H.forEach(entry => {
-    // Parse entry date: "dd/mm/yyyy, hh:mm:ss"
-    const parts = entry.dt.split(',')[0].trim().split('/');
-    if(parts.length < 3) return;
-    const dayKey = parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0');
-    const dayDate = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
-    if(dayDate < cutoff || dayDate > now) return;
-
-    const items = empF ? entry.items.filter(i=>i.emp===empF) : entry.items;
-    if(!items.length) return;
-    const tot = items.reduce((a,i)=>a+i.va,0);
-
-    if(!dayMap[dayKey]) dayMap[dayKey] = {label: parts[0]+'/'+parts[1]+'/'+parts[2], total:0, count:0, entries:0};
-    dayMap[dayKey].total += tot;
-    dayMap[dayKey].count += items.length;
-    dayMap[dayKey].entries += 1;
+  hist.forEach(entry=>{
+    if(entry.parsed.date < cutoff || entry.parsed.date > now) return;
+    const key = entry.parsed.day;
+    if(!dayMap[key]) dayMap[key]={label:key,aprovado:0,previsto:0,count:0,entries:0};
+    entry.filteredItems.forEach(i=>{
+      dayMap[key].aprovado += i.va;
+      dayMap[key].previsto += i.vp;
+    });
+    dayMap[key].count += entry.filteredItems.length;
+    dayMap[key].entries += 1;
   });
 
-  const days = Object.keys(dayMap).sort();
-  const labels = days.map(d=>dayMap[d].label);
-  const values = days.map(d=>dayMap[d].total);
-  const totAll = values.reduce((a,v)=>a+v,0);
-  const maxVal = values.length ? Math.max(...values) : 0;
-  const maxIdx = values.indexOf(maxVal);
-  const media = days.length ? totAll/days.length : 0;
+  const days = Object.keys(dayMap).sort((a,b)=>{
+    const pa=a.split('/'),pb=b.split('/');
+    return new Date(pa[2],pa[1]-1,pa[0]) - new Date(pb[2],pb[1]-1,pb[0]);
+  });
 
-  // Summary cards
-  document.getElementById('fcTot').textContent = brl(totAll);
-  document.getElementById('fcTotN').textContent = H.length + ' aprovações';
-  document.getElementById('fcMax').textContent = brl(maxVal);
-  document.getElementById('fcMaxD').textContent = maxIdx>=0 ? labels[maxIdx] : '—';
+  const totAprov = days.reduce((a,d)=>a+dayMap[d].aprovado,0);
+  const totPrev  = days.reduce((a,d)=>a+dayMap[d].previsto,0);
+  const diff = totPrev - totAprov;
+  const diffPct = totPrev>0 ? ((diff/totPrev)*100).toFixed(1) : 0;
+  const maxAprov = days.length ? Math.max(...days.map(d=>dayMap[d].aprovado)) : 0;
+  const maxDay = days.find(d=>dayMap[d].aprovado===maxAprov)||'';
+  const media = days.length ? totAprov/days.length : 0;
+
+  document.getElementById('fcTot').textContent = brl(totAprov);
+  document.getElementById('fcTotN').textContent = H.length+' aprovações';
+  document.getElementById('fcPrev').textContent = brl(totPrev);
+  document.getElementById('fcDiff').textContent = brl(diff);
+  document.getElementById('fcDiffPct').textContent = diffPct+'% de desconto/ajuste';
+  document.getElementById('fcMax').textContent = brl(maxAprov);
+  document.getElementById('fcMaxD').textContent = maxDay||'—';
   document.getElementById('fcMedia').textContent = brl(media);
-  document.getElementById('fcDias').textContent = days.length;
 
   const canvas = document.getElementById('fcChart');
-  const empty = document.getElementById('fcEmpty');
-
+  const empty  = document.getElementById('fcEmpty');
   if(!days.length){
-    canvas.style.display='none';
-    empty.style.display='block';
-    document.getElementById('fcTbody').innerHTML='<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#9ca3af">Sem dados no período</td></tr>';
-    return;
-  }
-  canvas.style.display='block';
-  empty.style.display='none';
-
-  // Chart
-  if(fcChartObj) fcChartObj.destroy();
-  fcChartObj = new Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets:[{
-        label: 'Total aprovado',
-        data: values,
-        backgroundColor: values.map(v => v === maxVal ? '#3b82f6' : '#93c5fd'),
-        borderRadius: 6,
-        borderSkipped: false,
-      }]
-    },
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          callbacks:{
-            label: ctx => ' ' + brl(ctx.raw)
-          }
-        }
+    canvas.style.display='none'; empty.style.display='block';
+    document.getElementById('fcTbody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:#9ca3af">Sem dados no período</td></tr>';
+  } else {
+    canvas.style.display='block'; empty.style.display='none';
+    if(fcChartObj) fcChartObj.destroy();
+    fcChartObj = new Chart(canvas,{
+      type:'bar',
+      data:{
+        labels: days,
+        datasets:[
+          {label:'Valor previsto', data:days.map(d=>dayMap[d].previsto), backgroundColor:'#bfdbfe', borderRadius:4, borderSkipped:false},
+          {label:'Valor aprovado', data:days.map(d=>dayMap[d].aprovado), backgroundColor:'#3b82f6', borderRadius:4, borderSkipped:false}
+        ]
       },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:11},color:'#6b7280'}},
-        y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},color:'#6b7280',callback:v=>'R$ '+v.toLocaleString('pt-BR')},border:{display:false}}
-      }
-    }
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#6b7280'}},
+                y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+v.toLocaleString('pt-BR')},border:{display:false}}}}
+    });
+    let acum=0;
+    document.getElementById('fcTbody').innerHTML = [...days].reverse().map(d=>{
+      acum+=dayMap[d].aprovado;
+      const df=dayMap[d].previsto-dayMap[d].aprovado;
+      return`<tr>
+        <td class="mn">${dayMap[d].label}</td>
+        <td>${dayMap[d].entries} / ${dayMap[d].count} itens</td>
+        <td>${dayMap[d].count}</td>
+        <td class="mn" style="text-align:right;color:#6b7280">${brl(dayMap[d].previsto)}</td>
+        <td class="mn" style="text-align:right;font-weight:500;color:#3b82f6">${brl(dayMap[d].aprovado)}</td>
+        <td class="mn" style="text-align:right;color:#059669">${brl(df)}</td>
+        <td class="mn" style="text-align:right;color:#9ca3af">${brl(acum)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ---- MENSAL ----
+  const monMap = {};
+  hist.forEach(entry=>{
+    const mKey = entry.parsed.monthKey;
+    const mLabel = entry.parsed.month;
+    const yr = entry.parsed.year;
+    if(anoF && anoF!=='0' && yr!==anoF) return;
+    if(!monMap[mKey]) monMap[mKey]={label:mLabel,aprovado:0,previsto:0,count:0};
+    entry.filteredItems.forEach(i=>{
+      monMap[mKey].aprovado += i.va;
+      monMap[mKey].previsto += i.vp;
+    });
+    monMap[mKey].count += entry.filteredItems.length;
   });
 
-  // Table with cumulative
-  let acum = 0;
-  document.getElementById('fcTbody').innerHTML = days.map(d=>{
-    acum += dayMap[d].total;
-    return `<tr>
-      <td class="mn">${dayMap[d].label}</td>
-      <td>${dayMap[d].entries}</td>
-      <td>${dayMap[d].count} lançamentos</td>
-      <td class="mn" style="text-align:right;font-weight:500;color:#3b82f6">${brl(dayMap[d].total)}</td>
-      <td class="mn" style="text-align:right;color:#6b7280">${brl(acum)}</td>
-    </tr>`;
-  }).reverse().join('');
+  const months = Object.keys(monMap).sort();
+  const canvasM = document.getElementById('fcChartMensal');
+  const emptyM  = document.getElementById('fcEmptyMensal');
+  if(!months.length){
+    canvasM.style.display='none'; emptyM.style.display='block';
+    document.getElementById('fcTbodyMensal').innerHTML='<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#9ca3af">Sem dados</td></tr>';
+  } else {
+    canvasM.style.display='block'; emptyM.style.display='none';
+    if(fcChartMensalObj) fcChartMensalObj.destroy();
+    fcChartMensalObj = new Chart(canvasM,{
+      type:'bar',
+      data:{
+        labels: months.map(m=>monMap[m].label),
+        datasets:[
+          {label:'Valor previsto', data:months.map(m=>monMap[m].previsto), backgroundColor:'#fca5a5', borderRadius:4, borderSkipped:false},
+          {label:'Valor aprovado', data:months.map(m=>monMap[m].aprovado), backgroundColor:'#ef4444', borderRadius:4, borderSkipped:false}
+        ]
+      },
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#6b7280'}},
+                y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},color:'#6b7280',callback:v=>'R$'+v.toLocaleString('pt-BR')},border:{display:false}}}}
+    });
+    document.getElementById('fcTbodyMensal').innerHTML = [...months].reverse().map(m=>{
+      const df = monMap[m].previsto - monMap[m].aprovado;
+      const pct = monMap[m].previsto>0 ? ((monMap[m].aprovado/monMap[m].previsto)*100).toFixed(1) : 0;
+      return`<tr>
+        <td class="mn" style="font-weight:500">${monMap[m].label}</td>
+        <td class="mn" style="text-align:right;color:#6b7280">${brl(monMap[m].previsto)}</td>
+        <td class="mn" style="text-align:right;font-weight:500;color:#ef4444">${brl(monMap[m].aprovado)}</td>
+        <td class="mn" style="text-align:right;color:#059669">${brl(df)}</td>
+        <td class="mn" style="text-align:right;color:#374151">${pct}%</td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 document.getElementById('fcPeriodo').addEventListener('change', renderFluxo);
 document.getElementById('fcEmp').addEventListener('change', renderFluxo);
+document.getElementById('fcAno').addEventListener('change', renderFluxo);
 
 rh();uhc();load();
 </script>
