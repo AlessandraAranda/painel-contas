@@ -194,8 +194,8 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 <div id="tf" style="display:none">
   <div class="hw">
 
-    <!-- ===== FILTRO GLOBAL ===== -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <!-- FILTROS -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="font-size:12px;font-weight:500;color:#6b7280">Filtrar:</span>
       <select id="fcEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
         <option value="">Todas as empresas</option>
@@ -205,88 +205,54 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
       </select>
     </div>
 
-    <!-- ===== CARDS RESUMO ===== -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px">
+    <!-- CARDS RESUMO -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px">
+      <div class="sc"><div class="slb">Total em aberto</div><div class="sv" id="fcPrev">R$ 0,00</div><div class="ssb" id="fcPrevN">do Drive</div></div>
       <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="fcTot">R$ 0,00</div><div class="ssb" id="fcTotN">0 aprovações</div></div>
-      <div class="sc"><div class="slb">Total previsto pago</div><div class="sv" id="fcPrev">R$ 0,00</div><div class="ssb">valor original dos itens</div></div>
-      <div class="sc"><div class="slb">Diferença (desconto)</div><div class="sv g" id="fcDiff">R$ 0,00</div><div class="ssb" id="fcDiffPct">0%</div></div>
-      <div class="sc"><div class="slb">Maior dia</div><div class="sv" id="fcMax">R$ 0,00</div><div class="ssb" id="fcMaxD">—</div></div>
-      <div class="sc"><div class="slb">Média diária</div><div class="sv" id="fcMedia">R$ 0,00</div></div>
+      <div class="sc"><div class="slb">Ainda a pagar</div><div class="sv r" id="fcRest">R$ 0,00</div><div class="ssb" id="fcRestN">—</div></div>
     </div>
 
-    <!-- ===== GRÁFICO DIÁRIO ===== -->
+    <!-- RESUMO TEXTUAL -->
+    <div id="fcResumo" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:13px;color:#0369a1;line-height:1.8;display:none"></div>
+
+    <!-- GRÁFICO DIÁRIO -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-size:14px;font-weight:600;color:#1a1d23">Fluxo diário — previsto vs aprovado</div>
-          <div style="font-size:12px;color:#9ca3af;margin-top:2px">Comparativo por dia de aprovação</div>
+          <div style="font-size:14px;font-weight:600;color:#1a1d23">Fluxo diário</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:2px">Previsto por vencimento · Aprovado por data de pagamento</div>
         </div>
         <select id="fcPeriodo" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-          <option value="30">Últimos 30 dias</option>
+          <option value="15">Últimos 15 dias</option>
+          <option value="30" selected>Últimos 30 dias</option>
           <option value="60">Últimos 60 dias</option>
-          <option value="90">Últimos 90 dias</option>
-          <option value="0">Tudo</option>
         </select>
       </div>
-      <!-- Legenda -->
       <div style="display:flex;gap:16px;margin-bottom:14px">
-        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#93c5fd;border-radius:3px"></span>Valor previsto</span>
-        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:3px"></span>Valor aprovado</span>
+        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;background:#bfdbfe;border-radius:2px"></span>Em aberto</span>
+        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px"></span>Aprovado</span>
       </div>
-      <canvas id="fcChart" height="90"></canvas>
-      <div id="fcEmpty" style="display:none;text-align:center;padding:3rem;color:#9ca3af;font-size:13px">Nenhuma aprovação salva ainda.<br>Salve aprovações no painel para ver o fluxo aqui.</div>
+      <canvas id="fcChart" height="100"></canvas>
+      <div id="fcEmpty" style="display:none;text-align:center;padding:2.5rem;color:#9ca3af;font-size:13px">Nenhum dado no período selecionado.</div>
     </div>
 
-    <!-- ===== GRÁFICO MENSAL ===== -->
+    <!-- GRÁFICO MENSAL -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-size:14px;font-weight:600;color:#1a1d23">Fluxo mensal — previsto vs aprovado</div>
+          <div style="font-size:14px;font-weight:600;color:#1a1d23">Fluxo mensal</div>
           <div style="font-size:12px;color:#9ca3af;margin-top:2px">Consolidado por mês</div>
         </div>
         <select id="fcAno" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
           <option value="0">Todos os anos</option>
         </select>
       </div>
-      <!-- Legenda -->
       <div style="display:flex;gap:16px;margin-bottom:14px">
-        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#fca5a5;border-radius:3px"></span>Valor previsto</span>
-        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;background:#ef4444;border-radius:3px"></span>Valor aprovado</span>
+        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;background:#fca5a5;border-radius:2px"></span>Em aberto</span>
+        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:2px"></span>Aprovado</span>
       </div>
-      <canvas id="fcChartMensal" height="80"></canvas>
+      <canvas id="fcChartMensal" height="90"></canvas>
       <div id="fcEmptyMensal" style="display:none;text-align:center;padding:2rem;color:#9ca3af;font-size:13px">Sem dados para exibir.</div>
-    </div>
-
-    <!-- ===== TABELA DIÁRIA ===== -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden;margin-bottom:16px">
-      <div style="padding:12px 16px;border-bottom:1px solid #e8eaed;font-size:13px;font-weight:600;color:#1a1d23">Detalhamento diário</div>
-      <table class="ht" style="margin:0">
-        <thead><tr>
-          <th>Data</th>
-          <th>Aprovações</th>
-          <th>Lançamentos</th>
-          <th style="text-align:right">Previsto</th>
-          <th style="text-align:right">Aprovado</th>
-          <th style="text-align:right">Diferença</th>
-          <th style="text-align:right">Acumulado aprovado</th>
-        </tr></thead>
-        <tbody id="fcTbody"></tbody>
-      </table>
-    </div>
-
-    <!-- ===== TABELA MENSAL ===== -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid #e8eaed;font-size:13px;font-weight:600;color:#1a1d23">Detalhamento mensal</div>
-      <table class="ht" style="margin:0">
-        <thead><tr>
-          <th>Mês</th>
-          <th style="text-align:right">Previsto</th>
-          <th style="text-align:right">Aprovado</th>
-          <th style="text-align:right">Diferença</th>
-          <th style="text-align:right">% pago</th>
-        </tr></thead>
-        <tbody id="fcTbodyMensal"></tbody>
-      </table>
     </div>
 
   </div>
@@ -680,11 +646,10 @@ let fcChartObj = null;
 let fcChartMensalObj = null;
 
 function parseHistDate(dtStr){
-  // "dd/mm/yyyy, hh:mm:ss" or "dd/mm/yyyy hh:mm:ss"
   const parts = dtStr.split(',')[0].trim().split('/');
   if(parts.length < 3) return null;
-  const y = parseInt(parts[2]); const m = parseInt(parts[1])-1; const d = parseInt(parts[0]);
-  return {date: new Date(y,m,d), day: parts[0].padStart(2,'0')+'/'+parts[1].padStart(2,'0')+'/'+parts[2], month: parts[1].padStart(2,'0')+'/'+parts[2], monthKey: parts[2]+'-'+parts[1].padStart(2,'0'), year: parts[2]};
+  const y=parseInt(parts[2]),m=parseInt(parts[1])-1,d=parseInt(parts[0]);
+  return {date:new Date(y,m,d), day:parts[0].padStart(2,'0')+'/'+parts[1].padStart(2,'0')+'/'+parts[2], month:parts[1].padStart(2,'0')+'/'+parts[2], monthKey:parts[2]+'-'+parts[1].padStart(2,'0'), year:parts[2]};
 }
 
 function getFilteredHistory(){
@@ -694,7 +659,7 @@ function getFilteredHistory(){
     if(!parsed) return null;
     const items = empF ? entry.items.filter(i=>i.emp===empF) : entry.items;
     if(!items.length) return null;
-    return {...entry, parsed, filteredItems: items};
+    return {...entry, parsed, filteredItems:items};
   }).filter(Boolean);
 }
 
@@ -703,141 +668,120 @@ function renderFluxo(){
   const anoF = document.getElementById('fcAno').value;
   const empF = document.getElementById('fcEmp').value;
   const now = new Date(); now.setHours(23,59,59,999);
-  const cutoff = periodo > 0 ? new Date(now - periodo * 86400000) : new Date(0);
-
+  const cutoff = new Date(now - periodo * 86400000);
   const hist = getFilteredHistory();
 
-  // Populate year filter with years from both D and H
+  // Populate year filter
+  const dFilt = empF ? D.filter(r=>r.emp===empF) : D;
+  const anosD = dFilt.map(r=>String(r.dt.getFullYear()));
   const anosH = hist.map(e=>e.parsed.year);
-  const anosD = D.map(r=>String(r.dt.getFullYear()));
-  const anos = [...new Set([...anosH,...anosD])].sort().reverse();
+  const anos = [...new Set([...anosD,...anosH])].sort().reverse();
   const anoSel = document.getElementById('fcAno').value;
   document.getElementById('fcAno').innerHTML = '<option value="0">Todos os anos</option>' +
-    anos.map(a=>`<option value="${a}" ${anoSel===a?'selected':''}>${a}</option>`).join('');
+    anos.map(a=>`<option value="${a}"${anoSel===a?' selected':''}>${a}</option>`).join('');
+
+  // Summary totals
+  const totPrev = dFilt.reduce((a,r)=>a+r.val,0);
+  const totAprov = hist.reduce((a,e)=>a+e.filteredItems.reduce((b,i)=>b+i.va,0),0);
+  const totRest = totPrev - totAprov;
+  const pctAprov = totPrev>0 ? ((totAprov/totPrev)*100).toFixed(1) : 0;
+  const pctRest = totPrev>0 ? (100 - parseFloat(pctAprov)).toFixed(1) : 100;
+
+  document.getElementById('fcPrev').textContent = brl(totPrev);
+  document.getElementById('fcPrevN').textContent = dFilt.length+' lançamentos em aberto';
+  document.getElementById('fcTot').textContent = brl(totAprov);
+  document.getElementById('fcTotN').textContent = hist.length+' aprovações salvas';
+  document.getElementById('fcRest').textContent = brl(totRest>0?totRest:0);
+  document.getElementById('fcRestN').textContent = totPrev>0 ? pctRest+'% ainda não aprovado' : '—';
+
+  // Resumo textual
+  const resumoEl = document.getElementById('fcResumo');
+  if(totPrev>0){
+    resumoEl.style.display='block';
+    let txt = '';
+    if(totAprov===0){
+      txt = `📋 Há <strong>${brl(totPrev)}</strong> em lançamentos abertos no sistema. Nenhum pagamento foi aprovado ainda nesta sessão. Selecione os lançamentos no painel e clique em "Salvar aprovação" para registrar os pagamentos.`;
+    } else if(totRest<=0){
+      txt = `✅ Todos os lançamentos em aberto foram aprovados. Total aprovado: <strong>${brl(totAprov)}</strong>.`;
+    } else {
+      txt = `💡 Do total de <strong>${brl(totPrev)}</strong> em aberto, <strong>${brl(totAprov)}</strong> (${pctAprov}%) já foi aprovado para pagamento. Faltam <strong>${brl(totRest)}</strong> (${pctRest}%) ainda sem aprovação.`;
+    }
+    resumoEl.innerHTML = txt;
+  } else {
+    resumoEl.style.display='none';
+  }
 
   // ---- DIÁRIO ----
-  // Previsto: from D (open items grouped by vencimento date)
-  // Aprovado: from H (approved items grouped by approval date)
   const dayMap = {};
-
-  // Add PREVISTO from D (open items — vencimento date)
-  const dFilt = empF ? D.filter(r=>r.emp===empF) : D;
   dFilt.forEach(r=>{
-    const d = r.dt; if(!d) return;
-    const dd = String(d.getDate()).padStart(2,'0');
-    const mm = String(d.getMonth()+1).padStart(2,'0');
-    const yy = String(d.getFullYear());
-    if(periodo>0 && d < cutoff) return;
-    if(anoF && anoF!=='0' && yy!==anoF) return;
-    const key = dd+'/'+mm+'/'+yy;
-    if(!dayMap[key]) dayMap[key]={label:key,aprovado:0,previsto:0,count:0,entries:0};
+    const d=r.dt; if(!d) return;
+    const dd=String(d.getDate()).padStart(2,'0'), mm=String(d.getMonth()+1).padStart(2,'0'), yy=String(d.getFullYear());
+    if(d<cutoff||d>now) return;
+    const key=dd+'/'+mm+'/'+yy;
+    if(!dayMap[key]) dayMap[key]={label:key,previsto:0,aprovado:0};
     dayMap[key].previsto += r.val;
-    dayMap[key].count += 1;
   });
-
-  // Add APROVADO from H (approved items — approval date)
   hist.forEach(entry=>{
-    if(entry.parsed.date < cutoff || entry.parsed.date > now) return;
-    if(anoF && anoF!=='0' && entry.parsed.year!==anoF) return;
-    const key = entry.parsed.day;
-    if(!dayMap[key]) dayMap[key]={label:key,aprovado:0,previsto:0,count:0,entries:0};
-    entry.filteredItems.forEach(i=>{ dayMap[key].aprovado += i.va; });
-    dayMap[key].entries += 1;
+    if(entry.parsed.date<cutoff||entry.parsed.date>now) return;
+    const key=entry.parsed.day;
+    if(!dayMap[key]) dayMap[key]={label:key,previsto:0,aprovado:0};
+    entry.filteredItems.forEach(i=>dayMap[key].aprovado+=i.va);
   });
 
   const days = Object.keys(dayMap).sort((a,b)=>{
     const pa=a.split('/'),pb=b.split('/');
-    return new Date(pa[2],pa[1]-1,pa[0]) - new Date(pb[2],pb[1]-1,pb[0]);
+    return new Date(pa[2],+pa[1]-1,+pa[0]) - new Date(pb[2],+pb[1]-1,+pb[0]);
   });
 
-  const totAprov = days.reduce((a,d)=>a+dayMap[d].aprovado,0);
-  const totPrev  = dFilt.reduce((a,r)=>a+r.val,0);
-  const diff = totPrev - totAprov;
-  const diffPct = totPrev>0 ? ((diff/totPrev)*100).toFixed(1) : 0;
-  const maxAprov = days.length ? Math.max(...days.map(d=>dayMap[d].aprovado)) : 0;
-  const maxDay = days.find(d=>dayMap[d].aprovado===maxAprov)||'';
-  const mediaDias = days.filter(d=>dayMap[d].aprovado>0).length;
-  const media = mediaDias ? totAprov/mediaDias : 0;
-
-  document.getElementById('fcTot').textContent = brl(totAprov);
-  document.getElementById('fcTotN').textContent = hist.length+' aprovações salvas';
-  document.getElementById('fcPrev').textContent = brl(totPrev);
-  document.getElementById('fcDiff').textContent = brl(diff);
-  document.getElementById('fcDiffPct').textContent = totPrev>0 ? diffPct+'% ainda em aberto' : '';
-  document.getElementById('fcMax').textContent = brl(maxAprov);
-  document.getElementById('fcMaxD').textContent = maxDay||'—';
-  document.getElementById('fcMedia').textContent = brl(media);
-
-  const canvas = document.getElementById('fcChart');
-  const empty  = document.getElementById('fcEmpty');
-  if(!days.length){
-    canvas.style.display='none'; empty.style.display='block';
-    document.getElementById('fcTbody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:#9ca3af">Sem dados no período</td></tr>';
-  } else {
+  const canvas=document.getElementById('fcChart'), empty=document.getElementById('fcEmpty');
+  if(!days.length){ canvas.style.display='none'; empty.style.display='block'; }
+  else {
     canvas.style.display='block'; empty.style.display='none';
     if(fcChartObj) fcChartObj.destroy();
     fcChartObj = new Chart(canvas,{
       type:'bar',
       data:{
-        labels: days,
+        labels: days.map(d=>dayMap[d].label),
         datasets:[
-          {label:'Valor previsto', data:days.map(d=>dayMap[d].previsto), backgroundColor:'#bfdbfe', borderRadius:4, borderSkipped:false},
-          {label:'Valor aprovado', data:days.map(d=>dayMap[d].aprovado), backgroundColor:'#3b82f6', borderRadius:4, borderSkipped:false}
+          {label:'Em aberto', data:days.map(d=>dayMap[d].previsto), backgroundColor:'#bfdbfe', borderRadius:4, borderSkipped:false, categoryPercentage:0.7},
+          {label:'Aprovado',  data:days.map(d=>dayMap[d].aprovado),  backgroundColor:'#3b82f6', borderRadius:4, borderSkipped:false, categoryPercentage:0.7}
         ]
       },
-      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
-        scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#6b7280'}},
-                y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+v.toLocaleString('pt-BR')},border:{display:false}}}}
+      options:{
+        responsive:true,
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}
+        },
+        scales:{
+          x:{grid:{display:false}, ticks:{font:{size:10},color:'#6b7280'}},
+          y:{grid:{color:'#f3f4f6'}, ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')}, border:{display:false}}
+        }
+      }
     });
-    let acum=0;
-    document.getElementById('fcTbody').innerHTML = [...days].reverse().map(d=>{
-      acum+=dayMap[d].aprovado;
-      const df=dayMap[d].previsto-dayMap[d].aprovado;
-      return`<tr>
-        <td class="mn">${dayMap[d].label}</td>
-        <td>${dayMap[d].entries} / ${dayMap[d].count} itens</td>
-        <td>${dayMap[d].count}</td>
-        <td class="mn" style="text-align:right;color:#6b7280">${brl(dayMap[d].previsto)}</td>
-        <td class="mn" style="text-align:right;font-weight:500;color:#3b82f6">${brl(dayMap[d].aprovado)}</td>
-        <td class="mn" style="text-align:right;color:#059669">${brl(df)}</td>
-        <td class="mn" style="text-align:right;color:#9ca3af">${brl(acum)}</td>
-      </tr>`;
-    }).join('');
   }
 
   // ---- MENSAL ----
   const monMap = {};
-
-  // Previsto mensal: from D grouped by vencimento month
   dFilt.forEach(r=>{
-    const d = r.dt; if(!d) return;
-    const mm = String(d.getMonth()+1).padStart(2,'0');
-    const yy = String(d.getFullYear());
-    if(anoF && anoF!=='0' && yy!==anoF) return;
-    const mKey = yy+'-'+mm;
-    const mLabel = mm+'/'+yy;
-    if(!monMap[mKey]) monMap[mKey]={label:mLabel,aprovado:0,previsto:0,count:0};
-    monMap[mKey].previsto += r.val;
+    const d=r.dt; if(!d) return;
+    const mm=String(d.getMonth()+1).padStart(2,'0'), yy=String(d.getFullYear());
+    if(anoF&&anoF!=='0'&&yy!==anoF) return;
+    const key=yy+'-'+mm;
+    if(!monMap[key]) monMap[key]={label:mm+'/'+yy,previsto:0,aprovado:0};
+    monMap[key].previsto += r.val;
   });
-
-  // Aprovado mensal: from H grouped by approval month
   hist.forEach(entry=>{
-    const mKey = entry.parsed.monthKey;
-    const mLabel = entry.parsed.month;
-    const yr = entry.parsed.year;
-    if(anoF && anoF!=='0' && yr!==anoF) return;
-    if(!monMap[mKey]) monMap[mKey]={label:mLabel,aprovado:0,previsto:0,count:0};
-    entry.filteredItems.forEach(i=>{ monMap[mKey].aprovado += i.va; });
-    monMap[mKey].count += entry.filteredItems.length;
+    if(anoF&&anoF!=='0'&&entry.parsed.year!==anoF) return;
+    const key=entry.parsed.monthKey;
+    if(!monMap[key]) monMap[key]={label:entry.parsed.month,previsto:0,aprovado:0};
+    entry.filteredItems.forEach(i=>monMap[key].aprovado+=i.va);
   });
 
-  const months = Object.keys(monMap).sort();
-  const canvasM = document.getElementById('fcChartMensal');
-  const emptyM  = document.getElementById('fcEmptyMensal');
-  if(!months.length){
-    canvasM.style.display='none'; emptyM.style.display='block';
-    document.getElementById('fcTbodyMensal').innerHTML='<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#9ca3af">Sem dados</td></tr>';
-  } else {
+  const months=Object.keys(monMap).sort();
+  const canvasM=document.getElementById('fcChartMensal'), emptyM=document.getElementById('fcEmptyMensal');
+  if(!months.length){ canvasM.style.display='none'; emptyM.style.display='block'; }
+  else {
     canvasM.style.display='block'; emptyM.style.display='none';
     if(fcChartMensalObj) fcChartMensalObj.destroy();
     fcChartMensalObj = new Chart(canvasM,{
@@ -845,25 +789,22 @@ function renderFluxo(){
       data:{
         labels: months.map(m=>monMap[m].label),
         datasets:[
-          {label:'Valor previsto', data:months.map(m=>monMap[m].previsto), backgroundColor:'#fca5a5', borderRadius:4, borderSkipped:false},
-          {label:'Valor aprovado', data:months.map(m=>monMap[m].aprovado), backgroundColor:'#ef4444', borderRadius:4, borderSkipped:false}
+          {label:'Em aberto', data:months.map(m=>monMap[m].previsto), backgroundColor:'#fca5a5', borderRadius:4, borderSkipped:false, categoryPercentage:0.7},
+          {label:'Aprovado',  data:months.map(m=>monMap[m].aprovado),  backgroundColor:'#ef4444', borderRadius:4, borderSkipped:false, categoryPercentage:0.7}
         ]
       },
-      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
-        scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#6b7280'}},
-                y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},color:'#6b7280',callback:v=>'R$'+v.toLocaleString('pt-BR')},border:{display:false}}}}
+      options:{
+        responsive:true,
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}
+        },
+        scales:{
+          x:{grid:{display:false}, ticks:{font:{size:11},color:'#6b7280'}},
+          y:{grid:{color:'#f3f4f6'}, ticks:{font:{size:11},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')}, border:{display:false}}
+        }
+      }
     });
-    document.getElementById('fcTbodyMensal').innerHTML = [...months].reverse().map(m=>{
-      const df = monMap[m].previsto - monMap[m].aprovado;
-      const pct = monMap[m].previsto>0 ? ((monMap[m].aprovado/monMap[m].previsto)*100).toFixed(1) : 0;
-      return`<tr>
-        <td class="mn" style="font-weight:500">${monMap[m].label}</td>
-        <td class="mn" style="text-align:right;color:#6b7280">${brl(monMap[m].previsto)}</td>
-        <td class="mn" style="text-align:right;font-weight:500;color:#ef4444">${brl(monMap[m].aprovado)}</td>
-        <td class="mn" style="text-align:right;color:#059669">${brl(df)}</td>
-        <td class="mn" style="text-align:right;color:#374151">${pct}%</td>
-      </tr>`;
-    }).join('');
   }
 }
 
