@@ -133,6 +133,7 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
   <div class="tab on" data-tab="p">Painel do dia</div>
   <div class="tab" data-tab="h">Histórico <span id="hc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
   <div class="tab" data-tab="f">Fluxo de Caixa</div>
+  <div class="tab" data-tab="r">Revisão <span id="rc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
 </div>
 
 <div id="tp">
@@ -258,6 +259,54 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
   </div>
 </div>
 
+<div id="tr2" style="display:none">
+  <div class="hw">
+    <div class="hh">
+      <div>
+        <h2>Revisão de pagamentos</h2>
+        <p style="font-size:13px;color:#6b7280;margin-top:4px">Confira tudo antes de aprovar. Você pode ajustar valores, remover itens ou voltar ao painel para adicionar mais.</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" id="brLimpar">✕ Limpar seleção</button>
+        <button class="btn btn-p btn-sm" id="brAprovar">✓ Aprovar pagamentos</button>
+      </div>
+    </div>
+
+    <!-- RESUMO REVISÃO -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px">
+      <div class="sc"><div class="slb">Itens selecionados</div><div class="sv v" id="rvCount">0</div></div>
+      <div class="sc"><div class="slb">Valor previsto total</div><div class="sv" id="rvPrev">R$ 0,00</div></div>
+      <div class="sc"><div class="slb">Valor a pagar total</div><div class="sv v" id="rvAprov">R$ 0,00</div></div>
+      <div class="sc"><div class="slb">Pagamento parcial</div><div class="sv g" id="rvDiff">R$ 0,00</div><div class="ssb" id="rvDiffN">diferença entre previsto e a pagar</div></div>
+    </div>
+
+    <!-- TABELA REVISÃO -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden">
+      <table class="ht" style="margin:0">
+        <thead><tr>
+          <th style="width:34px"></th>
+          <th style="width:100px">Empresa</th>
+          <th>Fornecedor</th>
+          <th style="width:100px">Vencimento</th>
+          <th style="width:80px">Status</th>
+          <th>Descrição</th>
+          <th style="text-align:right;width:120px">Previsto</th>
+          <th style="text-align:right;width:125px">Valor a pagar</th>
+        </tr></thead>
+        <tbody id="rvTbody"></tbody>
+      </table>
+      <div id="rvEmpty" style="text-align:center;padding:3rem;color:#9ca3af;font-size:13px;display:none">
+        Nenhum item selecionado.<br>Volte ao painel e selecione os lançamentos que deseja pagar.
+      </div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btn-sm" onclick="stab('p')">← Voltar ao painel</button>
+      <button class="btn btn-p btn-sm" id="brAprovar2">✓ Aprovar pagamentos</button>
+    </div>
+  </div>
+</div>
+
 <div class="bb" id="bb" style="display:none">
   <div class="bif">
     <span>Exibindo <b id="cv">0</b></span>
@@ -329,6 +378,38 @@ let D=[],sc='data',sa=true,ci=new Set(),pv={},fs={},ni=1;
 let H=JSON.parse(localStorage.getItem('cp_h')||'[]');
 let pendingFilter = false;
 
+// Restore saved selection
+function saveSelection(){
+  localStorage.setItem('cp_sel',JSON.stringify({ids:[...ci],pv:Object.fromEntries(Object.entries(pv))}));
+}
+function loadSelection(){
+  try{
+    const s=JSON.parse(localStorage.getItem('cp_sel')||'{}');
+    if(s.ids) s.ids.forEach(id=>ci.add(+id));
+    if(s.pv) Object.entries(s.pv).forEach(([k,v])=>pv[+k]=v);
+  }catch(e){}
+}
+// Save filters
+function saveFilters(){
+  localStorage.setItem('cp_filters',JSON.stringify({
+    fdi:document.getElementById('fdi').value,
+    fdf:document.getElementById('fdf').value,
+    ffn:document.getElementById('ffn').value,
+    fem:document.getElementById('fem').value,
+    fst:document.getElementById('fst').value
+  }));
+}
+function loadFilters(){
+  try{
+    const f=JSON.parse(localStorage.getItem('cp_filters')||'{}');
+    if(f.fdi)document.getElementById('fdi').value=f.fdi;
+    if(f.fdf)document.getElementById('fdf').value=f.fdf;
+    if(f.ffn)document.getElementById('ffn').value=f.ffn;
+    if(f.fem)document.getElementById('fem').value=f.fem;
+    if(f.fst)document.getElementById('fst').value=f.fst;
+  }catch(e){}
+}
+
 async function load(){
   sld();D=[];fs={};ci=new Set();pv={};ni=1;
   let ok=false;
@@ -387,7 +468,7 @@ async function load(){
       fixo: true
     });
   });
-  smn();ren();
+  smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
   const n=Object.values(fs).filter(s=>s==='ok').length;
   document.getElementById('hsub').textContent=`${D.length} lançamentos em aberto · ${n}/${FILES.length} arquivos carregados`;
@@ -489,10 +570,10 @@ function aev(){
     const id=+e.target.dataset.id;
     if(e.target.checked)ci.add(id);else ci.delete(id);
     e.target.closest('tr').classList.toggle('sl',e.target.checked);
-    upt();
+    upt();saveSelection();updateRev();
   }));
   document.querySelectorAll('.vi').forEach(el=>el.addEventListener('input',e=>{
-    pv[+e.target.dataset.id]=parseFloat(e.target.value)||0;upt();
+    pv[+e.target.dataset.id]=parseFloat(e.target.value)||0;upt();saveSelection();
   }));
 }
 
@@ -503,8 +584,9 @@ function csav(){
   const items=D.filter(r=>ci.has(r.id)).map(r=>({emp:r.emp,forn:r.forn,dts:r.dts,dsc:r.dsc,vp:r.val,va:pv[r.id]!==undefined?pv[r.id]:r.val}));
   H.unshift({id:Date.now(),lb,dt:new Date().toLocaleString('pt-BR'),tot:items.reduce((a,r)=>a+r.va,0),n:items.length,items});
   localStorage.setItem('cp_h',JSON.stringify(H));
+  ci=new Set();pv={};saveSelection();
   document.getElementById('mov').style.display='none';
-  rh();stab('h');
+  updateRev();ren();rh();stab('h');
 }
 
 // HISTÓRICO
@@ -557,13 +639,15 @@ function stab(t){
   document.getElementById('tp').style.display=t==='p'?'block':'none';
   document.getElementById('th2').style.display=t==='h'?'block':'none';
   document.getElementById('tf').style.display=t==='f'?'block':'none';
+  document.getElementById('tr2').style.display=t==='r'?'block':'none';
   document.getElementById('bb').style.display=(t==='p'&&D.length)?'flex':'none';
   if(t==='f') renderFluxo();
+  if(t==='r') renderRev();
 }
 document.querySelectorAll('.tab').forEach(x=>x.addEventListener('click',()=>stab(x.dataset.tab)));
 
 // EVENTS
-document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>{if(e.target.checked)ci.add(r.id);else ci.delete(r.id);});ren();});
+document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>{if(e.target.checked)ci.add(r.id);else ci.delete(r.id);});ren();saveSelection();updateRev();});
 // AUTOCOMPLETE FORNECEDOR
 (function(){
   const inp = document.getElementById('ffn');
@@ -601,7 +685,7 @@ document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>
   }
 
   inp.addEventListener('focus',()=>renderDrop(getFornList(inp.value.toLowerCase().trim())));
-  inp.addEventListener('input',()=>{renderDrop(getFornList(inp.value.toLowerCase().trim()));selIdx=-1;});
+  inp.addEventListener('input',()=>{renderDrop(getFornList(inp.value.toLowerCase().trim()));selIdx=-1;saveFilters();});
   inp.addEventListener('keydown',e=>{
     const items=drop.querySelectorAll('div');
     if(e.key==='ArrowDown'){e.preventDefault();selIdx=Math.min(selIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('ac-sel',i===selIdx));if(items[selIdx])items[selIdx].scrollIntoView({block:'nearest'});}
@@ -611,16 +695,16 @@ document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>
   });
   document.addEventListener('click',e=>{if(!inp.contains(e.target)&&!drop.contains(e.target))drop.style.display='none';});
 })();
-document.getElementById('bfil').addEventListener('click',ren);
+document.getElementById('bfil').addEventListener('click',()=>{ren();saveFilters();});
 document.getElementById('bcf').addEventListener('click',()=>{
   ['fdi','fdf','ffn'].forEach(id=>document.getElementById(id).value='');
   ['fem','fst'].forEach(id=>document.getElementById(id).selectedIndex=0);
-  ren();
+  ren();saveFilters();
 });
-document.getElementById('fem').addEventListener('change',ren);
-document.getElementById('fst').addEventListener('change',ren);
-document.getElementById('fdi').addEventListener('change',ren);
-document.getElementById('fdf').addEventListener('change',ren);
+document.getElementById('fem').addEventListener('change',()=>{ren();saveFilters();});
+document.getElementById('fst').addEventListener('change',()=>{ren();saveFilters();});
+document.getElementById('fdi').addEventListener('change',()=>{ren();saveFilters();});
+document.getElementById('fdf').addEventListener('change',()=>{ren();saveFilters();});
 document.querySelectorAll('th.st').forEach(th=>th.addEventListener('click',()=>{const c=th.dataset.col;if(sc===c)sa=!sa;else{sc=c;sa=true;}ren();}));
 document.getElementById('bref').addEventListener('click',load);
 document.getElementById('bret').addEventListener('click',load);
@@ -811,6 +895,96 @@ function renderFluxo(){
 document.getElementById('fcPeriodo').addEventListener('change', renderFluxo);
 document.getElementById('fcEmp').addEventListener('change', renderFluxo);
 document.getElementById('fcAno').addEventListener('change', renderFluxo);
+
+// =============================================
+// REVISÃO
+// =============================================
+function updateRev(){
+  const n=ci.size;
+  document.getElementById('rc').textContent=n?`(${n})`:'';
+}
+
+function renderRev(){
+  const items=D.filter(r=>ci.has(r.id));
+  const rvEmpty=document.getElementById('rvEmpty');
+  const rvTbody=document.getElementById('rvTbody');
+
+  if(!items.length){
+    rvTbody.innerHTML='';
+    rvEmpty.style.display='block';
+    document.getElementById('rvCount').textContent='0';
+    document.getElementById('rvPrev').textContent='R$ 0,00';
+    document.getElementById('rvAprov').textContent='R$ 0,00';
+    document.getElementById('rvDiff').textContent='R$ 0,00';
+    document.getElementById('rvDiffN').textContent='';
+    return;
+  }
+  rvEmpty.style.display='none';
+
+  const totPrev=items.reduce((a,r)=>a+r.val,0);
+  const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);
+  const diff=totPrev-totAprov;
+  document.getElementById('rvCount').textContent=items.length;
+  document.getElementById('rvPrev').textContent=brl(totPrev);
+  document.getElementById('rvAprov').textContent=brl(totAprov);
+  document.getElementById('rvDiff').textContent=brl(diff);
+  document.getElementById('rvDiffN').textContent=diff>0?`R$ ${diff.toLocaleString('pt-BR',{minimumFractionDigits:2})} sendo pago em partes`:'pagando o valor integral';
+
+  rvTbody.innerHTML=items.map(r=>{
+    const s=sta(r.dt);
+    const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
+    const bc=s==='atrasado'?'ba':s==='hoje'?'bh':'bf';
+    const bl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':'A vencer';
+    return`<tr>
+      <td><button onclick="removeFromRev(${r.id})" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 4px" title="Remover">×</button></td>
+      <td><span class="et ${ec(r.emp)}">${esc(r.emp)}</span></td>
+      <td style="font-weight:500;color:#111827">${esc(r.forn)}</td>
+      <td class="mn">${r.dts}</td>
+      <td><span class="bg ${bc}">${bl}</span></td>
+      <td style="color:#6b7280;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.dsc)}">${esc(r.dsc)}</td>
+      <td class="mn" style="text-align:right">${brl(r.val)}</td>
+      <td style="text-align:right"><input class="vi" type="number" data-id="${r.id}" value="${vp.toFixed(2)}" min="0" step="0.01" onchange="pvRev(${r.id},this.value)"></td>
+    </tr>`;
+  }).join('');
+}
+
+function removeFromRev(id){
+  ci.delete(id);
+  saveSelection();updateRev();renderRev();ren();
+}
+
+function pvRev(id,val){
+  pv[id]=parseFloat(val)||0;
+  saveSelection();
+  // Update summary
+  const items=D.filter(r=>ci.has(r.id));
+  const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);
+  const totPrev=items.reduce((a,r)=>a+r.val,0);
+  document.getElementById('rvAprov').textContent=brl(totAprov);
+  document.getElementById('rvDiff').textContent=brl(totPrev-totAprov);
+  upt();
+}
+
+function doApprove(){
+  if(!ci.size){alert('Nenhum item selecionado para aprovar.');return;}
+  document.getElementById('slb').value=`Pagamentos ${new Date().toLocaleDateString('pt-BR')}`;
+  document.getElementById('mov').style.display='flex';
+  setTimeout(()=>document.getElementById('slb').select(),50);
+}
+
+document.getElementById('brAprovar').addEventListener('click',doApprove);
+document.getElementById('brAprovar2').addEventListener('click',doApprove);
+document.getElementById('brLimpar').addEventListener('click',()=>{
+  if(!confirm('Limpar toda a seleção?'))return;
+  ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
+});
+
+// Override bsav to go to revision tab first if items selected
+document.getElementById('bsav').removeEventListener('click',osm);
+document.getElementById('bsav').addEventListener('click',()=>{
+  if(!ci.size){alert('Selecione ao menos um lançamento.');return;}
+  stab('r');
+});
 
 rh();uhc();load();
 </script>
