@@ -418,22 +418,11 @@ async function load(){
     const id=FIDS[fn];
     if(!id){fs[fn]='not_found';continue;}
     try{
-      // Try CSV export (more reliable without auth)
-      const res=await fetch(`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=0`);
+      // Fetch via Google Apps Script proxy
+      const API='https://script.google.com/macros/s/AKfycbyQlDi8u3uzvVcL6VKkhtwuGwQ7ht7QlT2NWTOx3BAPLsAViBZilsgPbdqbeMbzDW5wEA/exec';
+      const res=await fetch(`${API}?name=${encodeURIComponent(emp)}`);
       if(!res.ok)throw new Error('HTTP '+res.status);
-      const text=await res.text();
-      // Parse CSV into rows array
-      const rows=text.trim().split('\n').map(line=>{
-        const cells=[];let cur='',inQ=false;
-        for(let i=0;i<line.length;i++){
-          const ch=line[i];
-          if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-          else if(ch===','&&!inQ){cells.push(cur);cur='';}
-          else cur+=ch;
-        }
-        cells.push(cur);
-        return cells;
-      });
+      const rows=await res.json();
       if(rows.length<2){fs[fn]='empty';continue;}
       const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
       const iD=h.findIndex(x=>x.includes('data'));
@@ -445,12 +434,11 @@ async function load(){
         if(!row||row.every(c=>c===''||c===null||c===undefined))continue;
         const dscVal=String(row[iDs]||'');
         if(dscVal.toLowerCase().includes('acumulado'))continue;
-        // CSV dates come as strings dd/mm/yyyy
-        const rawDate=String(row[iD]||'').trim();
+        const rawDate=row[iD];
         const dt=parseXlsxDate(rawDate);
         if(!dt)continue;
-        const valStr=String(row[iV]||'0').replace(/"/g,'').trim();
-        const val=parseFloat(valStr.replace(/\./g,'').replace(',','.'))||0;
+        const valRaw=row[iV];
+        const val=typeof valRaw==='number'?valRaw:parseFloat(String(valRaw||'0').replace(/[^\d,\.]/g,'').replace(',','.'))||0;
         if(!val)continue;
         D.push({id:ni++,emp,forn:String(row[iF]||'-').trim(),dt,dts:fmtDate(dt),dsc:dscVal.trim(),val});
       }
