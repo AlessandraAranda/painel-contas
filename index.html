@@ -320,7 +320,44 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
     <div class="bt"><div class="btl">Total visível</div><div class="btv" id="tv">—</div></div>
     <div class="bt"><div class="btl">Total a pagar (selecionados)</div><div class="btv v" id="ts">R$ 0,00</div></div>
   </div>
+<!-- MODAL NOVO LANÇAMENTO AVULSO -->
+<div id="movAvulso" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:600;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border:1px solid #e8eaed;border-radius:12px;padding:24px;max-width:480px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.1)">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:6px;color:#1a1d23">Novo lançamento avulso</h3>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:18px;line-height:1.6">Adicione um lançamento manual que aparecerá junto com os demais no painel.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div>
+        <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Empresa</label>
+        <select id="avEmp" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+          <option value="ROSIL">ROSIL</option>
+          <option value="RSL">RSL</option>
+          <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Vencimento</label>
+        <input type="date" id="avData" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+      </div>
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Fornecedor</label>
+      <input type="text" id="avForn" placeholder="Nome do fornecedor" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Descrição</label>
+      <input type="text" id="avDesc" placeholder="Descrição do pagamento" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+    </div>
+    <div style="margin-bottom:18px">
+      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Valor (R$)</label>
+      <input type="number" id="avValor" placeholder="0,00" min="0" step="0.01" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" id="bAvulsoCancel">Cancelar</button>
+      <button class="btn" id="bAvulsoSave" style="background:#7e22ce;border-color:#7e22ce;color:#fff">+ Adicionar</button>
+    </div>
+  </div>
 </div>
+
 
 <script>
 const FILES=['ROSIL.xlsx','RSL.xlsx','LUCRO PRESUMIDO.xlsx'];
@@ -1103,42 +1140,5 @@ document.getElementById('movAvulso').addEventListener('click',e=>{
 
 rh();uhc();load();
 </script>
-<!-- MODAL NOVO LANÇAMENTO AVULSO -->
-<div id="movAvulso" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:600;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#fff;border:1px solid #e8eaed;border-radius:12px;padding:24px;max-width:480px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.1)">
-    <h3 style="font-size:16px;font-weight:600;margin-bottom:6px;color:#1a1d23">Novo lançamento avulso</h3>
-    <p style="font-size:13px;color:#6b7280;margin-bottom:18px;line-height:1.6">Adicione um lançamento manual que aparecerá junto com os demais no painel.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div>
-        <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Empresa</label>
-        <select id="avEmp" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-          <option value="ROSIL">ROSIL</option>
-          <option value="RSL">RSL</option>
-          <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
-        </select>
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Vencimento</label>
-        <input type="date" id="avData" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-      </div>
-    </div>
-    <div style="margin-bottom:10px">
-      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Fornecedor</label>
-      <input type="text" id="avForn" placeholder="Nome do fornecedor" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-    </div>
-    <div style="margin-bottom:10px">
-      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Descrição</label>
-      <input type="text" id="avDesc" placeholder="Descrição do pagamento" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-    </div>
-    <div style="margin-bottom:18px">
-      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Valor (R$)</label>
-      <input type="number" id="avValor" placeholder="0,00" min="0" step="0.01" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" id="bAvulsoCancel">Cancelar</button>
-      <button class="btn" id="bAvulsoSave" style="background:#7e22ce;border-color:#7e22ce;color:#fff">+ Adicionar</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
