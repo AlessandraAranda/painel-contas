@@ -483,15 +483,7 @@ function parseXlsxDate(v) {
   return null;
 }
 
-function fmtDate(d) {
-  if (!d) return '';
-
-  const date = new Date(d);
-
-  if (isNaN(date)) return '';
-
-  return date.toLocaleDateString('pt-BR');
-}
+function fmtDate(d) { if (!d) return ''; return d.toLocaleDateString('pt-BR'); } let D=[],sc='data',sa=true,ci=new Set(),pv={},fs={},ni=1;
 
 let D=[],sc='data',sa=true,ci=new Set(),pv={},fs={},ni=1;
 let H=JSON.parse(localStorage.getItem('cp_h')||'[]');
