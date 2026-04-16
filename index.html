@@ -485,7 +485,12 @@ function parseXlsxDate(v) {
 
 function fmtDate(d) {
   if (!d) return '';
-  return d.toLocaleDateString('pt-BR');
+
+  const date = new Date(d);
+
+  if (isNaN(date)) return '';
+
+  return date.toLocaleDateString('pt-BR');
 }
 
 let D=[],sc='data',sa=true,ci=new Set(),pv={},fs={},ni=1;
