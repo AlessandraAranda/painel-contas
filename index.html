@@ -528,7 +528,11 @@ async function load(){
     if(!id){fs[fn]='not_found';continue;}
     try{
       const API='https://script.google.com/macros/s/AKfycbzZRBT7g9--jAHP26fg5MmkTKvUvcYD4bxzxIWrNn9QnPynDdQptbOwcmO1eojSeUiN8g/exec';
-      const json=await fetchJSONP(`${API}?name=${encodeURIComponent(emp)}&t=${Date.now()}`);
+      const proxyUrl='https://api.allorigins.win/get?url='+encodeURIComponent(API+'?name='+encodeURIComponent(emp))+'&t='+Date.now();
+      const proxyRes=await fetch(proxyUrl);
+      if(!proxyRes.ok)throw new Error('proxy HTTP '+proxyRes.status);
+      const wrapper=await proxyRes.json();
+      const json=JSON.parse(wrapper.contents);
       if(!json||json.error){fs[fn]='error';console.error(emp,json&&json.error);continue;}
       const rows=json;
       if(rows.length<2){fs[fn]='empty';continue;}
