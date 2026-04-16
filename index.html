@@ -443,24 +443,17 @@ function parseXlsxDate(v) {
     if (!isNaN(v)) return v;
     return null;
   }
-  // String — detecta formato automaticamente
+  // String — Apps Script retorna formato dd/mm/yyyy (coluna O)
   if (typeof v === 'string') {
     const s = v.trim();
-    // dd/mm/yyyy ou dd/mm/yy (brasileiro)
+    // dd/mm/yyyy (brasileiro — vindo da coluna O do Apps Script)
     const mBR = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
     if (mBR) {
       const d=parseInt(mBR[1]), mo=parseInt(mBR[2]);
       let y=parseInt(mBR[3]);
       if (y < 100) y += y < 30 ? 2000 : 1900;
-      // Se mês > 12 provavelmente é formato mm/dd/yyyy (americano)
-      if (mo > 12) {
-        // swap: mBR[1]=mês, mBR[2]=dia
-        const dt = new Date(y, d-1, mo);
-        if (!isNaN(dt) && dt.getFullYear() > 1950) return dt;
-      } else {
-        const dt = new Date(y, mo-1, d);
-        if (!isNaN(dt) && dt.getFullYear() > 1950) return dt;
-      }
+      const dt = new Date(y, mo-1, d);
+      if (!isNaN(dt) && dt.getFullYear() > 1950 && dt.getFullYear() < 2100) return dt;
     }
     // yyyy-mm-dd
     const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -533,7 +526,7 @@ async function load(){
     if(!id){fs[fn]='not_found';continue;}
     try{
       // Fetch via Google Apps Script proxy
-      const API='https://script.google.com/macros/s/AKfycbxtw5OWpbF3rMjRBbETB5PDJTAEeCEhxO-OXzCOe5ORn2EM-zNhCz2a2TentPWkpQ3g/exec';
+      const API='https://script.google.com/macros/s/AKfycbwB6VlQom-EHZ_e6PFsBN5mCeSJyndOWWN-yFi2ab6gka-W1jG4oJRAwZDxTVQNF5-X/exec';
       const res=await fetch(`${API}?name=${encodeURIComponent(emp)}&t=${Date.now()}`);
       if(!res.ok)throw new Error('HTTP '+res.status);
       const json=await res.json();
