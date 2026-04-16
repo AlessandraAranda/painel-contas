@@ -105,6 +105,7 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 </head>
 <body>
 
+<!-- MODAL APROVAÇÃO -->
 <div class="mov" id="mov" style="display:none">
   <div class="mo">
     <h3>Salvar aprovação</h3>
@@ -113,6 +114,44 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
     <div class="mobs">
       <button class="btn" id="bcs">Cancelar</button>
       <button class="btn btn-s" id="bks">✓ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ CORREÇÃO BUG 4: Modal avulso movido para fora da .bb, direto no body -->
+<div id="movAvulso" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:600;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border:1px solid #e8eaed;border-radius:12px;padding:24px;max-width:480px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.1)">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:6px;color:#1a1d23">Novo lançamento avulso</h3>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:18px;line-height:1.6">Adicione um lançamento manual que aparecerá junto com os demais no painel.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div>
+        <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Empresa</label>
+        <select id="avEmp" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+          <option value="ROSIL">ROSIL</option>
+          <option value="RSL">RSL</option>
+          <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Vencimento</label>
+        <input type="date" id="avData" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+      </div>
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Fornecedor</label>
+      <input type="text" id="avForn" placeholder="Nome do fornecedor" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Descrição</label>
+      <input type="text" id="avDesc" placeholder="Descrição do pagamento" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+    </div>
+    <div style="margin-bottom:18px">
+      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Valor (R$)</label>
+      <input type="number" id="avValor" placeholder="0,00" min="0" step="0.01" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" id="bAvulsoCancel">Cancelar</button>
+      <button class="btn" id="bAvulsoSave" style="background:#7e22ce;border-color:#7e22ce;color:#fff">+ Adicionar</button>
     </div>
   </div>
 </div>
@@ -198,8 +237,6 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 
 <div id="tf" style="display:none">
   <div class="hw">
-
-    <!-- FILTROS -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="font-size:12px;font-weight:500;color:#6b7280">Filtrar:</span>
       <select id="fcEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
@@ -209,18 +246,12 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
         <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
       </select>
     </div>
-
-    <!-- CARDS RESUMO -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px">
       <div class="sc"><div class="slb">Total em aberto</div><div class="sv" id="fcPrev">R$ 0,00</div><div class="ssb" id="fcPrevN">do Drive</div></div>
       <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="fcTot">R$ 0,00</div><div class="ssb" id="fcTotN">0 aprovações</div></div>
       <div class="sc"><div class="slb">Ainda a pagar</div><div class="sv r" id="fcRest">R$ 0,00</div><div class="ssb" id="fcRestN">—</div></div>
     </div>
-
-    <!-- RESUMO TEXTUAL -->
     <div id="fcResumo" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:13px;color:#0369a1;line-height:1.8;display:none"></div>
-
-    <!-- GRÁFICO DIÁRIO -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div>
@@ -240,8 +271,6 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
       <canvas id="fcChart" height="100"></canvas>
       <div id="fcEmpty" style="display:none;text-align:center;padding:2.5rem;color:#9ca3af;font-size:13px">Nenhum dado no período selecionado.</div>
     </div>
-
-    <!-- GRÁFICO MENSAL -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div>
@@ -259,7 +288,6 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
       <canvas id="fcChartMensal" height="90"></canvas>
       <div id="fcEmptyMensal" style="display:none;text-align:center;padding:2rem;color:#9ca3af;font-size:13px">Sem dados para exibir.</div>
     </div>
-
   </div>
 </div>
 
@@ -275,16 +303,12 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
         <button class="btn btn-p btn-sm" id="brAprovar">✓ Aprovar pagamentos</button>
       </div>
     </div>
-
-    <!-- RESUMO REVISÃO -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px">
       <div class="sc"><div class="slb">Itens selecionados</div><div class="sv v" id="rvCount">0</div></div>
       <div class="sc"><div class="slb">Valor previsto total</div><div class="sv" id="rvPrev">R$ 0,00</div></div>
       <div class="sc"><div class="slb">Valor a pagar total</div><div class="sv v" id="rvAprov">R$ 0,00</div></div>
       <div class="sc"><div class="slb">Pagamento parcial</div><div class="sv g" id="rvDiff">R$ 0,00</div><div class="ssb" id="rvDiffN">diferença entre previsto e a pagar</div></div>
     </div>
-
-    <!-- TABELA REVISÃO -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden">
       <table class="ht" style="margin:0">
         <thead><tr>
@@ -303,7 +327,6 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
         Nenhum item selecionado.<br>Volte ao painel e selecione os lançamentos que deseja pagar.
       </div>
     </div>
-
     <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px">
       <button class="btn btn-sm" onclick="stab('p')">← Voltar ao painel</button>
       <button class="btn btn-p btn-sm" id="brAprovar2">✓ Aprovar pagamentos</button>
@@ -313,8 +336,6 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 
 <div id="ta" style="display:none">
   <div class="hw">
-
-    <!-- FILTRO -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="font-size:12px;font-weight:500;color:#6b7280">Filtrar:</span>
       <select id="anEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
@@ -324,8 +345,6 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
         <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
       </select>
     </div>
-
-    <!-- CARDS KPI -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:20px">
       <div class="sc"><div class="slb">Total a pagar</div><div class="sv" id="anTotAberto">R$ 0</div><div class="ssb" id="anTotAbertoN">0 lançamentos</div></div>
       <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="anTotAprov">R$ 0</div><div class="ssb" id="anTotAprovN">—</div></div>
@@ -334,8 +353,6 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
       <div class="sc"><div class="slb">Ticket médio</div><div class="sv" id="anTicket">R$ 0</div><div class="ssb">por lançamento</div></div>
       <div class="sc"><div class="slb">Despesa média mensal</div><div class="sv" id="anMensal">R$ 0</div><div class="ssb" id="anMensalN">—</div></div>
     </div>
-
-    <!-- ROW 1: Pizza por empresa + Status -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
       <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
         <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Distribuição por empresa</div>
@@ -348,31 +365,22 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
         <canvas id="anChartStatus" height="180"></canvas>
       </div>
     </div>
-
-    <!-- ROW 2: Evolução mensal -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
       <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Evolução mensal de despesas</div>
       <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Total a pagar por mês de vencimento</div>
       <canvas id="anChartMensal" height="90"></canvas>
     </div>
-
-    <!-- ROW 3: Top fornecedores -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
       <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Top 10 fornecedores</div>
       <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Maiores valores em aberto</div>
       <canvas id="anChartForn" height="110"></canvas>
     </div>
-
-    <!-- ROW 4: Planejado vs aprovado por empresa -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
       <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Planejado vs aprovado por empresa</div>
       <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Comparativo direto</div>
       <canvas id="anChartPlanAprov" height="80"></canvas>
     </div>
-
-    <!-- CARDS POR EMPRESA -->
     <div id="anEmpCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px"></div>
-
   </div>
 </div>
 
@@ -386,44 +394,7 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
     <div class="bt"><div class="btl">Total visível</div><div class="btv" id="tv">—</div></div>
     <div class="bt"><div class="btl">Total a pagar (selecionados)</div><div class="btv v" id="ts">R$ 0,00</div></div>
   </div>
-<!-- MODAL NOVO LANÇAMENTO AVULSO -->
-<div id="movAvulso" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:600;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#fff;border:1px solid #e8eaed;border-radius:12px;padding:24px;max-width:480px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.1)">
-    <h3 style="font-size:16px;font-weight:600;margin-bottom:6px;color:#1a1d23">Novo lançamento avulso</h3>
-    <p style="font-size:13px;color:#6b7280;margin-bottom:18px;line-height:1.6">Adicione um lançamento manual que aparecerá junto com os demais no painel.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div>
-        <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Empresa</label>
-        <select id="avEmp" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-          <option value="ROSIL">ROSIL</option>
-          <option value="RSL">RSL</option>
-          <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
-        </select>
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Vencimento</label>
-        <input type="date" id="avData" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-      </div>
-    </div>
-    <div style="margin-bottom:10px">
-      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Fornecedor</label>
-      <input type="text" id="avForn" placeholder="Nome do fornecedor" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-    </div>
-    <div style="margin-bottom:10px">
-      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Descrição</label>
-      <input type="text" id="avDesc" placeholder="Descrição do pagamento" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-    </div>
-    <div style="margin-bottom:18px">
-      <label style="font-size:11px;font-weight:500;color:#6b7280;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Valor (R$)</label>
-      <input type="number" id="avValor" placeholder="0,00" min="0" step="0.01" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" id="bAvulsoCancel">Cancelar</button>
-      <button class="btn" id="bAvulsoSave" style="background:#7e22ce;border-color:#7e22ce;color:#fff">+ Adicionar</button>
-    </div>
-  </div>
 </div>
-
 
 <script>
 const FILES=['ROSIL.xlsx','RSL.xlsx','LUCRO PRESUMIDO.xlsx'];
@@ -435,26 +406,32 @@ const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 const sta=d=>{if(!d)return'futuro';const x=new Date(d);x.setHours(0,0,0,0);return x<td?'atrasado':x.getTime()===td.getTime()?'hoje':'futuro';};
 const ec=e=>e==='ROSIL'?'eR':e==='RSL'?'eS':'eL';
 
-// ---- DATE PARSER (robusto para Excel serial e strings dd/mm/yyyy) ----
+// =============================================
+// ✅ CORREÇÃO BUG 1: parseXlsxDate corrigida
+// Problema: bloco yyyy-mm-dd usava `v - 25569` (lógica de número serial)
+// dentro de um bloco `typeof v === 'string'`, resultando em NaN.
+// Correção: usa os grupos do match para construir a data corretamente.
+// =============================================
 function parseXlsxDate(v) {
   if (!v) return null;
+
   // Já é Date nativo
   if (v instanceof Date) {
     if (!isNaN(v)) return v;
     return null;
   }
+
   // String — detecta formato automaticamente
   if (typeof v === 'string') {
     const s = v.trim();
+
     // dd/mm/yyyy ou dd/mm/yy (brasileiro)
     const mBR = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
     if (mBR) {
       const d=parseInt(mBR[1]), mo=parseInt(mBR[2]);
       let y=parseInt(mBR[3]);
       if (y < 100) y += y < 30 ? 2000 : 1900;
-      // Se mês > 12 provavelmente é formato mm/dd/yyyy (americano)
       if (mo > 12) {
-        // swap: mBR[1]=mês, mBR[2]=dia
         const dt = new Date(y, d-1, mo);
         if (!isNaN(dt) && dt.getFullYear() > 1950) return dt;
       } else {
@@ -462,48 +439,39 @@ function parseXlsxDate(v) {
         if (!isNaN(dt) && dt.getFullYear() > 1950) return dt;
       }
     }
-    // yyyy-mm-dd
+
+    // ✅ CORREÇÃO: yyyy-mm-dd agora usa os grupos do match, não `v - 25569`
     const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (m2) {
-      const dt = new Date((v - 25569) * 86400 * 1000);
+      const dt = new Date(parseInt(m2[1]), parseInt(m2[2]) - 1, parseInt(m2[3]));
+      if (!isNaN(dt.getTime()) && dt.getFullYear() > 1950 && dt.getFullYear() < 2100) return dt;
+      return null;
+    }
 
-// Corrigir fuso horário
-dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-
-// Validação segura
-if (!isNaN(dt.getTime()) && dt.getFullYear() > 1950 && dt.getFullYear() < 2100) {
-  return dt;
-}
-
-return null;
+    return null;
   }
+
   // Número serial do Excel (dias desde 1900-01-01, com bug do 1900 leap year)
   if (typeof v === 'number') {
-    // XLSX.js com cellDates:false retorna serial
-    // Fórmula correta: (serial - 25569) * 86400000 ms desde epoch Unix
     const dt = new Date(Math.round((v - 25569) * 86400 * 1000));
-    // Corrigir fuso horário
     dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
     if (!isNaN(dt) && dt.getFullYear() > 1950 && dt.getFullYear() < 2100) return dt;
     return null;
   }
+
   return null;
 }
 
 function fmtDate(d) {
   if (!d) return '';
-
   const date = new Date(d);
-
   if (isNaN(date.getTime())) return '';
-
   return date.toLocaleDateString('pt-BR');
 }
+
 let D=[],sc='data',sa=true,ci=new Set(),pv={},fs={},ni=1;
 let H=JSON.parse(localStorage.getItem('cp_h')||'[]');
-let pendingFilter = false;
 
-// Restore saved selection
 function saveSelection(){
   localStorage.setItem('cp_sel',JSON.stringify({ids:[...ci],pv:Object.fromEntries(Object.entries(pv))}));
 }
@@ -514,7 +482,6 @@ function loadSelection(){
     if(s.pv) Object.entries(s.pv).forEach(([k,v])=>pv[+k]=v);
   }catch(e){}
 }
-// Save filters
 function saveFilters(){
   localStorage.setItem('cp_filters',JSON.stringify({
     fdi:document.getElementById('fdi').value,
@@ -543,7 +510,6 @@ async function load(){
     const id=FIDS[fn];
     if(!id){fs[fn]='not_found';continue;}
     try{
-      // Fetch via Google Apps Script proxy
       const API='https://script.google.com/macros/s/AKfycbzZRBT7g9--jAHP26fg5MmkTKvUvcYD4bxzxIWrNn9QnPynDdQptbOwcmO1eojSeUiN8g/exec';
       const res=await fetch(`${API}?name=${encodeURIComponent(emp)}&t=${Date.now()}`);
       if(!res.ok)throw new Error('HTTP '+res.status);
@@ -565,7 +531,6 @@ async function load(){
         const dt=parseXlsxDate(rawDate);
         if(!dt)continue;
         const valStr=String(row[iV]||'0').trim();
-        // Handle Brazilian format: "1.234,56" -> 1234.56
         const val=parseFloat(valStr.replace(/\./g,'').replace(',','.'))||0;
         if(!val)continue;
         D.push({id:ni++,emp,forn:String(row[iF]||'-').trim(),dt,dts:fmtDate(dt),dsc:dscVal.trim(),val});
@@ -574,32 +539,24 @@ async function load(){
     }catch(e){fs[fn]='error';console.error(fn,e);}
   }
   if(!fs.ROSIL && !fs.RSL && !fs['LUCRO PRESUMIDO']){
-  serr('Nenhum arquivo carregou. Verifique os arquivos no Drive.');
-  return;
-}
+    serr('Nenhum arquivo carregou. Verifique os arquivos no Drive.');
+    return;
+  }
 
-  // LANÇAMENTOS FIXOS DIÁRIOS — RSL
+  // Lançamentos fixos diários — RSL
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const diasUteis = [1,2,3,4,5,6,0]; // todos os dias da semana
-  const diaSemana = hoje.getDay();
-  // Adiciona sempre (todos os dias da semana)
   const fixos = [
-    {forn:'LALAMOVE',        dsc:'FRETE DIÁRIO',        val:200.00},
-    {forn:'ABASTECIMENTO DIVERSOS', dsc:'COMBUSTÍVEL DIÁRIO', val:1200.00},
-    {forn:'CONECTCAR',       dsc:'PEDÁGIO DIÁRIO',       val:100.00},
+    {forn:'LALAMOVE',              dsc:'FRETE DIÁRIO',        val:200.00},
+    {forn:'ABASTECIMENTO DIVERSOS',dsc:'COMBUSTÍVEL DIÁRIO',  val:1200.00},
+    {forn:'CONECTCAR',             dsc:'PEDÁGIO DIÁRIO',      val:100.00},
   ];
   fixos.forEach(f=>{
-    D.push({
-      id: ni++,
-      emp: 'RSL',
-      forn: f.forn,
-      dt: new Date(hoje),
-      dts: hoje.toLocaleDateString('pt-BR'),
-      dsc: f.dsc,
-      val: f.val,
-      fixo: true
-    });
+    D.push({id:ni++,emp:'RSL',forn:f.forn,dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:f.dsc,val:f.val,fixo:true});
   });
+
+  // Recarregar avulsos salvos
+  loadAvulsos();
+
   smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
   const n=Object.values(fs).filter(s=>s==='ok').length;
@@ -611,14 +568,12 @@ function serr(msg){document.getElementById('ld').style.display='none';document.g
 function smn(){
   document.getElementById('ld').style.display='none';document.getElementById('er').style.display='none';
   document.getElementById('mc').style.display='block';document.getElementById('bb').style.display='flex';
-  // File status tags
   document.getElementById('fb2').innerHTML=FILES.map(f=>{
     const s=fs[f]||'not_found';
     const dc=s==='ok'?'dok':'derr';
     const lb=s==='ok'?'ok':s==='empty'?'vazio':s==='not_found'?'não encontrado':'erro';
     return`<span class="ftag"><span class="dot ${dc}"></span>${f.replace('.xlsx','')} <span style="color:#9ca3af">${lb}</span></span>`;
   }).join('');
-  // Populate empresa filter
   const emps=[...new Set(D.map(r=>r.emp))].sort();
   document.getElementById('fem').innerHTML='<option value="">Todas as empresas</option>'+emps.map(e=>`<option value="${esc(e)}">${esc(e)}</option>`).join('');
 }
@@ -709,17 +664,29 @@ function aev(){
   }));
 }
 
-// SALVAR
+// =============================================
+// ✅ CORREÇÃO BUG 2: csav declarada como `let` para permitir reatribuição
+// Problema: função declarada com `function csav()` não pode ser
+// reatribuída via `csav = function(){}` de forma confiável.
+// Correção: csav é uma variável `let` desde o início.
+// =============================================
 function osm(){if(!ci.size){alert('Selecione ao menos um lançamento para salvar.');return;}document.getElementById('slb').value=`Pagamentos ${new Date().toLocaleDateString('pt-BR')}`;document.getElementById('mov').style.display='flex';setTimeout(()=>document.getElementById('slb').select(),50);}
-function csav(){
+
+let csav = function() {
   const lb=document.getElementById('slb').value.trim()||`Pagamentos ${new Date().toLocaleDateString('pt-BR')}`;
   const items=D.filter(r=>ci.has(r.id)).map(r=>({emp:r.emp,forn:r.forn,dts:r.dts,dsc:r.dsc,vp:r.val,va:pv[r.id]!==undefined?pv[r.id]:r.val}));
   H.unshift({id:Date.now(),lb,dt:new Date().toLocaleString('pt-BR'),tot:items.reduce((a,r)=>a+r.va,0),n:items.length,items});
   localStorage.setItem('cp_h',JSON.stringify(H));
+
+  // ✅ Remover avulsos aprovados do D e localStorage
+  const approvedAvulsoIds = D.filter(r=>r.avulso && ci.has(r.id)).map(r=>r.id);
+  approvedAvulsoIds.forEach(id=>{ const idx=D.findIndex(x=>x.id===id); if(idx>=0) D.splice(idx,1); });
+  saveAvulsos();
+
   ci=new Set();pv={};saveSelection();
   document.getElementById('mov').style.display='none';
   updateRev();ren();rh();stab('h');
-}
+};
 
 // HISTÓRICO
 function rh(){
@@ -782,12 +749,12 @@ document.querySelectorAll('.tab').forEach(x=>x.addEventListener('click',()=>stab
 
 // EVENTS
 document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>{if(e.target.checked)ci.add(r.id);else ci.delete(r.id);});ren();saveSelection();updateRev();});
+
 // AUTOCOMPLETE FORNECEDOR
 (function(){
   const inp = document.getElementById('ffn');
   const drop = document.getElementById('ffn-drop');
   let selIdx = -1;
-
   function getFornList(q){
     const seen = new Map();
     D.forEach(r=>{
@@ -799,7 +766,6 @@ document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>
     if(!q) return all.slice(0,50);
     return all.filter(x=>x.forn.toLowerCase().includes(q)).slice(0,50);
   }
-
   function renderDrop(items){
     if(!items.length){drop.style.display='none';return;}
     selIdx=-1;
@@ -817,7 +783,6 @@ document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>
       });
     });
   }
-
   inp.addEventListener('focus',()=>renderDrop(getFornList(inp.value.toLowerCase().trim())));
   inp.addEventListener('input',()=>{renderDrop(getFornList(inp.value.toLowerCase().trim()));selIdx=-1;saveFilters();});
   inp.addEventListener('keydown',e=>{
@@ -829,6 +794,7 @@ document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>
   });
   document.addEventListener('click',e=>{if(!inp.contains(e.target)&&!drop.contains(e.target))drop.style.display='none';});
 })();
+
 document.getElementById('bfil').addEventListener('click',()=>{ren();saveFilters();});
 document.getElementById('bcf').addEventListener('click',()=>{
   ['fdi','fdf','ffn'].forEach(id=>document.getElementById(id).value='');
@@ -842,9 +808,12 @@ document.getElementById('fdf').addEventListener('change',()=>{ren();saveFilters(
 document.querySelectorAll('th.st').forEach(th=>th.addEventListener('click',()=>{const c=th.dataset.col;if(sc===c)sa=!sa;else{sc=c;sa=true;}ren();}));
 document.getElementById('bref').addEventListener('click',load);
 document.getElementById('bret').addEventListener('click',load);
-document.getElementById('bsav').addEventListener('click',osm);
+document.getElementById('bsav').addEventListener('click',()=>{
+  if(!ci.size){alert('Selecione ao menos um lançamento.');return;}
+  stab('r');
+});
 document.getElementById('bcs').addEventListener('click',()=>document.getElementById('mov').style.display='none');
-document.getElementById('bks').addEventListener('click',csav);
+document.getElementById('bks').addEventListener('click',()=>csav());
 document.getElementById('slb').addEventListener('keydown',e=>{if(e.key==='Enter')csav();});
 document.getElementById('bch').addEventListener('click',()=>{if(!confirm('Apagar todo o histórico?'))return;H=[];localStorage.removeItem('cp_h');rh();});
 document.getElementById('bexp').addEventListener('click',()=>{
@@ -855,6 +824,16 @@ document.getElementById('bexp').addEventListener('click',()=>{
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
   a.download=`contas_pagar_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;a.click();
+});
+
+document.getElementById('bclcache').addEventListener('click',()=>{
+  if(!confirm('Limpar cache e recarregar?')) return;
+  localStorage.removeItem('cp_sel');
+  localStorage.removeItem('cp_filters');
+  ci=new Set(); pv={};
+  ['fdi','fdf','ffn'].forEach(id=>document.getElementById(id).value='');
+  ['fem','fst'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  load();
 });
 
 // =============================================
@@ -889,7 +868,6 @@ function renderFluxo(){
   const cutoff = new Date(now - periodo * 86400000);
   const hist = getFilteredHistory();
 
-  // Populate year filter
   const dFilt = empF ? D.filter(r=>r.emp===empF) : D;
   const anosD = dFilt.map(r=>String(r.dt.getFullYear()));
   const anosH = hist.map(e=>e.parsed.year);
@@ -898,7 +876,6 @@ function renderFluxo(){
   document.getElementById('fcAno').innerHTML = '<option value="0">Todos os anos</option>' +
     anos.map(a=>`<option value="${a}"${anoSel===a?' selected':''}>${a}</option>`).join('');
 
-  // Summary totals
   const totPrev = dFilt.reduce((a,r)=>a+r.val,0);
   const totAprov = hist.reduce((a,e)=>a+e.filteredItems.reduce((b,i)=>b+i.va,0),0);
   const totRest = totPrev - totAprov;
@@ -912,24 +889,23 @@ function renderFluxo(){
   document.getElementById('fcRest').textContent = brl(totRest>0?totRest:0);
   document.getElementById('fcRestN').textContent = totPrev>0 ? pctRest+'% ainda não aprovado' : '—';
 
-  // Resumo textual
   const resumoEl = document.getElementById('fcResumo');
   if(totPrev>0){
     resumoEl.style.display='block';
     let txt = '';
     if(totAprov===0){
-      txt = `📋 Há <strong>${brl(totPrev)}</strong> em lançamentos abertos no sistema. Nenhum pagamento foi aprovado ainda nesta sessão. Selecione os lançamentos no painel e clique em "Salvar aprovação" para registrar os pagamentos.`;
+      txt = `📋 Há <strong>${brl(totPrev)}</strong> em lançamentos abertos no sistema. Nenhum pagamento foi aprovado ainda nesta sessão.`;
     } else if(totRest<=0){
       txt = `✅ Todos os lançamentos em aberto foram aprovados. Total aprovado: <strong>${brl(totAprov)}</strong>.`;
     } else {
-      txt = `💡 Do total de <strong>${brl(totPrev)}</strong> em aberto, <strong>${brl(totAprov)}</strong> (${pctAprov}%) já foi aprovado para pagamento. Faltam <strong>${brl(totRest)}</strong> (${pctRest}%) ainda sem aprovação.`;
+      txt = `💡 Do total de <strong>${brl(totPrev)}</strong> em aberto, <strong>${brl(totAprov)}</strong> (${pctAprov}%) já foi aprovado. Faltam <strong>${brl(totRest)}</strong> (${pctRest}%) ainda sem aprovação.`;
     }
     resumoEl.innerHTML = txt;
   } else {
     resumoEl.style.display='none';
   }
 
-  // ---- DIÁRIO ----
+  // DIÁRIO
   const dayMap = {};
   dFilt.forEach(r=>{
     const d=r.dt; if(!d) return;
@@ -958,28 +934,16 @@ function renderFluxo(){
     if(fcChartObj) fcChartObj.destroy();
     fcChartObj = new Chart(canvas,{
       type:'bar',
-      data:{
-        labels: days.map(d=>dayMap[d].label),
-        datasets:[
-          {label:'Em aberto', data:days.map(d=>dayMap[d].previsto), backgroundColor:'#bfdbfe', borderRadius:4, borderSkipped:false, categoryPercentage:0.7},
-          {label:'Aprovado',  data:days.map(d=>dayMap[d].aprovado),  backgroundColor:'#3b82f6', borderRadius:4, borderSkipped:false, categoryPercentage:0.7}
-        ]
-      },
-      options:{
-        responsive:true,
-        plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}
-        },
-        scales:{
-          x:{grid:{display:false}, ticks:{font:{size:10},color:'#6b7280'}},
-          y:{grid:{color:'#f3f4f6'}, ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')}, border:{display:false}}
-        }
-      }
+      data:{labels:days.map(d=>dayMap[d].label),datasets:[
+        {label:'Em aberto',data:days.map(d=>dayMap[d].previsto),backgroundColor:'#bfdbfe',borderRadius:4,borderSkipped:false,categoryPercentage:0.7},
+        {label:'Aprovado', data:days.map(d=>dayMap[d].aprovado), backgroundColor:'#3b82f6',borderRadius:4,borderSkipped:false,categoryPercentage:0.7}
+      ]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}
     });
   }
 
-  // ---- MENSAL ----
+  // MENSAL
   const monMap = {};
   dFilt.forEach(r=>{
     const d=r.dt; if(!d) return;
@@ -1004,24 +968,12 @@ function renderFluxo(){
     if(fcChartMensalObj) fcChartMensalObj.destroy();
     fcChartMensalObj = new Chart(canvasM,{
       type:'bar',
-      data:{
-        labels: months.map(m=>monMap[m].label),
-        datasets:[
-          {label:'Em aberto', data:months.map(m=>monMap[m].previsto), backgroundColor:'#fca5a5', borderRadius:4, borderSkipped:false, categoryPercentage:0.7},
-          {label:'Aprovado',  data:months.map(m=>monMap[m].aprovado),  backgroundColor:'#ef4444', borderRadius:4, borderSkipped:false, categoryPercentage:0.7}
-        ]
-      },
-      options:{
-        responsive:true,
-        plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}
-        },
-        scales:{
-          x:{grid:{display:false}, ticks:{font:{size:11},color:'#6b7280'}},
-          y:{grid:{color:'#f3f4f6'}, ticks:{font:{size:11},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')}, border:{display:false}}
-        }
-      }
+      data:{labels:months.map(m=>monMap[m].label),datasets:[
+        {label:'Em aberto',data:months.map(m=>monMap[m].previsto),backgroundColor:'#fca5a5',borderRadius:4,borderSkipped:false,categoryPercentage:0.7},
+        {label:'Aprovado', data:months.map(m=>monMap[m].aprovado), backgroundColor:'#ef4444',borderRadius:4,borderSkipped:false,categoryPercentage:0.7}
+      ]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}
     });
   }
 }
@@ -1042,10 +994,8 @@ function renderRev(){
   const items=D.filter(r=>ci.has(r.id));
   const rvEmpty=document.getElementById('rvEmpty');
   const rvTbody=document.getElementById('rvTbody');
-
   if(!items.length){
-    rvTbody.innerHTML='';
-    rvEmpty.style.display='block';
+    rvTbody.innerHTML='';rvEmpty.style.display='block';
     document.getElementById('rvCount').textContent='0';
     document.getElementById('rvPrev').textContent='R$ 0,00';
     document.getElementById('rvAprov').textContent='R$ 0,00';
@@ -1054,7 +1004,6 @@ function renderRev(){
     return;
   }
   rvEmpty.style.display='none';
-
   const totPrev=items.reduce((a,r)=>a+r.val,0);
   const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);
   const diff=totPrev-totAprov;
@@ -1062,11 +1011,9 @@ function renderRev(){
   document.getElementById('rvPrev').textContent=brl(totPrev);
   document.getElementById('rvAprov').textContent=brl(totAprov);
   document.getElementById('rvDiff').textContent=brl(diff);
-  document.getElementById('rvDiffN').textContent=diff>0?`R$ ${diff.toLocaleString('pt-BR',{minimumFractionDigits:2})} sendo pago em partes`:'pagando o valor integral';
-
+  document.getElementById('rvDiffN').textContent=diff>0?'pagando em partes':'pagando o valor integral';
   rvTbody.innerHTML=items.map(r=>{
-    const s=sta(r.dt);
-    const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
+    const s=sta(r.dt),vp=pv[r.id]!==undefined?pv[r.id]:r.val;
     const bc=s==='atrasado'?'ba':s==='hoje'?'bh':'bf';
     const bl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':'A vencer';
     return`<tr>
@@ -1082,15 +1029,9 @@ function renderRev(){
   }).join('');
 }
 
-function removeFromRev(id){
-  ci.delete(id);
-  saveSelection();updateRev();renderRev();ren();
-}
-
+function removeFromRev(id){ci.delete(id);saveSelection();updateRev();renderRev();ren();}
 function pvRev(id,val){
-  pv[id]=parseFloat(val)||0;
-  saveSelection();
-  // Update summary
+  pv[id]=parseFloat(val)||0;saveSelection();
   const items=D.filter(r=>ci.has(r.id));
   const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);
   const totPrev=items.reduce((a,r)=>a+r.val,0);
@@ -1113,23 +1054,6 @@ document.getElementById('brLimpar').addEventListener('click',()=>{
   ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
 });
 
-// Override bsav to go to revision tab first if items selected
-document.getElementById('bsav').removeEventListener('click',osm);
-document.getElementById('bsav').addEventListener('click',()=>{
-  if(!ci.size){alert('Selecione ao menos um lançamento.');return;}
-  stab('r');
-});
-
-document.getElementById('bclcache').addEventListener('click',()=>{
-  if(!confirm('Limpar cache e recarregar?')) return;
-  localStorage.removeItem('cp_sel');
-  localStorage.removeItem('cp_filters');
-  ci=new Set(); pv={};
-  ['fdi','fdf','ffn'].forEach(id=>document.getElementById(id).value='');
-  ['fem','fst'].forEach(id=>document.getElementById(id).selectedIndex=0);
-  load();
-});
-
 // =============================================
 // LANÇAMENTOS AVULSOS
 // =============================================
@@ -1139,8 +1063,9 @@ function loadAvulsos(){
   try {
     const saved = JSON.parse(localStorage.getItem(AV_KEY)||'[]');
     saved.forEach(r=>{
-      // Check not already added (avoid duplicates on reload)
       if(!D.find(x=>x.id===r.id)){
+        // Rehydrate Date objects from stored ISO strings
+        r.dt = new Date(r.dt);
         D.push(r);
       }
     });
@@ -1152,6 +1077,8 @@ function saveAvulsos(){
   localStorage.setItem(AV_KEY, JSON.stringify(avulsos));
 }
 
+// ✅ CORREÇÃO BUG 3: popF() removido (função inexistente)
+// Substituído por ren() que já atualiza o painel corretamente
 function addAvulso(){
   const emp = document.getElementById('avEmp').value;
   const dataVal = document.getElementById('avData').value;
@@ -1164,22 +1091,13 @@ function addAvulso(){
   if(!val){alert('Informe o valor.');return;}
 
   const dt = new Date(dataVal+'T00:00:00');
-  const entry = {
-    id: Date.now(),
-    emp,
-    forn,
-    dt,
-    dts: dt.toLocaleDateString('pt-BR'),
-    dsc,
-    val,
-    avulso: true
-  };
+  const entry = {id:Date.now(),emp,forn,dt,dts:dt.toLocaleDateString('pt-BR'),dsc,val,avulso:true};
   D.push(entry);
   saveAvulsos();
   closeAvulsoModal();
-  popF();ren();updateRev();
+  // ✅ popF() removido — ren() já atualiza o painel
+  ren();updateRev();
 
-  // Show success feedback
   const btn = document.getElementById('bnovolcto');
   const orig = btn.textContent;
   btn.textContent = '✓ Adicionado!';
@@ -1194,20 +1112,7 @@ function closeAvulsoModal(){
   document.getElementById('avData').value='';
 }
 
-// When approving, remove avulsos from localStorage (they've been processed)
-const origCsav = csav;
-csav = function(){
-  // Get avulso IDs that are being approved
-  const approvedAvulsoIds = D.filter(r=>r.avulso && ci.has(r.id)).map(r=>r.id);
-  origCsav();
-  // Remove approved avulsos from D and localStorage
-  approvedAvulsoIds.forEach(id=>{ const idx=D.findIndex(x=>x.id===id); if(idx>=0) D.splice(idx,1); });
-  saveAvulsos();
-  ren();
-};
-
 document.getElementById('bnovolcto').addEventListener('click',()=>{
-  // Set today as default date
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('avData').value = today;
   document.getElementById('movAvulso').style.display='flex';
@@ -1216,9 +1121,7 @@ document.getElementById('bnovolcto').addEventListener('click',()=>{
 document.getElementById('bAvulsoCancel').addEventListener('click', closeAvulsoModal);
 document.getElementById('bAvulsoSave').addEventListener('click', addAvulso);
 document.getElementById('avValor').addEventListener('keydown',e=>{if(e.key==='Enter')addAvulso();});
-document.getElementById('movAvulso').addEventListener('click',e=>{
-  if(e.target===e.currentTarget) closeAvulsoModal();
-});
+document.getElementById('movAvulso').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAvulsoModal();});
 
 // =============================================
 // ANÁLISE / KPIs
@@ -1240,7 +1143,6 @@ function renderAnalise(){
   const hojes     = dFilt.filter(r=>sta(r.dt)==='hoje');
   const futuros   = dFilt.filter(r=>sta(r.dt)==='futuro');
 
-  // Média mensal: agrupar por mês de vencimento
   const monMap={};
   dFilt.forEach(r=>{
     if(!r.dt)return;
@@ -1251,7 +1153,6 @@ function renderAnalise(){
   const monVals=Object.values(monMap);
   const mediaMensal=monVals.length?monVals.reduce((a,v)=>a+v,0)/monVals.length:0;
 
-  // Cards
   document.getElementById('anTotAberto').textContent=brl(totAberto);
   document.getElementById('anTotAbertoN').textContent=dFilt.length+' lançamentos';
   document.getElementById('anTotAprov').textContent=brl(totAprov);
@@ -1267,7 +1168,6 @@ function renderAnalise(){
   const empAberto=emps.map(e=>dFilt.filter(r=>r.emp===e).reduce((a,r)=>a+r.val,0));
   const empAprov=emps.map(e=>hFilt.reduce((a,en)=>a+en.filteredItems.filter(i=>i.emp===e).reduce((b,i)=>b+i.va,0),0));
 
-  // Pizza por empresa
   if(anChartEmpObj)anChartEmpObj.destroy();
   anChartEmpObj=new Chart(document.getElementById('anChartEmp'),{
     type:'doughnut',
@@ -1275,7 +1175,6 @@ function renderAnalise(){
     options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)+' ('+((ctx.raw/totAberto||0)*100).toFixed(1)+'%)'}}}}
   });
 
-  // Rosca por status
   const statusData=[atrasados.reduce((a,r)=>a+r.val,0),hojes.reduce((a,r)=>a+r.val,0),futuros.reduce((a,r)=>a+r.val,0)];
   if(anChartStatusObj)anChartStatusObj.destroy();
   anChartStatusObj=new Chart(document.getElementById('anChartStatus'),{
@@ -1284,7 +1183,6 @@ function renderAnalise(){
     options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)+' ('+((ctx.raw/(statusData.reduce((a,v)=>a+v,1)))*100).toFixed(1)+'%)'}}}}
   });
 
-  // Evolução mensal
   const monKeys=Object.keys(monMap).sort();
   const monLabels=monKeys.map(k=>{const p=k.split('-');return p[1]+'/'+p[0];});
   if(anChartMensalObj)anChartMensalObj.destroy();
@@ -1295,7 +1193,6 @@ function renderAnalise(){
       scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}
   });
 
-  // Top 10 fornecedores
   const fornMap={};
   dFilt.forEach(r=>{if(!fornMap[r.forn])fornMap[r.forn]=0;fornMap[r.forn]+=r.val;});
   const top10=Object.entries(fornMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
@@ -1307,7 +1204,6 @@ function renderAnalise(){
       scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}}}
   });
 
-  // Planejado vs aprovado por empresa
   if(anChartPlanAprovObj)anChartPlanAprovObj.destroy();
   anChartPlanAprovObj=new Chart(document.getElementById('anChartPlanAprov'),{
     type:'bar',
@@ -1319,7 +1215,6 @@ function renderAnalise(){
       scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}
   });
 
-  // Cards por empresa
   const empTextColors={'ROSIL':'#1d4ed8','RSL':'#065f46','LUCRO PRESUMIDO':'#9a3412'};
   document.getElementById('anEmpCards').innerHTML=emps.map((e,i)=>{
     const ab=empAberto[i]; const ap=empAprov[i];
