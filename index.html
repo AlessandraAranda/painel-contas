@@ -515,7 +515,7 @@ async function load(){
     if(!id){fs[fn]='not_found';continue;}
     try{
       const API='https://script.google.com/macros/s/AKfycbzZRBT7g9--jAHP26fg5MmkTKvUvcYD4bxzxIWrNn9QnPynDdQptbOwcmO1eojSeUiN8g/exec';
-      const res=await fetch(`${API}?name=${encodeURIComponent(emp)}&t=${Date.now()}`);
+      const res=await fetch(`${API}?name=${encodeURIComponent(emp)}&t=${Date.now()}`,{redirect:'follow',credentials:'omit',mode:'cors'});
       if(!res.ok)throw new Error('HTTP '+res.status);
       const json=await res.json();
       if(json.error){fs[fn]='error';console.error(emp,json.error);continue;}
