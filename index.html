@@ -483,8 +483,10 @@ function parseXlsxDate(v) {
   return null;
 }
 
-function fmtDate(d) { if (!d) return ''; return d.toLocaleDateString('pt-BR'); } let D=[],sc='data',sa=true,ci=new Set(),pv={},fs={},ni=1;
-
+function fmtDate(d) {
+  if (!d) return '';
+  return d.toLocaleDateString('pt-BR');
+}
 let D=[],sc='data',sa=true,ci=new Set(),pv={},fs={},ni=1;
 let H=JSON.parse(localStorage.getItem('cp_h')||'[]');
 let pendingFilter = false;
