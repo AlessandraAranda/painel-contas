@@ -506,6 +506,19 @@ function loadFilters(){
   }catch(e){}
 }
 
+function fetchJSONP(url){
+  return new Promise((resolve,reject)=>{
+    const cb="__gjsonp_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+    const script=document.createElement("script");
+    const timer=setTimeout(()=>{cleanup();reject(new Error("JSONP timeout"));},15000);
+    function cleanup(){clearTimeout(timer);delete window[cb];if(script.parentNode)script.parentNode.removeChild(script);}
+    window[cb]=function(data){cleanup();resolve(data);};
+    script.onerror=function(){cleanup();reject(new Error("JSONP error"));};
+    script.src=url+"0026callback="+cb;
+    document.head.appendChild(script);
+  });
+}
+
 async function load(){
   sld();D=[];fs={};ci=new Set();pv={};ni=1;
   let ok=false;
@@ -515,10 +528,8 @@ async function load(){
     if(!id){fs[fn]='not_found';continue;}
     try{
       const API='https://script.google.com/macros/s/AKfycbzZRBT7g9--jAHP26fg5MmkTKvUvcYD4bxzxIWrNn9QnPynDdQptbOwcmO1eojSeUiN8g/exec';
-      const res=await fetch(`${API}?name=${encodeURIComponent(emp)}&t=${Date.now()}`,{redirect:'follow',credentials:'omit',mode:'cors'});
-      if(!res.ok)throw new Error('HTTP '+res.status);
-      const json=await res.json();
-      if(json.error){fs[fn]='error';console.error(emp,json.error);continue;}
+      const json=await fetchJSONP(`${API}?name=${encodeURIComponent(emp)}&t=${Date.now()}`);
+      if(!json||json.error){fs[fn]='error';console.error(emp,json&&json.error);continue;}
       const rows=json;
       if(rows.length<2){fs[fn]='empty';continue;}
       const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
