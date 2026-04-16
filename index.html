@@ -562,7 +562,10 @@ async function load(){
       fs[fn]='ok';ok=true;
     }catch(e){fs[fn]='error';console.error(fn,e);}
   }
-  if(!ok){serr('Não foi possível carregar os arquivos. Verifique se estão na pasta do Drive.');return;}
+  if(!fs.ROSIL && !fs.RSL && !fs['LUCRO PRESUMIDO']){
+  serr('Nenhum arquivo carregou. Verifique os arquivos no Drive.');
+  return;
+}
 
   // LANÇAMENTOS FIXOS DIÁRIOS — RSL
   const hoje = new Date(); hoje.setHours(0,0,0,0);
