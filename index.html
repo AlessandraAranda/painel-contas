@@ -325,36 +325,49 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
       </select>
     </div>
 
-    <!-- CARDS PRINCIPAIS -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px">
-      <div class="sc"><div class="slb">Total em aberto</div><div class="sv" id="anTotAberto">R$ 0</div><div class="ssb" id="anTotAbertoN">0 lançamentos</div></div>
-      <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="anTotAprov">R$ 0</div><div class="ssb" id="anTotAprovN">0 aprovações</div></div>
+    <!-- CARDS KPI -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:20px">
+      <div class="sc"><div class="slb">Total a pagar</div><div class="sv" id="anTotAberto">R$ 0</div><div class="ssb" id="anTotAbertoN">0 lançamentos</div></div>
+      <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="anTotAprov">R$ 0</div><div class="ssb" id="anTotAprovN">—</div></div>
+      <div class="sc"><div class="slb">% aprovado</div><div class="sv g" id="anPctAprov">0%</div><div class="ssb">do total a pagar</div></div>
       <div class="sc"><div class="slb">Atrasados</div><div class="sv r" id="anAtrasado">R$ 0</div><div class="ssb" id="anAtrasadoN">0 lançamentos</div></div>
-      <div class="sc"><div class="slb">Vence hoje</div><div class="sv a" id="anHoje">R$ 0</div><div class="ssb" id="anHojeN">0 lançamentos</div></div>
-      <div class="sc"><div class="slb">A vencer</div><div class="sv g" id="anFuturo">R$ 0</div><div class="ssb" id="anFuturoN">0 lançamentos</div></div>
+      <div class="sc"><div class="slb">Ticket médio</div><div class="sv" id="anTicket">R$ 0</div><div class="ssb">por lançamento</div></div>
+      <div class="sc"><div class="slb">Despesa média mensal</div><div class="sv" id="anMensal">R$ 0</div><div class="ssb" id="anMensalN">—</div></div>
     </div>
 
-    <!-- GRÁFICOS ROW 1: Por empresa + Por status -->
+    <!-- ROW 1: Pizza por empresa + Status -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <!-- Por empresa -->
       <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
-        <div style="font-size:14px;font-weight:600;color:#1a1d23;margin-bottom:4px">Distribuição por empresa</div>
-        <div style="font-size:12px;color:#9ca3af;margin-bottom:16px">Em aberto vs aprovado</div>
-        <canvas id="anChartEmp" height="200"></canvas>
+        <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Distribuição por empresa</div>
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">% do total a pagar</div>
+        <canvas id="anChartEmp" height="180"></canvas>
       </div>
-      <!-- Por status -->
       <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
-        <div style="font-size:14px;font-weight:600;color:#1a1d23;margin-bottom:4px">Por status</div>
-        <div style="font-size:12px;color:#9ca3af;margin-bottom:16px">Atrasado · Hoje · A vencer</div>
-        <canvas id="anChartStatus" height="200"></canvas>
+        <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Despesas por status</div>
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Atrasado · Hoje · A vencer</div>
+        <canvas id="anChartStatus" height="180"></canvas>
       </div>
     </div>
 
-    <!-- GRÁFICO ROW 2: Top 10 fornecedores -->
+    <!-- ROW 2: Evolução mensal -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
-      <div style="font-size:14px;font-weight:600;color:#1a1d23;margin-bottom:4px">Top 10 fornecedores</div>
-      <div style="font-size:12px;color:#9ca3af;margin-bottom:16px">Maiores valores em aberto</div>
-      <canvas id="anChartForn" height="120"></canvas>
+      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Evolução mensal de despesas</div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Total a pagar por mês de vencimento</div>
+      <canvas id="anChartMensal" height="90"></canvas>
+    </div>
+
+    <!-- ROW 3: Top fornecedores -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Top 10 fornecedores</div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Maiores valores em aberto</div>
+      <canvas id="anChartForn" height="110"></canvas>
+    </div>
+
+    <!-- ROW 4: Planejado vs aprovado por empresa -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Planejado vs aprovado por empresa</div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Comparativo direto</div>
+      <canvas id="anChartPlanAprov" height="80"></canvas>
     </div>
 
     <!-- CARDS POR EMPRESA -->
@@ -520,7 +533,7 @@ async function load(){
     if(!id){fs[fn]='not_found';continue;}
     try{
       // Fetch via Google Apps Script proxy
-      const API='https://script.google.com/macros/s/AKfycbyQlDi8u3uzvVcL6VKkhtwuGwQ7ht7QlT2NWTOx3BAPLsAViBZilsgPbdqbeMbzDW5wEA/exec';
+      const API='https://script.google.com/macros/s/AKfycbzZRBT7g9--jAHP26fg5MmkTKvUvcYD4bxzxIWrNn9QnPynDdQptbOwcmO1eojSeUiN8g/exec';
       const res=await fetch(`${API}?name=${encodeURIComponent(emp)}&t=${Date.now()}`);
       if(!res.ok)throw new Error('HTTP '+res.status);
       const json=await res.json();
@@ -1196,102 +1209,116 @@ document.getElementById('movAvulso').addEventListener('click',e=>{
 // =============================================
 // ANÁLISE / KPIs
 // =============================================
-let anChartEmpObj=null, anChartStatusObj=null, anChartFornObj=null;
+let anChartEmpObj=null,anChartStatusObj=null,anChartFornObj=null,anChartMensalObj=null,anChartPlanAprovObj=null;
 
 function renderAnalise(){
   const empF = document.getElementById('anEmp').value;
   const dFilt = empF ? D.filter(r=>r.emp===empF) : D;
-  const hFilt = empF ? H.map(e=>({...e,filteredItems:e.items.filter(i=>i.emp===empF)})).filter(e=>e.filteredItems.length) : H.map(e=>({...e,filteredItems:e.items}));
+  const hFilt = empF
+    ? H.map(e=>({...e,filteredItems:e.items.filter(i=>i.emp===empF)})).filter(e=>e.filteredItems.length)
+    : H.map(e=>({...e,filteredItems:e.items}));
 
-  // Totals
   const totAberto = dFilt.reduce((a,r)=>a+r.val,0);
-  const totAprov = hFilt.reduce((a,e)=>a+e.filteredItems.reduce((b,i)=>b+i.va,0),0);
+  const totAprov  = hFilt.reduce((a,e)=>a+e.filteredItems.reduce((b,i)=>b+i.va,0),0);
+  const pctAprov  = totAberto>0?((totAprov/totAberto)*100).toFixed(1):0;
+  const ticket    = dFilt.length?totAberto/dFilt.length:0;
   const atrasados = dFilt.filter(r=>sta(r.dt)==='atrasado');
-  const hojes = dFilt.filter(r=>sta(r.dt)==='hoje');
-  const futuros = dFilt.filter(r=>sta(r.dt)==='futuro');
+  const hojes     = dFilt.filter(r=>sta(r.dt)==='hoje');
+  const futuros   = dFilt.filter(r=>sta(r.dt)==='futuro');
 
+  // Média mensal: agrupar por mês de vencimento
+  const monMap={};
+  dFilt.forEach(r=>{
+    if(!r.dt)return;
+    const k=String(r.dt.getFullYear())+'-'+String(r.dt.getMonth()+1).padStart(2,'0');
+    if(!monMap[k])monMap[k]=0;
+    monMap[k]+=r.val;
+  });
+  const monVals=Object.values(monMap);
+  const mediaMensal=monVals.length?monVals.reduce((a,v)=>a+v,0)/monVals.length:0;
+
+  // Cards
   document.getElementById('anTotAberto').textContent=brl(totAberto);
   document.getElementById('anTotAbertoN').textContent=dFilt.length+' lançamentos';
   document.getElementById('anTotAprov').textContent=brl(totAprov);
   document.getElementById('anTotAprovN').textContent=hFilt.length+' aprovações';
+  document.getElementById('anPctAprov').textContent=pctAprov+'%';
   document.getElementById('anAtrasado').textContent=brl(atrasados.reduce((a,r)=>a+r.val,0));
   document.getElementById('anAtrasadoN').textContent=atrasados.length+' lançamentos';
-  document.getElementById('anHoje').textContent=brl(hojes.reduce((a,r)=>a+r.val,0));
-  document.getElementById('anHojeN').textContent=hojes.length+' lançamentos';
-  document.getElementById('anFuturo').textContent=brl(futuros.reduce((a,r)=>a+r.val,0));
-  document.getElementById('anFuturoN').textContent=futuros.length+' lançamentos';
+  document.getElementById('anTicket').textContent=brl(ticket);
+  document.getElementById('anMensal').textContent=brl(mediaMensal);
+  document.getElementById('anMensalN').textContent=Object.keys(monMap).length+' meses';
 
-  // ---- GRÁFICO POR EMPRESA ----
   const emps=['ROSIL','RSL','LUCRO PRESUMIDO'];
-  const empAberto = emps.map(e=>dFilt.filter(r=>r.emp===e).reduce((a,r)=>a+r.val,0));
-  const empAprov = emps.map(e=>hFilt.reduce((a,en)=>a+en.filteredItems.filter(i=>i.emp===e).reduce((b,i)=>b+i.va,0),0));
+  const empAberto=emps.map(e=>dFilt.filter(r=>r.emp===e).reduce((a,r)=>a+r.val,0));
+  const empAprov=emps.map(e=>hFilt.reduce((a,en)=>a+en.filteredItems.filter(i=>i.emp===e).reduce((b,i)=>b+i.va,0),0));
 
-  if(anChartEmpObj) anChartEmpObj.destroy();
-  anChartEmpObj = new Chart(document.getElementById('anChartEmp'),{
+  // Pizza por empresa
+  if(anChartEmpObj)anChartEmpObj.destroy();
+  anChartEmpObj=new Chart(document.getElementById('anChartEmp'),{
+    type:'doughnut',
+    data:{labels:emps,datasets:[{data:empAberto,backgroundColor:['#bfdbfe','#a7f3d0','#fed7aa'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)+' ('+((ctx.raw/totAberto||0)*100).toFixed(1)+'%)'}}}}
+  });
+
+  // Rosca por status
+  const statusData=[atrasados.reduce((a,r)=>a+r.val,0),hojes.reduce((a,r)=>a+r.val,0),futuros.reduce((a,r)=>a+r.val,0)];
+  if(anChartStatusObj)anChartStatusObj.destroy();
+  anChartStatusObj=new Chart(document.getElementById('anChartStatus'),{
+    type:'doughnut',
+    data:{labels:['Atrasado','Vence hoje','A vencer'],datasets:[{data:statusData,backgroundColor:['#fca5a5','#fde68a','#a7f3d0'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)+' ('+((ctx.raw/(statusData.reduce((a,v)=>a+v,1)))*100).toFixed(1)+'%)'}}}}
+  });
+
+  // Evolução mensal
+  const monKeys=Object.keys(monMap).sort();
+  const monLabels=monKeys.map(k=>{const p=k.split('-');return p[1]+'/'+p[0];});
+  if(anChartMensalObj)anChartMensalObj.destroy();
+  anChartMensalObj=new Chart(document.getElementById('anChartMensal'),{
     type:'bar',
-    data:{
-      labels:emps,
-      datasets:[
-        {label:'Em aberto',data:empAberto,backgroundColor:'#bfdbfe',borderRadius:4,borderSkipped:false},
-        {label:'Aprovado',data:empAprov,backgroundColor:'#3b82f6',borderRadius:4,borderSkipped:false}
-      ]
-    },
+    data:{labels:monLabels,datasets:[{label:'Despesas',data:monKeys.map(k=>monMap[k]),backgroundColor:'#c7d2fe',borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}
+  });
+
+  // Top 10 fornecedores
+  const fornMap={};
+  dFilt.forEach(r=>{if(!fornMap[r.forn])fornMap[r.forn]=0;fornMap[r.forn]+=r.val;});
+  const top10=Object.entries(fornMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(anChartFornObj)anChartFornObj.destroy();
+  anChartFornObj=new Chart(document.getElementById('anChartForn'),{
+    type:'bar',
+    data:{labels:top10.map(x=>x[0].length>28?x[0].substring(0,28)+'...':x[0]),datasets:[{label:'Em aberto',data:top10.map(x=>x[1]),backgroundColor:'#818cf8',borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
+      scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}}}
+  });
+
+  // Planejado vs aprovado por empresa
+  if(anChartPlanAprovObj)anChartPlanAprovObj.destroy();
+  anChartPlanAprovObj=new Chart(document.getElementById('anChartPlanAprov'),{
+    type:'bar',
+    data:{labels:emps,datasets:[
+      {label:'Planejado (em aberto)',data:empAberto,backgroundColor:'#e0e7ff',borderRadius:4,borderSkipped:false},
+      {label:'Aprovado',data:empAprov,backgroundColor:'#6366f1',borderRadius:4,borderSkipped:false}
+    ]},
     options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
       scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}
   });
 
-  // ---- GRÁFICO POR STATUS ----
-  const statusData = [
-    atrasados.reduce((a,r)=>a+r.val,0),
-    hojes.reduce((a,r)=>a+r.val,0),
-    futuros.reduce((a,r)=>a+r.val,0)
-  ];
-  if(anChartStatusObj) anChartStatusObj.destroy();
-  anChartStatusObj = new Chart(document.getElementById('anChartStatus'),{
-    type:'doughnut',
-    data:{
-      labels:['Atrasado','Vence hoje','A vencer'],
-      datasets:[{data:statusData,backgroundColor:['#fca5a5','#fde68a','#a7f3d0'],borderWidth:0}]
-    },
-    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)+' ('+((ctx.raw/statusData.reduce((a,v)=>a+v,1))*100).toFixed(1)+'%)'}}}}
-  });
-
-  // ---- TOP 10 FORNECEDORES ----
-  const fornMap={};
-  dFilt.forEach(r=>{
-    if(!fornMap[r.forn]) fornMap[r.forn]=0;
-    fornMap[r.forn]+=r.val;
-  });
-  const top10 = Object.entries(fornMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  if(anChartFornObj) anChartFornObj.destroy();
-  anChartFornObj = new Chart(document.getElementById('anChartForn'),{
-    type:'bar',
-    data:{
-      labels:top10.map(x=>x[0].length>25?x[0].substring(0,25)+'...':x[0]),
-      datasets:[{label:'Em aberto',data:top10.map(x=>x[1]),backgroundColor:'#818cf8',borderRadius:4,borderSkipped:false}]
-    },
-    options:{
-      indexAxis:'y',
-      responsive:true,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},
-      scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}}
-    }
-  });
-
-  // ---- CARDS POR EMPRESA ----
-  const empColors={'ROSIL':'#eff6ff','RSL':'#f0fdf4','LUCRO PRESUMIDO':'#fff7ed'};
+  // Cards por empresa
   const empTextColors={'ROSIL':'#1d4ed8','RSL':'#065f46','LUCRO PRESUMIDO':'#9a3412'};
-  document.getElementById('anEmpCards').innerHTML = emps.map(e=>{
-    const ab=dFilt.filter(r=>r.emp===e).reduce((a,r)=>a+r.val,0);
-    const ap=hFilt.reduce((a,en)=>a+en.filteredItems.filter(i=>i.emp===e).reduce((b,i)=>b+i.va,0),0);
+  document.getElementById('anEmpCards').innerHTML=emps.map((e,i)=>{
+    const ab=empAberto[i]; const ap=empAprov[i];
     const pct=ab>0?((ap/ab)*100).toFixed(1):0;
     const cnt=dFilt.filter(r=>r.emp===e).length;
+    const atStr=dFilt.filter(r=>r.emp===e&&sta(r.dt)==='atrasado').length;
     return`<div class="sc" style="border-left:3px solid ${empTextColors[e]}">
       <div style="font-size:12px;font-weight:600;color:${empTextColors[e]};margin-bottom:10px">${e}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Em aberto</div><div style="font-size:15px;font-weight:600;font-family:monospace">${brl(ab)}</div><div style="font-size:11px;color:#9ca3af">${cnt} lanç.</div></div>
-        <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Aprovado</div><div style="font-size:15px;font-weight:600;font-family:monospace;color:#3b82f6">${brl(ap)}</div><div style="font-size:11px;color:#9ca3af">${pct}% pago</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">A pagar</div><div style="font-size:15px;font-weight:600;font-family:monospace">${brl(ab)}</div><div style="font-size:11px;color:#9ca3af">${cnt} lanç.</div></div>
+        <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">Aprovado</div><div style="font-size:15px;font-weight:600;font-family:monospace;color:#6366f1">${brl(ap)}</div><div style="font-size:11px;color:#9ca3af">${pct}% pago</div></div>
       </div>
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid #f3f4f6;font-size:11px;color:#dc2626">${atStr} lançamento${atStr!==1?'s':''} atrasado${atStr!==1?'s':''}</div>
     </div>`;
   }).join('');
 }
