@@ -465,10 +465,17 @@ function parseXlsxDate(v) {
     // yyyy-mm-dd
     const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (m2) {
-      const dt = new Date(parseInt(m2[1]), parseInt(m2[2])-1, parseInt(m2[3]));
-      if (!isNaN(dt)) return dt;
-    }
-    return null;
+      const dt = new Date((v - 25569) * 86400 * 1000);
+
+// Corrigir fuso horário
+dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
+
+// Validação segura
+if (!isNaN(dt.getTime()) && dt.getFullYear() > 1950 && dt.getFullYear() < 2100) {
+  return dt;
+}
+
+return null;
   }
   // Número serial do Excel (dias desde 1900-01-01, com bug do 1900 leap year)
   if (typeof v === 'number') {
