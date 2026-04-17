@@ -320,6 +320,43 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       </div>
     </div>
 
+    <!-- KPI MATÉRIA-PRIMA -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:18px 24px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#1a1d23">Matéria-Prima vs Despesas Totais</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px">Lançamentos com "MATERIA PRIMA" na descrição</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;align-items:center">
+        <div class="sc" style="background:#f0fdf4;border-color:#a7f3d0">
+          <div class="slb" style="color:#065f46">Matéria-Prima</div>
+          <div class="sv g" id="anMpVal">R$ 0</div>
+          <div class="ssb" id="anMpN">0 lançamentos</div>
+        </div>
+        <div class="sc" style="background:#eff6ff;border-color:#bfdbfe">
+          <div class="slb" style="color:#1d4ed8">Outras despesas</div>
+          <div class="sv v" id="anMpOutros">R$ 0</div>
+          <div class="ssb" id="anMpOutrosN">0 lançamentos</div>
+        </div>
+        <div class="sc" style="background:#fdf4ff;border-color:#e9d5ff">
+          <div class="slb" style="color:#7e22ce">MP % sobre total</div>
+          <div class="sv" id="anMpPct" style="color:#7e22ce">0%</div>
+          <div class="ssb">do total a pagar</div>
+        </div>
+        <div style="min-width:180px">
+          <div style="font-size:11px;color:#6b7280;margin-bottom:6px">Proporção visual</div>
+          <div style="background:#e0e7ff;border-radius:6px;height:10px;overflow:hidden">
+            <div id="anMpBar" style="height:100%;background:#10b981;border-radius:6px;transition:width .4s;width:0%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span style="font-size:10px;color:#059669">● MP</span>
+            <span style="font-size:10px;color:#3b82f6">● Outras</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ROW 1: Pizza empresa + Status -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
       <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
@@ -610,8 +647,7 @@ async function load(){
       fixo: true
     });
   });
-  loadAvulsos();
-  popF();smn();loadFilters();loadSelection();ren();updateRev();
+  smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
   const n=Object.values(fs).filter(s=>s==='ok').length;
   document.getElementById('hsub').textContent=`${D.length} lançamentos em aberto · ${n}/${FILES.length} arquivos carregados`;
@@ -973,6 +1009,8 @@ function renderAnalise(){
   document.getElementById('anMpPct').textContent = mpPct+'%';
   document.getElementById('anMpBar').style.width = Math.min(mpPct,100)+'%';
 
+  // Materia-Prima KPI
+
   document.getElementById('anTotAberto').textContent=brl(totAberto);
   document.getElementById('anTotAbertoN').textContent=dFilt.length+' lançamentos';
   document.getElementById('anTotAprov').textContent=brl(totAprov);
@@ -1084,129 +1122,6 @@ if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist')
   a.download=`historico_completo_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;
   a.click();
 });
-
-
-// =============================================
-// LANÇAMENTOS AVULSOS
-// =============================================
-const AV_KEY = 'cp_avulsos';
-
-function loadAvulsos(){
-  try {
-    const saved = JSON.parse(localStorage.getItem(AV_KEY)||'[]');
-    saved.forEach(r=>{
-      if(!D.find(x=>x.id===r.id)){
-        if(r.dt) r.dt = new Date(r.dt);
-        D.push(r);
-      }
-    });
-  } catch(e){}
-}
-
-function saveAvulsos(){
-  const avulsos = D.filter(r=>r.avulso||r.pago);
-  localStorage.setItem(AV_KEY, JSON.stringify(avulsos));
-}
-
-function addAvulso(){
-  const emp = document.getElementById('avEmp').value;
-  const dataVal = document.getElementById('avData').value;
-  const forn = document.getElementById('avForn').value.trim();
-  const dsc = document.getElementById('avDesc').value.trim();
-  const val = parseFloat(document.getElementById('avValor').value)||0;
-  if(!forn){alert('Informe o fornecedor.');return;}
-  if(!dataVal){alert('Informe a data de vencimento.');return;}
-  if(!val){alert('Informe o valor.');return;}
-  const dt = new Date(dataVal+'T00:00:00');
-  const entry = {id:Date.now(),emp,forn,dt,dts:dt.toLocaleDateString('pt-BR'),dsc,val,avulso:true};
-  D.push(entry);
-  saveAvulsos();
-  closeAvulsoModal();
-  popF();ren();updateRev();
-  const btn = document.getElementById('bnovolcto');
-  const orig = btn.textContent;
-  btn.textContent = '✓ Adicionado!';
-  setTimeout(()=>btn.textContent=orig, 2000);
-}
-
-function closeAvulsoModal(){
-  document.getElementById('movAvulso').style.display='none';
-  document.getElementById('avForn').value='';
-  document.getElementById('avDesc').value='';
-  document.getElementById('avValor').value='';
-  document.getElementById('avData').value='';
-}
-
-// =============================================
-// REVISÃO
-// =============================================
-function updateRev(){
-  const n=ci.size;
-  document.getElementById('rc').textContent=n?`(${n})`:'';
-}
-
-function renderRev(){
-  const items=D.filter(r=>ci.has(r.id));
-  const rvEmpty=document.getElementById('rvEmpty');
-  const rvTbody=document.getElementById('rvTbody');
-  if(!items.length){
-    if(rvTbody) rvTbody.innerHTML='';
-    if(rvEmpty) rvEmpty.style.display='block';
-    const els=['rvCount','rvPrev','rvAprov','rvDiff'];
-    els.forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=id.includes('Count')?'0':'R$ 0,00';});
-    return;
-  }
-  if(rvEmpty) rvEmpty.style.display='none';
-  const totPrev=items.reduce((a,r)=>a+r.val,0);
-  const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);
-  const diff=totPrev-totAprov;
-  const e=id=>document.getElementById(id);
-  if(e('rvCount')) e('rvCount').textContent=items.length;
-  if(e('rvPrev')) e('rvPrev').textContent=brl(totPrev);
-  if(e('rvAprov')) e('rvAprov').textContent=brl(totAprov);
-  if(e('rvDiff')) e('rvDiff').textContent=brl(diff);
-  if(e('rvDiffN')) e('rvDiffN').textContent=diff>0?'pago parcialmente':'valor integral';
-  if(rvTbody) rvTbody.innerHTML=items.map(r=>{
-    const s=sta(r.dt,r.pago);
-    const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
-    const bc=s==='atrasado'?'ba':s==='hoje'?'bh':s==='pago'?'bp':'bf';
-    const bl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':s==='pago'?'Pago':'A vencer';
-    return`<tr>
-      <td><button onclick="removeFromRev(${r.id})" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 4px" title="Remover">×</button></td>
-      <td><span class="et ${ec(r.emp)}">${esc(r.emp)}</span></td>
-      <td style="font-weight:500;color:#111827">${esc(r.forn)}</td>
-      <td class="mn">${r.dts}</td>
-      <td><span class="bg ${bc}">${bl}</span></td>
-      <td style="color:#6b7280;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.dsc)}">${esc(r.dsc)}</td>
-      <td class="mn" style="text-align:right">${brl(r.val)}</td>
-      <td style="text-align:right"><input class="vi" type="number" data-id="${r.id}" value="${vp.toFixed(2)}" min="0" step="0.01" onchange="pvRev(${r.id},this.value)"></td>
-    </tr>`;
-  }).join('');
-}
-
-function removeFromRev(id){
-  ci.delete(id);
-  saveSelection();updateRev();renderRev();ren();
-}
-
-function pvRev(id,val){
-  pv[id]=parseFloat(val)||0;
-  saveSelection();
-  const items=D.filter(r=>ci.has(r.id));
-  const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);
-  const totPrev=items.reduce((a,r)=>a+r.val,0);
-  const e=id=>document.getElementById(id);
-  if(e('rvAprov')) e('rvAprov').textContent=brl(totAprov);
-  if(e('rvDiff')) e('rvDiff').textContent=brl(totPrev-totAprov);
-  upt();
-}
-
-function doApprove(){
-  if(!ci.size){alert('Nenhum item selecionado para aprovar.');return;}
-  document.getElementById('slb').value=`Pagamentos ${new Date().toLocaleDateString('pt-BR')}`;
-  document.getElementById('mov').style.display='flex';
-  setTimeout(()=>document.getElementById('slb').select(),50);
-}
 
 // =============================================
 // PAINEL LATERAL DE RASTREAMENTO
@@ -1370,30 +1285,7 @@ function showPanel(){
     spCloseBtn.addEventListener('click', closeSidePanel);
     spCloseBtn._bound = true;
   }
-    // Revisão buttons
-  if(document.getElementById('brAprovar')) document.getElementById('brAprovar').addEventListener('click',doApprove);
-  if(document.getElementById('brAprovar2')) document.getElementById('brAprovar2').addEventListener('click',doApprove);
-  if(document.getElementById('brLimpar')) document.getElementById('brLimpar').addEventListener('click',()=>{
-    if(!confirm('Limpar toda a seleção?'))return;
-    ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
-  });
-  // Avulso buttons
-  if(document.getElementById('bnovolcto')) document.getElementById('bnovolcto').addEventListener('click',()=>{
-    const today=new Date().toISOString().split('T')[0];
-    document.getElementById('avData').value=today;
-    document.getElementById('movAvulso').style.display='flex';
-    setTimeout(()=>document.getElementById('avForn').focus(),50);
-  });
-  if(document.getElementById('bAvulsoCancel')) document.getElementById('bAvulsoCancel').addEventListener('click',closeAvulsoModal);
-  if(document.getElementById('bAvulsoSave')) document.getElementById('bAvulsoSave').addEventListener('click',addAvulso);
-  if(document.getElementById('avValor')) document.getElementById('avValor').addEventListener('keydown',e=>{if(e.key==='Enter')addAvulso();});
-  if(document.getElementById('movAvulso')) document.getElementById('movAvulso').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAvulsoModal();});
-  // Override bsav
-  const bsavEl=document.getElementById('bsav');
-  if(bsavEl){ bsavEl.removeEventListener('click',osm); bsavEl.addEventListener('click',()=>{ if(!ci.size){alert('Selecione ao menos um lançamento.');return;} stab('r'); }); }
-});
-
-rh();uhc();load();
+  rh();uhc();load();
 }
 
 async function handleLogin(){
@@ -1428,6 +1320,8 @@ async function handleLogin(){
     btn.disabled = false;
   }
 }
+
+});
 
 // All login event listeners
 window.addEventListener('DOMContentLoaded', function(){
