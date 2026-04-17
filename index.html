@@ -225,7 +225,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
         <div id="ffn-drop" style="display:none;position:absolute;top:36px;left:0;width:320px;background:#fff;border:1px solid #e2e5ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:999;max-height:260px;overflow-y:auto"></div>
       </div>
       <select id="fem"><option value="">Todas as empresas</option></select>
-      <select id="fst"><option value="">Todos os status</option><option value="atrasado">Atrasados</option><option value="hoje">Vence hoje</option><option value="futuro">A vencer</option><option value="pago">Pagos</option></select>
+      <select id="fst"><option value="">Todos os status</option><option value="atrasado">Atrasados</option><option value="hoje">Vence hoje</option><option value="futuro">A vencer</option></select>
       <div class="fsp"></div>
       <button class="btn btn-p btn-sm" id="bfil">🔍 Filtrar</button>
       <button class="btn btn-sm" id="bcf">Limpar filtros</button>
@@ -469,7 +469,7 @@ const FIDS={'ROSIL.xlsx':'1umzGUQjhAI8EZ5xoF81Cnc6NoUpK5-mI66VztuE2Huw','RSL.xls
 const td=new Date();td.setHours(0,0,0,0);
 const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const sta=(d,pago)=>{if(pago)return'pago';if(!d)return'futuro';const x=new Date(d);x.setHours(0,0,0,0);return x<td?'atrasado':x.getTime()===td.getTime()?'hoje':'futuro';};
+const sta=d=>{if(!d)return'futuro';const x=new Date(d);x.setHours(0,0,0,0);return x<td?'atrasado':x.getTime()===td.getTime()?'hoje':'futuro';};
 const ec=e=>e==='ROSIL'?'eR':e==='RSL'?'eS':'eL';
 
 // ---- DATE PARSER (robusto para Excel serial e strings dd/mm/yyyy) ----
@@ -650,7 +650,7 @@ function gf(){
     if(df&&r.dt>new Date(df+'T23:59:59'))return false;
     if(fn&&!r.forn.toLowerCase().includes(fn))return false;
     if(em&&r.emp!==em)return false;
-    if(st&&sta(r.dt,r.pago)!==st)return false;
+    if(st&&sta(r.dt)!==st)return false;
     return true;
   });
 }
@@ -687,7 +687,7 @@ function ren(){
     tb.innerHTML=`<tr><td colspan="8" class="etd">Nenhum lançamento encontrado com os filtros aplicados.</td></tr>`;
   } else {
     tb.innerHTML=f.map(r=>{
-      const s=sta(r.dt,r.pago),sel=ci.has(r.id),vp=pv[r.id]!==undefined?pv[r.id]:r.val;
+      const s=sta(r.dt),sel=ci.has(r.id),vp=pv[r.id]!==undefined?pv[r.id]:r.val;
       const bc=s==='atrasado'?'ba':s==='hoje'?'bh':s==='pago'?'bp':'bf';
       const bl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':s==='pago'?'Pago':'A vencer';
       return`<tr class="${sel?'sl':''}" data-id="${r.id}">
@@ -779,15 +779,6 @@ function csav(){
   H.unshift({id:Date.now(),lb,dt:new Date().toLocaleString('pt-BR'),tot:items.reduce((a,r)=>a+r.va,0),n:items.length,items});
   localStorage.setItem('cp_h',JSON.stringify(H));
 
-  // Mark items as PAGO
-  selectedRows.forEach(r=>{
-    const idx=D.findIndex(x=>x.id===r.id);
-    if(idx>=0){
-      D[idx].pago=true;
-      D[idx].pagoDt=new Date().toLocaleDateString('pt-BR');
-      D[idx].pagoVal=pv[r.id]!==undefined?pv[r.id]:r.val;
-    }
-  });
   saveAvulsos();
   ci=new Set();pv={};saveSelection();
   document.getElementById('mov').style.display='none';
@@ -976,7 +967,7 @@ function renderRev(){
   if(ge('rvAprov')) ge('rvAprov').textContent=brl(totAprov);
   if(ge('rvDiff')) ge('rvDiff').textContent=brl(diff);
   if(rvTbody) rvTbody.innerHTML=items.map(r=>{
-    const s=sta(r.dt,r.pago);
+    const s=sta(r.dt);
     const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
     const bc=s==='atrasado'?'ba':s==='hoje'?'bh':s==='pago'?'bp':'bf';
     const bl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':s==='pago'?'Pago':'A vencer';
@@ -1214,7 +1205,7 @@ function openSidePanel(id){
     <div class="sp-row"><span class="sp-label">Empresa</span><span class="sp-val"><span class="et ${ec(r.emp)}" style="font-size:10px;padding:1px 6px">${esc(r.emp)}</span></span></div>
     <div class="sp-row"><span class="sp-label">Fornecedor</span><span class="sp-val" style="font-family:Inter,sans-serif;font-size:12px;max-width:200px;text-align:right">${esc(r.forn)}</span></div>
     <div class="sp-row"><span class="sp-label">Vencimento</span><span class="sp-val">${r.dts}</span></div>
-    <div class="sp-row"><span class="sp-label">Status</span><span class="sp-val"><span class="bg ${sta(r.dt,r.pago)==='atrasado'?'ba':sta(r.dt,r.pago)==='hoje'?'bh':sta(r.dt,r.pago)==='pago'?'bp':'bf'}">${sta(r.dt,r.pago)==='atrasado'?'Atrasado':sta(r.dt,r.pago)==='hoje'?'Hoje':sta(r.dt,r.pago)==='pago'?'✓ Pago':'A vencer'}</span></span></div>
+    <div class="sp-row"><span class="sp-label">Status</span><span class="sp-val"><span class="bg ${sta(r.dt)==='atrasado'?'ba':sta(r.dt)==='hoje'?'bh':sta(r.dt)==='pago'?'bp':'bf'}">${sta(r.dt)==='atrasado'?'Atrasado':sta(r.dt)==='hoje'?'Hoje':sta(r.dt)==='pago'?'✓ Pago':'A vencer'}</span></span></div>
     <div class="sp-row"><span class="sp-label">Descrição</span><span class="sp-val" style="font-family:Inter,sans-serif;font-size:11px;max-width:200px;text-align:right;color:#6b7280">${esc(r.dsc)}</span></div>
   </div>`;
 
