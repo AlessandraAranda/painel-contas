@@ -256,6 +256,31 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 </div>
 
 
+<div id="tr2" style="display:none">
+  <div class="hw">
+    <div class="hh">
+      <h2>Revisão de pagamentos</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:13px;color:#6b7280"><b id="rvCount">0</b> lançamentos · Previsto: <b id="rvPrev">R$ 0,00</b> · A aprovar: <b id="rvAprov">R$ 0,00</b> · Desconto: <b id="rvDiff">R$ 0,00</b></span>
+        <button class="btn btn-sm" id="brLimpar" style="color:#dc2626;border-color:#fca5a5">Limpar seleção</button>
+        <button class="btn btn-s" id="brAprovar">✓ Aprovar pagamentos</button>
+      </div>
+    </div>
+    <div id="rvEmpty" style="padding:40px;text-align:center;color:#9ca3af">
+      Nenhum lançamento selecionado.<br>Selecione lançamentos no painel e clique em "Salvar aprovação".
+    </div>
+    <div style="overflow-x:auto">
+      <table class="ht" id="rvTable" style="display:none">
+        <thead><tr><th></th><th>Empresa</th><th>Fornecedor</th><th>Vencimento</th><th>Status</th><th>Descrição</th><th style="text-align:right">Previsto</th><th style="text-align:right">A pagar</th></tr></thead>
+        <tbody id="rvTbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end">
+      <button class="btn btn-s" id="brAprovar2">✓ Aprovar pagamentos</button>
+    </div>
+  </div>
+</div>
+
 <div id="ta" style="display:none">
   <div class="hw">
 
@@ -294,7 +319,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px">
         <div class="sc" style="background:#f0fdf4;border-color:#a7f3d0">
           <div class="slb" style="color:#065f46">Matéria-Prima</div>
-          <div class="sv g" id="anMpVal">R$ 0</div>
           <div class="ssb" id="anMpN">0 lançamentos</div>
         </div>
         <div class="sc" style="background:#eff6ff;border-color:#bfdbfe">
@@ -969,13 +993,16 @@ function renderRev(){
   const items=D.filter(r=>ci.has(r.id));
   const rvEmpty=document.getElementById('rvEmpty');
   const rvTbody=document.getElementById('rvTbody');
+  const rvTable=document.getElementById('rvTable');
   if(!items.length){
     if(rvTbody) rvTbody.innerHTML='';
     if(rvEmpty) rvEmpty.style.display='block';
+    if(rvTable) rvTable.style.display='none';
     ['rvCount','rvPrev','rvAprov','rvDiff'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=id.includes('Count')?'0':'R$ 0,00';});
     return;
   }
   if(rvEmpty) rvEmpty.style.display='none';
+  if(rvTable) rvTable.style.display='';
   const totPrev=items.reduce((a,r)=>a+r.val,0);
   const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);
   const diff=totPrev-totAprov;
@@ -1062,31 +1089,19 @@ function renderAnalise(){
   const mediaMensal=monVals.length?monVals.reduce((a,v)=>a+v,0)/monVals.length:0;
 
   // Matéria-Prima KPI
-  const mpRows = dFilt.filter(r => r.dsc.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes('MATERIA PRIMA'));
-  const mpVal = mpRows.reduce((a,r)=>a+r.val,0);
-  const mpOutros = totAberto - mpVal;
-  const mpPct = totAberto>0 ? ((mpVal/totAberto)*100).toFixed(1) : 0;
-  document.getElementById('anMpVal').textContent = brl(mpVal);
-  document.getElementById('anMpN').textContent = mpRows.length+' lançamentos';
-  document.getElementById('anMpOutros').textContent = brl(mpOutros);
-  document.getElementById('anMpOutrosN').textContent = (dFilt.length-mpRowsNew.length)+' lançamentos';
-  document.getElementById('anMpPct').textContent = mpPct+'%';
-  document.getElementById('anMpBar').style.width = Math.min(mpPctNew,100)+'%';
-
-  // Materia-Prima KPI
-  const mpRowsNew=dFilt.filter(r=>{
-    const d=r.dsc.toUpperCase();
-    return d.includes('MATERIA PRIMA')||d.includes('MATÉRIA PRIMA')||d.includes('MATERIA-PRIMA')||d.includes('MATÉRIA-PRIMA');
+  const mpRows=dFilt.filter(r=>{
+    const d=r.dsc.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    return d.includes('MATERIA PRIMA')||d.includes('MATERIA-PRIMA');
   });
-  const mpValNew=mpRowsNew.reduce((a,r)=>a+r.val,0);
-  const mpOutrosNew=totAberto-mpValNew;
-  const mpPctNew=totAberto>0?((mpValNew/totAberto)*100).toFixed(1):0;
-  if(document.getElementById('anMpVal'))document.getElementById('anMpVal').textContent=brl(mpValNew);
-  if(document.getElementById('anMpN'))document.getElementById('anMpN').textContent=mpRowsNew.length+' lançamentos';
-  if(document.getElementById('anMpOutros'))document.getElementById('anMpOutros').textContent=brl(mpOutrosNew);
-  if(document.getElementById('anMpOutrosN'))document.getElementById('anMpOutrosN').textContent=(dFilt.length-mpRowsNew.length)+' lançamentos';
-  if(document.getElementById('anMpPct'))document.getElementById('anMpPct').textContent=mpPctNew+'%';
-  if(document.getElementById('anMpBar'))document.getElementById('anMpBar').style.width=Math.min(mpPctNew,100)+'%';
+  const mpVal=mpRows.reduce((a,r)=>a+r.val,0);
+  const mpOutros=totAberto-mpVal;
+  const mpPct=totAberto>0?((mpVal/totAberto)*100).toFixed(1):0;
+  if(document.getElementById('anMpVal'))document.getElementById('anMpVal').textContent=brl(mpVal);
+  if(document.getElementById('anMpN'))document.getElementById('anMpN').textContent=mpRows.length+' lançamentos';
+  if(document.getElementById('anMpOutros'))document.getElementById('anMpOutros').textContent=brl(mpOutros);
+  if(document.getElementById('anMpOutrosN'))document.getElementById('anMpOutrosN').textContent=(dFilt.length-mpRows.length)+' lançamentos';
+  if(document.getElementById('anMpPct'))document.getElementById('anMpPct').textContent=mpPct+'%';
+  if(document.getElementById('anMpBar'))document.getElementById('anMpBar').style.width=Math.min(mpPct,100)+'%';
 
   document.getElementById('anTotAberto').textContent=brl(totAberto);
   document.getElementById('anTotAbertoN').textContent=dFilt.length+' lançamentos';
