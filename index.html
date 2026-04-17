@@ -196,7 +196,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   <div class="tab on" data-tab="p">Painel do dia</div>
   <div class="tab" data-tab="r">Revisão <span id="rc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
   <div class="tab" data-tab="h">Histórico <span id="hc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
-  <div class="tab" data-tab="f">Fluxo de Caixa</div>
   <div class="tab" data-tab="a">Análise</div>
 </div>
 
@@ -256,120 +255,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   </div>
 </div>
 
-<div id="tf" style="display:none">
-  <div class="hw">
-
-    <!-- FILTROS -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="font-size:12px;font-weight:500;color:#6b7280">Filtrar:</span>
-      <select id="fcEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-        <option value="">Todas as empresas</option>
-        <option value="ROSIL">ROSIL</option>
-        <option value="RSL">RSL</option>
-        <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
-      </select>
-    </div>
-
-    <!-- CARDS RESUMO -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px">
-      <div class="sc"><div class="slb">Total em aberto</div><div class="sv" id="fcPrev">R$ 0,00</div><div class="ssb" id="fcPrevN">do Drive</div></div>
-      <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="fcTot">R$ 0,00</div><div class="ssb" id="fcTotN">0 aprovações</div></div>
-      <div class="sc"><div class="slb">Ainda a pagar</div><div class="sv r" id="fcRest">R$ 0,00</div><div class="ssb" id="fcRestN">—</div></div>
-    </div>
-
-    <!-- RESUMO TEXTUAL -->
-    <div id="fcResumo" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:13px;color:#0369a1;line-height:1.8;display:none"></div>
-
-    <!-- GRÁFICO DIÁRIO -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div>
-          <div style="font-size:14px;font-weight:600;color:#1a1d23">Fluxo diário</div>
-          <div style="font-size:12px;color:#9ca3af;margin-top:2px">Previsto por vencimento · Aprovado por data de pagamento</div>
-        </div>
-        <select id="fcPeriodo" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-          <option value="15">Últimos 15 dias</option>
-          <option value="30" selected>Últimos 30 dias</option>
-          <option value="60">Últimos 60 dias</option>
-        </select>
-      </div>
-      <div style="display:flex;gap:16px;margin-bottom:14px">
-        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;background:#bfdbfe;border-radius:2px"></span>Em aberto</span>
-        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px"></span>Aprovado</span>
-      </div>
-      <canvas id="fcChart" height="100"></canvas>
-      <div id="fcEmpty" style="display:none;text-align:center;padding:2.5rem;color:#9ca3af;font-size:13px">Nenhum dado no período selecionado.</div>
-    </div>
-
-    <!-- GRÁFICO MENSAL -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div>
-          <div style="font-size:14px;font-weight:600;color:#1a1d23">Fluxo mensal</div>
-          <div style="font-size:12px;color:#9ca3af;margin-top:2px">Consolidado por mês</div>
-        </div>
-        <select id="fcAno" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-          <option value="0">Todos os anos</option>
-        </select>
-      </div>
-      <div style="display:flex;gap:16px;margin-bottom:14px">
-        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;background:#fca5a5;border-radius:2px"></span>Em aberto</span>
-        <span style="font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:2px"></span>Aprovado</span>
-      </div>
-      <canvas id="fcChartMensal" height="90"></canvas>
-      <div id="fcEmptyMensal" style="display:none;text-align:center;padding:2rem;color:#9ca3af;font-size:13px">Sem dados para exibir.</div>
-    </div>
-
-  </div>
-</div>
-
-<div id="tr2" style="display:none">
-  <div class="hw">
-    <div class="hh">
-      <div>
-        <h2>Revisão de pagamentos</h2>
-        <p style="font-size:13px;color:#6b7280;margin-top:4px">Confira tudo antes de aprovar. Você pode ajustar valores, remover itens ou voltar ao painel para adicionar mais.</p>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-sm" id="brLimpar">✕ Limpar seleção</button>
-        <button class="btn btn-p btn-sm" id="brAprovar">✓ Aprovar pagamentos</button>
-      </div>
-    </div>
-
-    <!-- RESUMO REVISÃO -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px">
-      <div class="sc"><div class="slb">Itens selecionados</div><div class="sv v" id="rvCount">0</div></div>
-      <div class="sc"><div class="slb">Valor previsto total</div><div class="sv" id="rvPrev">R$ 0,00</div></div>
-      <div class="sc"><div class="slb">Valor a pagar total</div><div class="sv v" id="rvAprov">R$ 0,00</div></div>
-      <div class="sc"><div class="slb">Pagamento parcial</div><div class="sv g" id="rvDiff">R$ 0,00</div><div class="ssb" id="rvDiffN">diferença entre previsto e a pagar</div></div>
-    </div>
-
-    <!-- TABELA REVISÃO -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden">
-      <table class="ht" style="margin:0">
-        <thead><tr>
-          <th style="width:34px"></th>
-          <th style="width:100px">Empresa</th>
-          <th>Fornecedor</th>
-          <th style="width:100px">Vencimento</th>
-          <th style="width:80px">Status</th>
-          <th>Descrição</th>
-          <th style="text-align:right;width:120px">Previsto</th>
-          <th style="text-align:right;width:125px">Valor a pagar</th>
-        </tr></thead>
-        <tbody id="rvTbody"></tbody>
-      </table>
-      <div id="rvEmpty" style="text-align:center;padding:3rem;color:#9ca3af;font-size:13px;display:none">
-        Nenhum item selecionado.<br>Volte ao painel e selecione os lançamentos que deseja pagar.
-      </div>
-    </div>
-
-    <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px">
-      <button class="btn btn-sm" onclick="stab('p')">← Voltar ao painel</button>
-      <button class="btn btn-p btn-sm" id="brAprovar2">✓ Aprovar pagamentos</button>
-    </div>
-  </div>
-</div>
 
 <div id="ta" style="display:none">
   <div class="hw">
@@ -398,6 +283,41 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       <div class="sc"><div class="slb">Atrasados</div><div class="sv r" id="anAtrasado">R$ 0</div><div class="ssb" id="anAtrasadoN">0 lançamentos</div></div>
       <div class="sc"><div class="slb">Ticket médio</div><div class="sv" id="anTicket">R$ 0</div><div class="ssb">por lançamento</div></div>
       <div class="sc"><div class="slb">Média mensal</div><div class="sv" id="anMensal">R$ 0</div><div class="ssb" id="anMensalN">—</div></div>
+    </div>
+
+    <!-- KPI MATÉRIA-PRIMA -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:18px 24px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="font-size:13px;font-weight:600;color:#1a1d23">Matéria-Prima vs Despesas Totais</div>
+        <div style="font-size:11px;color:#9ca3af">Lançamentos com "MATERIA PRIMA" na descrição</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px">
+        <div class="sc" style="background:#f0fdf4;border-color:#a7f3d0">
+          <div class="slb" style="color:#065f46">Matéria-Prima</div>
+          <div class="sv g" id="anMpVal">R$ 0</div>
+          <div class="ssb" id="anMpN">0 lançamentos</div>
+        </div>
+        <div class="sc" style="background:#eff6ff;border-color:#bfdbfe">
+          <div class="slb" style="color:#1d4ed8">Outras despesas</div>
+          <div class="sv v" id="anMpOutros">R$ 0</div>
+          <div class="ssb" id="anMpOutrosN">0 lançamentos</div>
+        </div>
+        <div class="sc" style="background:#fdf4ff;border-color:#e9d5ff">
+          <div class="slb" style="color:#7e22ce">MP sobre total</div>
+          <div class="sv" id="anMpPct" style="color:#7e22ce">0%</div>
+          <div class="ssb">do total a pagar</div>
+        </div>
+        <div style="display:flex;flex-direction:column;justify-content:center;min-width:200px">
+          <div style="font-size:11px;color:#6b7280;margin-bottom:6px">Proporção MP vs outras despesas</div>
+          <div style="background:#f3f4f6;border-radius:6px;height:10px;overflow:hidden;position:relative">
+            <div id="anMpBar" style="height:100%;background:#10b981;border-radius:6px;transition:width .4s;width:0%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span style="font-size:10px;color:#059669">● Matéria-Prima</span>
+            <span style="font-size:10px;color:#3b82f6">● Outras despesas</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ROW 1: Pizza empresa + Status -->
@@ -906,11 +826,9 @@ function stab(t){
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
   document.getElementById('tp').style.display=t==='p'?'block':'none';
   document.getElementById('th2').style.display=t==='h'?'block':'none';
-  document.getElementById('tf').style.display=t==='f'?'block':'none';
   document.getElementById('tr2').style.display=t==='r'?'block':'none';
   document.getElementById('ta').style.display=t==='a'?'block':'none';
   document.getElementById('bb').style.display=(t==='p'&&D.length)?'flex':'none';
-  if(t==='f') renderFluxo();
   if(t==='r') renderRev();
   if(t==='a') renderAnalise();
 }
@@ -995,369 +913,6 @@ document.getElementById('bexp').addEventListener('click',()=>{
 });
 
 // =============================================
-// FLUXO DE CAIXA
-// =============================================
-let fcChartObj = null;
-let fcChartMensalObj = null;
-
-function parseHistDate(dtStr){
-  const parts = dtStr.split(',')[0].trim().split('/');
-  if(parts.length < 3) return null;
-  const y=parseInt(parts[2]),m=parseInt(parts[1])-1,d=parseInt(parts[0]);
-  return {date:new Date(y,m,d), day:parts[0].padStart(2,'0')+'/'+parts[1].padStart(2,'0')+'/'+parts[2], month:parts[1].padStart(2,'0')+'/'+parts[2], monthKey:parts[2]+'-'+parts[1].padStart(2,'0'), year:parts[2]};
-}
-
-function getFilteredHistory(){
-  const empF = document.getElementById('fcEmp').value;
-  return H.map(entry=>{
-    const parsed = parseHistDate(entry.dt);
-    if(!parsed) return null;
-    const items = empF ? entry.items.filter(i=>i.emp===empF) : entry.items;
-    if(!items.length) return null;
-    return {...entry, parsed, filteredItems:items};
-  }).filter(Boolean);
-}
-
-function renderFluxo(){
-  const periodo = parseInt(document.getElementById('fcPeriodo').value);
-  const anoF = document.getElementById('fcAno').value;
-  const empF = document.getElementById('fcEmp').value;
-  const now = new Date(); now.setHours(23,59,59,999);
-  const cutoff = new Date(now - periodo * 86400000);
-  const hist = getFilteredHistory();
-
-  // Populate year filter
-  const dFilt = empF ? D.filter(r=>r.emp===empF) : D;
-  const anosD = dFilt.map(r=>String(r.dt.getFullYear()));
-  const anosH = hist.map(e=>e.parsed.year);
-  const anos = [...new Set([...anosD,...anosH])].sort().reverse();
-  const anoSel = document.getElementById('fcAno').value;
-  document.getElementById('fcAno').innerHTML = '<option value="0">Todos os anos</option>' +
-    anos.map(a=>`<option value="${a}"${anoSel===a?' selected':''}>${a}</option>`).join('');
-
-  // Summary totals
-  const totPrev = dFilt.reduce((a,r)=>a+r.val,0);
-  const totAprov = hist.reduce((a,e)=>a+e.filteredItems.reduce((b,i)=>b+i.va,0),0);
-  const totRest = totPrev - totAprov;
-  const pctAprov = totPrev>0 ? ((totAprov/totPrev)*100).toFixed(1) : 0;
-  const pctRest = totPrev>0 ? (100 - parseFloat(pctAprov)).toFixed(1) : 100;
-
-  document.getElementById('fcPrev').textContent = brl(totPrev);
-  document.getElementById('fcPrevN').textContent = dFilt.length+' lançamentos em aberto';
-  document.getElementById('fcTot').textContent = brl(totAprov);
-  document.getElementById('fcTotN').textContent = hist.length+' aprovações salvas';
-  document.getElementById('fcRest').textContent = brl(totRest>0?totRest:0);
-  document.getElementById('fcRestN').textContent = totPrev>0 ? pctRest+'% ainda não aprovado' : '—';
-
-  // Resumo textual
-  const resumoEl = document.getElementById('fcResumo');
-  if(totPrev>0){
-    resumoEl.style.display='block';
-    let txt = '';
-    if(totAprov===0){
-      txt = `📋 Há <strong>${brl(totPrev)}</strong> em lançamentos abertos no sistema. Nenhum pagamento foi aprovado ainda nesta sessão. Selecione os lançamentos no painel e clique em "Salvar aprovação" para registrar os pagamentos.`;
-    } else if(totRest<=0){
-      txt = `✅ Todos os lançamentos em aberto foram aprovados. Total aprovado: <strong>${brl(totAprov)}</strong>.`;
-    } else {
-      txt = `💡 Do total de <strong>${brl(totPrev)}</strong> em aberto, <strong>${brl(totAprov)}</strong> (${pctAprov}%) já foi aprovado para pagamento. Faltam <strong>${brl(totRest)}</strong> (${pctRest}%) ainda sem aprovação.`;
-    }
-    resumoEl.innerHTML = txt;
-  } else {
-    resumoEl.style.display='none';
-  }
-
-  // ---- DIÁRIO ----
-  const dayMap = {};
-  dFilt.forEach(r=>{
-    const d=r.dt; if(!d) return;
-    const dd=String(d.getDate()).padStart(2,'0'), mm=String(d.getMonth()+1).padStart(2,'0'), yy=String(d.getFullYear());
-    if(d<cutoff||d>now) return;
-    const key=dd+'/'+mm+'/'+yy;
-    if(!dayMap[key]) dayMap[key]={label:key,previsto:0,aprovado:0};
-    dayMap[key].previsto += r.val;
-  });
-  hist.forEach(entry=>{
-    if(entry.parsed.date<cutoff||entry.parsed.date>now) return;
-    const key=entry.parsed.day;
-    if(!dayMap[key]) dayMap[key]={label:key,previsto:0,aprovado:0};
-    entry.filteredItems.forEach(i=>dayMap[key].aprovado+=i.va);
-  });
-
-  const days = Object.keys(dayMap).sort((a,b)=>{
-    const pa=a.split('/'),pb=b.split('/');
-    return new Date(pa[2],+pa[1]-1,+pa[0]) - new Date(pb[2],+pb[1]-1,+pb[0]);
-  });
-
-  const canvas=document.getElementById('fcChart'), empty=document.getElementById('fcEmpty');
-  if(!days.length){ canvas.style.display='none'; empty.style.display='block'; }
-  else {
-    canvas.style.display='block'; empty.style.display='none';
-    if(fcChartObj) fcChartObj.destroy();
-    fcChartObj = new Chart(canvas,{
-      type:'bar',
-      data:{
-        labels: days.map(d=>dayMap[d].label),
-        datasets:[
-          {label:'Em aberto', data:days.map(d=>dayMap[d].previsto), backgroundColor:'#bfdbfe', borderRadius:4, borderSkipped:false, categoryPercentage:0.7},
-          {label:'Aprovado',  data:days.map(d=>dayMap[d].aprovado),  backgroundColor:'#3b82f6', borderRadius:4, borderSkipped:false, categoryPercentage:0.7}
-        ]
-      },
-      options:{
-        responsive:true,
-        plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}
-        },
-        scales:{
-          x:{grid:{display:false}, ticks:{font:{size:10},color:'#6b7280'}},
-          y:{grid:{color:'#f3f4f6'}, ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')}, border:{display:false}}
-        }
-      }
-    });
-  }
-
-  // ---- MENSAL ----
-  const monMap = {};
-  dFilt.forEach(r=>{
-    const d=r.dt; if(!d) return;
-    const mm=String(d.getMonth()+1).padStart(2,'0'), yy=String(d.getFullYear());
-    if(anoF&&anoF!=='0'&&yy!==anoF) return;
-    const key=yy+'-'+mm;
-    if(!monMap[key]) monMap[key]={label:mm+'/'+yy,previsto:0,aprovado:0};
-    monMap[key].previsto += r.val;
-  });
-  hist.forEach(entry=>{
-    if(anoF&&anoF!=='0'&&entry.parsed.year!==anoF) return;
-    const key=entry.parsed.monthKey;
-    if(!monMap[key]) monMap[key]={label:entry.parsed.month,previsto:0,aprovado:0};
-    entry.filteredItems.forEach(i=>monMap[key].aprovado+=i.va);
-  });
-
-  const months=Object.keys(monMap).sort();
-  const canvasM=document.getElementById('fcChartMensal'), emptyM=document.getElementById('fcEmptyMensal');
-  if(!months.length){ canvasM.style.display='none'; emptyM.style.display='block'; }
-  else {
-    canvasM.style.display='block'; emptyM.style.display='none';
-    if(fcChartMensalObj) fcChartMensalObj.destroy();
-    fcChartMensalObj = new Chart(canvasM,{
-      type:'bar',
-      data:{
-        labels: months.map(m=>monMap[m].label),
-        datasets:[
-          {label:'Em aberto', data:months.map(m=>monMap[m].previsto), backgroundColor:'#fca5a5', borderRadius:4, borderSkipped:false, categoryPercentage:0.7},
-          {label:'Aprovado',  data:months.map(m=>monMap[m].aprovado),  backgroundColor:'#ef4444', borderRadius:4, borderSkipped:false, categoryPercentage:0.7}
-        ]
-      },
-      options:{
-        responsive:true,
-        plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}
-        },
-        scales:{
-          x:{grid:{display:false}, ticks:{font:{size:11},color:'#6b7280'}},
-          y:{grid:{color:'#f3f4f6'}, ticks:{font:{size:11},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')}, border:{display:false}}
-        }
-      }
-    });
-  }
-}
-
-if(document.getElementById('fcPeriodo'))document.getElementById('fcPeriodo').addEventListener('change', renderFluxo);
-if(document.getElementById('fcEmp'))document.getElementById('fcEmp').addEventListener('change', renderFluxo);
-if(document.getElementById('fcAno'))document.getElementById('fcAno').addEventListener('change', renderFluxo);
-
-// =============================================
-// REVISÃO
-// =============================================
-function updateRev(){
-  const n=ci.size;
-  document.getElementById('rc').textContent=n?`(${n})`:'';
-}
-
-function renderRev(){
-  const items=D.filter(r=>ci.has(r.id));
-  const rvEmpty=document.getElementById('rvEmpty');
-  const rvTbody=document.getElementById('rvTbody');
-
-  if(!items.length){
-    rvTbody.innerHTML='';
-    rvEmpty.style.display='block';
-    document.getElementById('rvCount').textContent='0';
-    document.getElementById('rvPrev').textContent='R$ 0,00';
-    document.getElementById('rvAprov').textContent='R$ 0,00';
-    document.getElementById('rvDiff').textContent='R$ 0,00';
-    document.getElementById('rvDiffN').textContent='';
-    return;
-  }
-  rvEmpty.style.display='none';
-
-  const totPrev=items.reduce((a,r)=>a+r.val,0);
-  const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);
-  const diff=totPrev-totAprov;
-  document.getElementById('rvCount').textContent=items.length;
-  document.getElementById('rvPrev').textContent=brl(totPrev);
-  document.getElementById('rvAprov').textContent=brl(totAprov);
-  document.getElementById('rvDiff').textContent=brl(diff);
-  document.getElementById('rvDiffN').textContent=diff>0?`R$ ${diff.toLocaleString('pt-BR',{minimumFractionDigits:2})} sendo pago em partes`:'pagando o valor integral';
-
-  rvTbody.innerHTML=items.map(r=>{
-    const s=sta(r.dt);
-    const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
-    const bc=s==='atrasado'?'ba':s==='hoje'?'bh':'bf';
-    const bl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':'A vencer';
-    return`<tr>
-      <td><button onclick="removeFromRev(${r.id})" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 4px" title="Remover">×</button></td>
-      <td><span class="et ${ec(r.emp)}">${esc(r.emp)}</span></td>
-      <td style="font-weight:500;color:#111827">${esc(r.forn)}</td>
-      <td class="mn">${r.dts}</td>
-      <td><span class="bg ${bc}">${bl}</span></td>
-      <td style="color:#6b7280;font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.dsc)}">${esc(r.dsc)}</td>
-      <td class="mn" style="text-align:right">${brl(r.val)}</td>
-      <td style="text-align:right"><input class="vi" type="number" data-id="${r.id}" value="${vp.toFixed(2)}" min="0" step="0.01" onchange="pvRev(${r.id},this.value)"></td>
-    </tr>`;
-  }).join('');
-}
-
-function removeFromRev(id){
-  ci.delete(id);
-  saveSelection();updateRev();renderRev();ren();
-}
-
-function pvRev(id,val){
-  pv[id]=parseFloat(val)||0;
-  saveSelection();
-  // Update summary
-  const items=D.filter(r=>ci.has(r.id));
-  const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);
-  const totPrev=items.reduce((a,r)=>a+r.val,0);
-  document.getElementById('rvAprov').textContent=brl(totAprov);
-  document.getElementById('rvDiff').textContent=brl(totPrev-totAprov);
-  upt();
-}
-
-function doApprove(){
-  if(!ci.size){alert('Nenhum item selecionado para aprovar.');return;}
-  document.getElementById('slb').value=`Pagamentos ${new Date().toLocaleDateString('pt-BR')}`;
-  document.getElementById('mov').style.display='flex';
-  setTimeout(()=>document.getElementById('slb').select(),50);
-}
-
-if(document.getElementById('brAprovar'))document.getElementById('brAprovar').addEventListener('click',doApprove);
-if(document.getElementById('brAprovar2'))document.getElementById('brAprovar2').addEventListener('click',doApprove);
-if(document.getElementById('brLimpar'))document.getElementById('brLimpar').addEventListener('click',()=>{
-  if(!confirm('Limpar toda a seleção?'))return;
-  ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
-});
-
-// Override bsav to go to revision tab first if items selected
-document.getElementById('bsav').removeEventListener('click',osm);
-document.getElementById('bsav').addEventListener('click',()=>{
-  if(!ci.size){alert('Selecione ao menos um lançamento.');return;}
-  stab('r');
-});
-
-document.getElementById('bclcache').addEventListener('click',()=>{
-  if(!confirm('Limpar cache e recarregar?')) return;
-  localStorage.removeItem('cp_sel');
-  localStorage.removeItem('cp_filters');
-  ci=new Set(); pv={};
-  ['fdi','fdf','ffn'].forEach(id=>document.getElementById(id).value='');
-  ['fem','fst'].forEach(id=>document.getElementById(id).selectedIndex=0);
-  load();
-});
-
-// =============================================
-// LANÇAMENTOS AVULSOS
-// =============================================
-const AV_KEY = 'cp_avulsos';
-
-function loadAvulsos(){
-  try {
-    const saved = JSON.parse(localStorage.getItem(AV_KEY)||'[]');
-    saved.forEach(r=>{
-      // Check not already added (avoid duplicates on reload)
-      if(!D.find(x=>x.id===r.id)){
-        D.push(r);
-      }
-    });
-  } catch(e){}
-}
-
-function saveAvulsos(){
-  const avulsos = D.filter(r=>r.avulso);
-  localStorage.setItem(AV_KEY, JSON.stringify(avulsos));
-}
-
-function addAvulso(){
-  const emp = document.getElementById('avEmp').value;
-  const dataVal = document.getElementById('avData').value;
-  const forn = document.getElementById('avForn').value.trim();
-  const dsc = document.getElementById('avDesc').value.trim();
-  const val = parseFloat(document.getElementById('avValor').value)||0;
-
-  if(!forn){alert('Informe o fornecedor.');return;}
-  if(!dataVal){alert('Informe a data de vencimento.');return;}
-  if(!val){alert('Informe o valor.');return;}
-
-  const dt = new Date(dataVal+'T00:00:00');
-  const entry = {
-    id: Date.now(),
-    emp,
-    forn,
-    dt,
-    dts: dt.toLocaleDateString('pt-BR'),
-    dsc,
-    val,
-    avulso: true
-  };
-  D.push(entry);
-  saveAvulsos();
-  closeAvulsoModal();
-  popF();ren();updateRev();
-
-  // Show success feedback
-  const btn = document.getElementById('bnovolcto');
-  const orig = btn.textContent;
-  btn.textContent = '✓ Adicionado!';
-  setTimeout(()=>btn.textContent=orig, 2000);
-}
-
-function closeAvulsoModal(){
-  document.getElementById('movAvulso').style.display='none';
-  document.getElementById('avForn').value='';
-  document.getElementById('avDesc').value='';
-  document.getElementById('avValor').value='';
-  document.getElementById('avData').value='';
-}
-
-// When approving, remove avulsos from localStorage (they've been processed)
-const origCsav = csav;
-csav = function(){
-  // Get avulso IDs that are being approved
-  const approvedAvulsoIds = D.filter(r=>r.avulso && ci.has(r.id)).map(r=>r.id);
-  origCsav();
-  // Remove approved avulsos from D and localStorage
-  approvedAvulsoIds.forEach(id=>{ const idx=D.findIndex(x=>x.id===id); if(idx>=0) D.splice(idx,1); });
-  saveAvulsos();
-  ren();
-};
-
-document.getElementById('bnovolcto').addEventListener('click',()=>{
-  // Set today as default date
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('avData').value = today;
-  document.getElementById('movAvulso').style.display='flex';
-  setTimeout(()=>document.getElementById('avForn').focus(),50);
-});
-document.getElementById('bAvulsoCancel').addEventListener('click', closeAvulsoModal);
-document.getElementById('bAvulsoSave').addEventListener('click', addAvulso);
-document.getElementById('avValor').addEventListener('keydown',e=>{if(e.key==='Enter')addAvulso();});
-document.getElementById('movAvulso').addEventListener('click',e=>{
-  if(e.target===e.currentTarget) closeAvulsoModal();
-});
-
-// =============================================
 // ANÁLISE / KPIs
 // =============================================
 let anChartEmpObj=null,anChartStatusObj=null,anChartFornObj=null,anChartMensalObj=null,anChartPlanAprovObj=null,anChartDiarioObj=null,anChartCatObj=null;
@@ -1404,6 +959,18 @@ function renderAnalise(){
   dFilt.forEach(r=>{if(!r.dt)return;const k=String(r.dt.getFullYear())+'-'+String(r.dt.getMonth()+1).padStart(2,'0');if(!monMap[k])monMap[k]=0;monMap[k]+=r.val;});
   const monVals=Object.values(monMap);
   const mediaMensal=monVals.length?monVals.reduce((a,v)=>a+v,0)/monVals.length:0;
+
+  // Matéria-Prima KPI
+  const mpRows = dFilt.filter(r => r.dsc.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes('MATERIA PRIMA'));
+  const mpVal = mpRows.reduce((a,r)=>a+r.val,0);
+  const mpOutros = totAberto - mpVal;
+  const mpPct = totAberto>0 ? ((mpVal/totAberto)*100).toFixed(1) : 0;
+  document.getElementById('anMpVal').textContent = brl(mpVal);
+  document.getElementById('anMpN').textContent = mpRows.length+' lançamentos';
+  document.getElementById('anMpOutros').textContent = brl(mpOutros);
+  document.getElementById('anMpOutrosN').textContent = (dFilt.length-mpRows.length)+' lançamentos';
+  document.getElementById('anMpPct').textContent = mpPct+'%';
+  document.getElementById('anMpBar').style.width = Math.min(mpPct,100)+'%';
 
   document.getElementById('anTotAberto').textContent=brl(totAberto);
   document.getElementById('anTotAbertoN').textContent=dFilt.length+' lançamentos';
