@@ -693,7 +693,7 @@ function ren(){
       return`<tr class="${sel?'sl':''}" data-id="${r.id}">
         <td><input type="checkbox" class="rc" data-id="${r.id}" ${sel?'checked':''}></td>
         <td><span class="et ${ec(r.emp)}">${esc(r.emp)}</span></td>
-        <td style="font-weight:500;color:#111827">${esc(r.forn)}${r.fixo?'<span class="fixo-tag">fixo</span>':''}${r.avulso&&!r.parcial?'<span class="avulso-tag">avulso</span>':''}${r.parcial?`<span class="avulso-tag" style="background:#fff7ed;color:#c2410c;border-color:#fed7aa">parcela ${r.parcelNum||1}</span>`:''}</td>
+        <td style="font-weight:500;color:#111827">${esc(r.forn)}${r.fixo?'<span class="fixo-tag">fixo</span>':''}${r.avulso?'<span class="avulso-tag">avulso</span>':''}</td>
         <td class="mn">${r.dts}</td>
         <td><span class="bg ${bc}">${bl}</span></td>
         <td style="color:#6b7280;font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.dsc)}">${esc(r.dsc)}</td>
@@ -734,49 +734,15 @@ function csav(){
   H.unshift({id:Date.now(),lb,dt:new Date().toLocaleString('pt-BR'),tot:items.reduce((a,r)=>a+r.va,0),n:items.length,items});
   localStorage.setItem('cp_h',JSON.stringify(H));
 
-  // Mark items as PAGO and handle partials
-  const newPartials=[];
+  // Mark items as PAGO
   selectedRows.forEach(r=>{
-    const valorPago=pv[r.id]!==undefined?pv[r.id]:r.val;
-    const saldo=Math.round((r.val-valorPago)*100)/100;
-
-    // Mark as pago
     const idx=D.findIndex(x=>x.id===r.id);
     if(idx>=0){
       D[idx].pago=true;
       D[idx].pagoDt=new Date().toLocaleDateString('pt-BR');
-      D[idx].pagoVal=valorPago;
-    }
-
-    // Handle partial
-    if(saldo>0.01){
-      const parcelNum=(r.parcelNum||1)+1;
-      const criar=confirm(`Pagamento parcial detectado!\n\nFornecedor: ${r.forn}\nValor pago: ${brl(valorPago)}\nSaldo restante: ${brl(saldo)}\n\nDeseja criar o lançamento de saldo (parcela ${parcelNum})?`);
-      if(criar){
-        newPartials.push({
-          id:Date.now()+Math.random(),
-          emp:r.emp,
-          forn:r.forn,
-          dt:new Date(r.dt),
-          dts:r.dts,
-          dsc:r.dsc,
-          val:saldo,
-          avulso:true,
-          parcial:true,
-          parcialRef:r.parcialRef||r.id,
-          parcelNum:parcelNum,
-          parcelOrig:r.val
-        });
-      }
+      D[idx].pagoVal=pv[r.id]!==undefined?pv[r.id]:r.val;
     }
   });
-
-  if(newPartials.length>0){
-    newPartials.forEach(p=>D.push(p));
-    saveAvulsos();
-  }
-
-  // Save pago status
   saveAvulsos();
   ci=new Set();pv={};saveSelection();
   document.getElementById('mov').style.display='none';
