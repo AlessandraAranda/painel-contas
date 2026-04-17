@@ -187,7 +187,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
     <button class="btn btn-sm" id="bLogout" style="color:#9ca3af;border-color:#e2e5ea">↩ Sair</button>
     <button class="btn btn-sm" id="bclcache">🗑 Limpar cache</button>
     <button class="btn btn-sm" id="bnovolcto" style="border-color:#e9d5ff;color:#7e22ce;background:#fdf4ff">+ Novo lançamento</button>
-    <button class="btn btn-s btn-sm" id="bsav">✓ Salvar aprovação</button>
     <button class="btn btn-p btn-sm" id="bexp">↓ Exportar CSV</button>
   </div>
 </div>
@@ -266,7 +265,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       </div>
     </div>
     <div id="rvEmpty" style="padding:40px;text-align:center;color:#9ca3af">
-      Nenhum lançamento selecionado.<br>Selecione lançamentos no painel e clique em "Salvar aprovação".
+      Nenhum lançamento selecionado.<br>Selecione lançamentos no Painel do dia para iniciar a revisão.
     </div>
     <div style="overflow-x:auto">
       <table class="ht" id="rvTable" style="display:none">
@@ -729,8 +728,10 @@ function osm(){if(!ci.size){alert('Selecione ao menos um lançamento para salvar
 const AV_KEY='cp_avulsos';
 
 function saveAvulsos(){
-  const avulsos=D.filter(r=>r.avulso||r.pago);
+  const avulsos=D.filter(r=>r.avulso);
   localStorage.setItem(AV_KEY,JSON.stringify(avulsos));
+  // Also save to Drive
+  if(avulsos.length > 0) apiPost('saveAvulsos', avulsos);
 }
 
 function loadAvulsos(){
@@ -792,7 +793,7 @@ function csav(){
 function rh(){
   uhc();
   const el=document.getElementById('hl');
-  if(!H.length){el.innerHTML='<div class="nh">Nenhuma aprovação salva ainda.<br>Selecione lançamentos no painel e clique em "Salvar aprovação".</div>';return;}
+  if(!H.length){el.innerHTML='<div class="nh">Nenhuma aprovação salva ainda.<br>Selecione lançamentos no Painel do dia e clique em "Aprovar pagamentos".</div>';return;}
   el.innerHTML=H.map((e,i)=>`<div class="he">
     <div class="heh" onclick="tgh(${i})">
       <div>
@@ -927,7 +928,7 @@ document.getElementById('fdf').addEventListener('change',()=>{ren();saveFilters(
 document.querySelectorAll('th.st').forEach(th=>th.addEventListener('click',()=>{const c=th.dataset.col;if(sc===c)sa=!sa;else{sc=c;sa=true;}ren();}));
 document.getElementById('bref').addEventListener('click',load);
 document.getElementById('bret').addEventListener('click',load);
-document.getElementById('bsav').addEventListener('click',osm);
+// bsav removed - using brAprovar2 instead
 document.getElementById('bcs').addEventListener('click',()=>document.getElementById('mov').style.display='none');
 document.getElementById('bks').addEventListener('click',csav);
 document.getElementById('slb').addEventListener('keydown',e=>{if(e.key==='Enter')csav();});
@@ -1312,10 +1313,11 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxfqh094-hknN8Kx_vhZSQU
 // =============================================
 async function apiPost(action, dados){
   try {
-    const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados));
-    const res = await fetch(url);
-    return await res.json();
-  } catch(e){ return {error: e.toString()}; }
+    const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados)) + '&t=' + Date.now();
+    const res = await fetch(url, {redirect:'follow'});
+    const txt = await res.text();
+    return JSON.parse(txt);
+  } catch(e){ console.warn('apiPost error:', e); return {error: e.toString()}; }
 }
 
 async function saveRevisaoRemota(){
