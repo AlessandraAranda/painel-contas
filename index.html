@@ -965,6 +965,7 @@ document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>
   });
   document.addEventListener('click',e=>{if(!inp.contains(e.target)&&!drop.contains(e.target))drop.style.display='none';});
 })();
+window.addEventListener('DOMContentLoaded',function(){
 document.getElementById('bfil').addEventListener('click',()=>{ren();saveFilters();});
 document.getElementById('bcf').addEventListener('click',()=>{
   ['fdi','fdf','ffn'].forEach(id=>document.getElementById(id).value='');
@@ -982,7 +983,7 @@ document.getElementById('bsav').addEventListener('click',osm);
 document.getElementById('bcs').addEventListener('click',()=>document.getElementById('mov').style.display='none');
 document.getElementById('bks').addEventListener('click',csav);
 document.getElementById('slb').addEventListener('keydown',e=>{if(e.key==='Enter')csav();});
-document.getElementById('bch').addEventListener('click',()=>{if(!confirm('Apagar todo o histórico?'))return;H=[];localStorage.removeItem('cp_h');rh();});
+if(document.getElementById('bch'))document.getElementById('bch').addEventListener('click',()=>{if(!confirm('Apagar todo o histórico?'))return;H=[];localStorage.removeItem('cp_h');rh();});
 document.getElementById('bexp').addEventListener('click',()=>{
   const sel=D.filter(r=>ci.has(r.id));
   if(!sel.length){alert('Selecione ao menos um lançamento para exportar.');return;}
@@ -1162,9 +1163,9 @@ function renderFluxo(){
   }
 }
 
-document.getElementById('fcPeriodo').addEventListener('change', renderFluxo);
-document.getElementById('fcEmp').addEventListener('change', renderFluxo);
-document.getElementById('fcAno').addEventListener('change', renderFluxo);
+if(document.getElementById('fcPeriodo'))document.getElementById('fcPeriodo').addEventListener('change', renderFluxo);
+if(document.getElementById('fcEmp'))document.getElementById('fcEmp').addEventListener('change', renderFluxo);
+if(document.getElementById('fcAno'))document.getElementById('fcAno').addEventListener('change', renderFluxo);
 
 // =============================================
 // REVISÃO
@@ -1242,9 +1243,9 @@ function doApprove(){
   setTimeout(()=>document.getElementById('slb').select(),50);
 }
 
-document.getElementById('brAprovar').addEventListener('click',doApprove);
-document.getElementById('brAprovar2').addEventListener('click',doApprove);
-document.getElementById('brLimpar').addEventListener('click',()=>{
+if(document.getElementById('brAprovar'))document.getElementById('brAprovar').addEventListener('click',doApprove);
+if(document.getElementById('brAprovar2'))document.getElementById('brAprovar2').addEventListener('click',doApprove);
+if(document.getElementById('brLimpar'))document.getElementById('brLimpar').addEventListener('click',()=>{
   if(!confirm('Limpar toda a seleção?'))return;
   ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
 });
@@ -1497,7 +1498,7 @@ function renderAnalise(){
 ['anEmp','anDtIni','anDtFim','anPeriodo','anAno'].forEach(id=>{
   document.getElementById(id).addEventListener('change',renderAnalise);
 });
-document.getElementById('anClearF').addEventListener('click',()=>{
+if(document.getElementById('anClearF'))document.getElementById('anClearF').addEventListener('click',()=>{
   document.getElementById('anDtIni').value='';
   document.getElementById('anDtFim').value='';
   document.getElementById('anEmp').selectedIndex=0;
@@ -1505,7 +1506,7 @@ document.getElementById('anClearF').addEventListener('click',()=>{
 });
 
 // Export all history
-document.getElementById('bExpAllHist').addEventListener('click',()=>{
+if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist').addEventListener('click',()=>{
   if(!H.length){alert('Nenhum histórico para exportar.');return;}
   const rows=[['Data Aprovação','Identificação','Empresa','Fornecedor','Vencimento','Descrição','Valor Previsto','Valor Aprovado']];
   H.forEach(h=>h.items.forEach(i=>rows.push([h.dt,h.lb,i.emp,i.forn,i.dts,i.dsc,i.vp.toFixed(2),i.va.toFixed(2)])));
@@ -1678,7 +1679,9 @@ function showPanel(){
     spCloseBtn.addEventListener('click', closeSidePanel);
     spCloseBtn._bound = true;
   }
-  rh();uhc();load();
+  });
+
+rh();uhc();load();
 }
 
 async function handleLogin(){
