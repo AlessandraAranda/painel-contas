@@ -857,11 +857,12 @@ function uhc(){document.getElementById('hc').textContent=H.length?`(${H.length})
 // TABS
 function stab(t){
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
-  document.getElementById('tp').style.display=t==='p'?'block':'none';
-  document.getElementById('th2').style.display=t==='h'?'block':'none';
-  document.getElementById('tr2').style.display=t==='r'?'block':'none';
-  document.getElementById('ta').style.display=t==='a'?'block':'none';
-  document.getElementById('bb').style.display=(t==='p'&&D.length)?'flex':'none';
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.style.display=v;};
+  se('tp',t==='p'?'block':'none');
+  se('th2',t==='h'?'block':'none');
+  se('tr2',t==='r'?'block':'none');
+  se('ta',t==='a'?'block':'none');
+  se('bb',(t==='p'&&D.length)?'flex':'none');
   if(t==='r') renderRev();
   if(t==='a') renderAnalise();
 }
@@ -943,6 +944,8 @@ document.getElementById('bexp').addEventListener('click',()=>{
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
   a.download=`contas_pagar_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;a.click();
+});
+
 });
 
 // =============================================
@@ -1322,8 +1325,6 @@ aev = function(){
     });
   });
 };
-
-});
 
 // =============================================
 // AUTENTICAÇÃO
