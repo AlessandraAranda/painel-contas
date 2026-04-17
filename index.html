@@ -187,6 +187,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   <div class="hbtns">
     <span class="lu" id="lu"></span>
     <button class="btn btn-sm" id="bref">↺ Atualizar</button>
+    <button class="btn btn-sm" id="bLogout" style="color:#9ca3af;border-color:#e2e5ea">↩ Sair</button>
     <button class="btn btn-sm" id="bclcache">🗑 Limpar cache</button>
     <button class="btn btn-sm" id="bnovolcto" style="border-color:#e9d5ff;color:#7e22ce;background:#fdf4ff">+ Novo lançamento</button>
     <button class="btn btn-s btn-sm" id="bsav">✓ Salvar aprovação</button>
@@ -1665,7 +1666,14 @@ async function checkPassword(pwd){
 
 function showPanel(){
   document.getElementById('loginScreen').style.display = 'none';
-  rh();uhc();load();
+  // LOGOUT
+document.getElementById('bLogout').addEventListener('click',()=>{
+  if(!confirm('Deseja sair do painel?')) return;
+  localStorage.removeItem(SESSION_KEY);
+  location.reload();
+});
+
+rh();uhc();load();
 }
 
 async function handleLogin(){
