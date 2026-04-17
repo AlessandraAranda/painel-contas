@@ -792,6 +792,10 @@ function csav(){
   ci=new Set();pv={};saveSelection();
   document.getElementById('mov').style.display='none';
   updateRev();ren();rh();stab('h');
+  // Save historico to Drive
+  saveHistoricoRemoto();
+  // Clear revisao from Drive
+  clearRevisaoRemota();
 }
 
 // HISTÓRICO
@@ -1293,7 +1297,67 @@ aev = function(){
 // =============================================
 // AUTENTICAÇÃO
 // =============================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzVuJxkTsJfne1vciJwD4QNRexFHSsxcPz-lx0xrATIkyZ22Wg8hARv5qVWylkP0AIo/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxfqh094-hknN8Kx_vhZSQUJrDTpv4x0WOp-VsFSjRrmCUeavci54M7vWOPtdN9pzSm/exec';
+
+// =============================================
+// ESTADO COMPARTILHADO (Google Drive)
+// =============================================
+async function apiPost(action, dados){
+  try {
+    const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados));
+    const res = await fetch(url);
+    return await res.json();
+  } catch(e){ return {error: e.toString()}; }
+}
+
+async function saveRevisaoRemota(){
+  const payload = {
+    items: D.filter(r=>ci.has(r.id)).map(r=>({
+      id:r.id, emp:r.emp, forn:r.forn, dts:r.dts, dsc:r.dsc,
+      val:r.val, vp: pv[r.id]!==undefined?pv[r.id]:r.val
+    })),
+    pv: Object.fromEntries(Object.entries(pv)),
+    ts: new Date().toLocaleString('pt-BR')
+  };
+  const r = await apiPost('saveRevisao', payload);
+  return r.ok;
+}
+
+async function loadEstadoRemoto(){
+  try {
+    const url = API_URL + '?action=getEstado&token=' + SECRET_TOKEN;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    // Load historico
+    if(data.historico && data.historico.length){
+      H = data.historico;
+      localStorage.setItem('cp_h', JSON.stringify(H));
+    }
+
+    // Load revisao
+    if(data.revisao && data.revisao.items){
+      const rev = data.revisao;
+      rev.items.forEach(item=>{
+        ci.add(item.id);
+        if(item.vp !== item.val) pv[item.id] = item.vp;
+      });
+      saveSelection();
+    }
+  } catch(e){ console.warn('Estado remoto indisponível', e); }
+}
+
+async function saveHistoricoRemoto(){
+  const r = await apiPost('saveHistorico', H);
+  return r.ok;
+}
+
+async function clearRevisaoRemota(){
+  try {
+    const url = API_URL + '?action=clearRevisao&token=' + SECRET_TOKEN;
+    await fetch(url);
+  } catch(e){}
+}
 const SECRET_TOKEN = 'rsl-tk-2026-x9z';
 const SESSION_KEY = 'rsl_session';
 const SESSION_HOURS = 4;
@@ -1321,6 +1385,8 @@ function showPanel(){
   document.getElementById('mainContent').style.display = 'block';
   document.getElementById('sidePanel').style.display = '';
   rh();uhc();load();
+  // Load shared state after panel opens
+  setTimeout(loadEstadoRemoto, 1500);
 }
 
 async function handleLogin(){
