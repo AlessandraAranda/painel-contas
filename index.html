@@ -408,23 +408,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Agrupado por palavra-chave da descrição</div>
       <canvas id="anChartCat" height="110"></canvas>
     </div>
-
-    <!-- ROW 6: Top 10 lançamentos individuais -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:10px">Top 10 maiores lançamentos</div>
-      <table class="ht" style="margin:0" id="anTop10Table">
-        <thead><tr><th>#</th><th>Empresa</th><th>Fornecedor</th><th>Descrição</th><th>Vencimento</th><th style="text-align:right">Valor</th></tr></thead>
-        <tbody id="anTop10Body"></tbody>
-      </table>
-    </div>
-
-    <!-- ROW 7: Planejado vs aprovado + Cards empresa -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Planejado vs aprovado por empresa</div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Comparativo direto</div>
-      <canvas id="anChartPlanAprov" height="80"></canvas>
-    </div>
-
     <div id="anEmpCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px"></div>
 
   </div>
@@ -941,7 +924,7 @@ document.getElementById('bexp').addEventListener('click',()=>{
 // =============================================
 // ANÁLISE / KPIs
 // =============================================
-let anChartEmpObj=null,anChartStatusObj=null,anChartFornObj=null,anChartMensalObj=null,anChartPlanAprovObj=null,anChartDiarioObj=null,anChartCatObj=null;
+let anChartEmpObj=null,anChartStatusObj=null,anChartFornObj=null,anChartMensalObj=null,anChartDiarioObj=null,anChartCatObj=null;
 
 function parseHistDate2(s){
   const p=s.split(',')[0].trim().split('/');
@@ -1125,17 +1108,6 @@ function renderAnalise(){
   const top10c=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
   if(anChartCatObj)anChartCatObj.destroy();
   anChartCatObj=new Chart(document.getElementById('anChartCat'),{type:'bar',data:{labels:top10c.map(x=>x[0].length>28?x[0].substring(0,28)+'...':x[0]),datasets:[{label:'Total',data:top10c.map(x=>x[1]),backgroundColor:'#34d399',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}}}});
-
-  // Top 10 lançamentos individuais
-  const top10i=[...dFilt].sort((a,b)=>b.val-a.val).slice(0,10);
-  document.getElementById('anTop10Body').innerHTML=top10i.map((r,i)=>`<tr>
-    <td style="color:#9ca3af;font-weight:600">${i+1}</td>
-    <td><span class="et ${ec(r.emp)}" style="font-size:10px;padding:2px 6px">${esc(r.emp)}</span></td>
-    <td style="font-weight:500">${esc(r.forn)}</td>
-    <td style="font-size:11px;color:#6b7280;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.dsc)}</td>
-    <td class="mn">${r.dts}</td>
-    <td class="mn" style="text-align:right;font-weight:600;color:#6366f1">${brl(r.val)}</td>
-  </tr>`).join('');
 
   // Planejado vs aprovado
   if(anChartPlanAprovObj)anChartPlanAprovObj.destroy();
