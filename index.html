@@ -1290,12 +1290,6 @@ function showPanel(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainContent').style.display = 'block';
   document.getElementById('sidePanel').style.display = '';
-  // Attach spClose now that panel is visible
-  const spCloseBtn = document.getElementById('spClose');
-  if(spCloseBtn && !spCloseBtn._bound){
-    spCloseBtn.addEventListener('click', closeSidePanel);
-    spCloseBtn._bound = true;
-  }
   rh();uhc();load();
 }
 
