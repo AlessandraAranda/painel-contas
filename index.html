@@ -616,7 +616,7 @@ async function load(){
       fixo: true
     });
   });
-  smn();loadFilters();loadSelection();ren();updateRev();
+  loadAvulsos();smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
   const n=Object.values(fs).filter(s=>s==='ok').length;
   document.getElementById('hsub').textContent=`${D.length} lançamentos em aberto · ${n}/${FILES.length} arquivos carregados`;
@@ -727,6 +727,51 @@ function aev(){
 
 // SALVAR
 function osm(){if(!ci.size){alert('Selecione ao menos um lançamento para salvar.');return;}document.getElementById('slb').value=`Pagamentos ${new Date().toLocaleDateString('pt-BR')}`;document.getElementById('mov').style.display='flex';setTimeout(()=>document.getElementById('slb').select(),50);}
+const AV_KEY='cp_avulsos';
+
+function saveAvulsos(){
+  const avulsos=D.filter(r=>r.avulso||r.pago);
+  localStorage.setItem(AV_KEY,JSON.stringify(avulsos));
+}
+
+function loadAvulsos(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(AV_KEY)||'[]');
+    saved.forEach(r=>{
+      if(!D.find(x=>x.id===r.id)){
+        if(r.dt)r.dt=new Date(r.dt);
+        D.push(r);
+      } else {
+        // update pago status on existing
+        const idx=D.findIndex(x=>x.id===r.id);
+        if(r.pago)D[idx].pago=r.pago;
+      }
+    });
+  }catch(e){}
+}
+
+function addAvulso(){
+  const emp=document.getElementById('avEmp').value;
+  const dataVal=document.getElementById('avData').value;
+  const forn=document.getElementById('avForn').value.trim();
+  const dsc=document.getElementById('avDesc').value.trim();
+  const val=parseFloat(document.getElementById('avValor').value)||0;
+  if(!forn){alert('Informe o fornecedor.');return;}
+  if(!dataVal){alert('Informe a data.');return;}
+  if(!val){alert('Informe o valor.');return;}
+  const dt=new Date(dataVal+'T00:00:00');
+  const entry={id:Date.now(),emp,forn,dt,dts:dt.toLocaleDateString('pt-BR'),dsc,val,avulso:true};
+  D.push(entry);
+  saveAvulsos();
+  closeAvulsoModal();
+  ren();updateRev();
+}
+
+function closeAvulsoModal(){
+  document.getElementById('movAvulso').style.display='none';
+  ['avForn','avDesc','avValor','avData'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+}
+
 function csav(){
   const lb=document.getElementById('slb').value.trim()||`Pagamentos ${new Date().toLocaleDateString('pt-BR')}`;
   const selectedRows=D.filter(r=>ci.has(r.id));
