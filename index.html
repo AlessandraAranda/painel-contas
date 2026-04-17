@@ -94,28 +94,6 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 .mo input:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.1)}
 .mobs{display:flex;gap:7px;justify-content:flex-end}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#f5f6f8}::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
-.layout-wrap{display:flex;transition:all .3s ease;min-height:100vh}
-.main-content{flex:1;min-width:0;transition:all .3s ease}
-.side-panel{width:0;overflow:hidden;transition:all .3s ease;background:#fff;border-left:1px solid #e8eaed;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
-.side-panel.open{width:380px}
-.sp-header{padding:16px 20px;border-bottom:1px solid #e8eaed;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:10}
-.sp-header h3{font-size:14px;font-weight:600;color:#1a1d23}
-.sp-close{background:none;border:none;cursor:pointer;color:#9ca3af;font-size:20px;line-height:1;padding:2px 6px}
-.sp-close:hover{color:#374151}
-.sp-body{padding:16px 20px}
-.sp-section{margin-bottom:20px}
-.sp-section-title{font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-.sp-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
-.sp-row:last-child{border-bottom:none}
-.sp-label{color:#6b7280}
-.sp-val{font-weight:500;color:#1a1d23;font-family:monospace;font-size:12px}
-.sp-timeline{position:relative;padding-left:20px}
-.sp-timeline::before{content:'';position:absolute;left:6px;top:6px;bottom:6px;width:1px;background:#e8eaed}
-.sp-titem{position:relative;margin-bottom:14px}
-.sp-titem::before{content:'';position:absolute;left:-17px;top:5px;width:8px;height:8px;border-radius:50%;background:#e2e5ea;border:2px solid #fff}
-.sp-titem.paid::before{background:#3b82f6}
-.sp-titem.partial::before{background:#f59e0b}
-.sp-titem.open::before{background:#e5e7eb;border:2px solid #d1d5db}
 .sp-titem-date{font-size:11px;color:#9ca3af;margin-bottom:2px}
 .sp-titem-desc{font-size:13px;color:#374151;font-weight:500}
 .sp-titem-val{font-size:12px;font-family:monospace}
@@ -171,7 +149,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   </div>
 </div>
 
-<div class="layout-wrap"><div class="main-content" id="mainContent"><div class="hd">
+<div class="hd">
   <div>
     <div style="display:flex;align-items:center;gap:10px">
       <img src="data:image/png;base64,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" style="width:32px;height:32px;object-fit:contain;flex-shrink:0">
@@ -185,7 +163,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
     <span class="lu" id="lu"></span>
     <button class="btn btn-sm" id="bref">↺ Atualizar</button>
     <button class="btn btn-sm" id="bLogout" style="color:#9ca3af;border-color:#e2e5ea">↩ Sair</button>
-    <button class="btn btn-sm" id="bclcache">🗑 Limpar cache</button>
     <button class="btn btn-sm" id="bnovolcto" style="border-color:#e9d5ff;color:#7e22ce;background:#fdf4ff">+ Novo lançamento</button>
     <button class="btn btn-p btn-sm" id="bexp">↓ Exportar CSV</button>
   </div>
@@ -523,6 +500,11 @@ let pendingFilter = false;
 // Restore saved selection
 function saveSelection(){
   localStorage.setItem('cp_sel',JSON.stringify({ids:[...ci],pv:Object.fromEntries(Object.entries(pv))}));
+  clearTimeout(window._revTimer);
+  window._revTimer = setTimeout(()=>{
+    if(ci.size > 0) saveRevisaoRemota();
+    else clearRevisaoRemota();
+  }, 2000);
 }
 function loadSelection(){
   try{
@@ -1180,7 +1162,6 @@ if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist')
 // =============================================
 // PAINEL LATERAL DE RASTREAMENTO
 // =============================================
-let activePanelId = null;
 
 function openSidePanel(id){
   const r = D.find(x=>x.id===id);
@@ -1289,19 +1270,6 @@ function closeSidePanel(){
 // spClose listener added after DOM ready (see showPanel)
 
 // Override aev to add row click
-const origAev = aev;
-aev = function(){
-  origAev();
-  document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
-    tr.addEventListener('click', e=>{
-      // Don't open panel when clicking checkbox or value input
-      if(e.target.type==='checkbox'||e.target.type==='number'||e.target.closest('.vi')) return;
-      const id = +tr.dataset.id;
-      if(activePanelId===id){ closeSidePanel(); return; }
-      openSidePanel(id);
-    });
-  });
-};
 
 // =============================================
 // AUTENTICAÇÃO
@@ -1352,7 +1320,8 @@ async function loadEstadoRemoto(){
         ci.add(item.id);
         if(item.vp !== item.val) pv[item.id] = item.vp;
       });
-      saveSelection();
+      localStorage.setItem('cp_sel',JSON.stringify({ids:[...ci],pv:Object.fromEntries(Object.entries(pv))}));
+      updateRev();ren();rh();
     }
   } catch(e){ console.warn('Estado remoto indisponível', e); }
 }
@@ -1393,7 +1362,6 @@ async function checkPassword(pwd){
 function showPanel(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainContent').style.display = 'block';
-  document.getElementById('sidePanel').style.display = '';
   rh();uhc();load();
   // Load shared state after panel opens
   setTimeout(loadEstadoRemoto, 1500);
@@ -1453,23 +1421,14 @@ window.addEventListener('DOMContentLoaded', function(){
     const mc = document.getElementById('mainContent');
     const sp = document.getElementById('sidePanel');
     if(mc) mc.style.display = 'none';
-    if(sp) sp.style.display = 'none';
     setTimeout(()=>{ if(loginPwd) loginPwd.focus(); }, 100);
   }
 });
 
 
 </script>
-</div><!-- /main-content -->
 
-<!-- SIDE PANEL -->
-<div class="side-panel" id="sidePanel">
-  <div class="sp-header">
-    <h3 id="spTitle">Detalhes do lançamento</h3>
-    <button class="sp-close" id="spClose">×</button>
-  </div>
-  <div class="sp-body" id="spBody"></div>
-</div>
+
 
 </div><!-- /layout-wrap -->
 </body>
