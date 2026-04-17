@@ -1625,7 +1625,7 @@ function closeSidePanel(){
   activePanelId=null;
 }
 
-document.getElementById('spClose').addEventListener('click', closeSidePanel);
+// spClose listener added after DOM ready (see showPanel)
 
 // Override aev to add row click
 const origAev = aev;
@@ -1672,6 +1672,12 @@ function showPanel(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainContent').style.display = 'block';
   document.getElementById('sidePanel').style.display = '';
+  // Attach spClose now that panel is visible
+  const spCloseBtn = document.getElementById('spClose');
+  if(spCloseBtn && !spCloseBtn._bound){
+    spCloseBtn.addEventListener('click', closeSidePanel);
+    spCloseBtn._bound = true;
+  }
   rh();uhc();load();
 }
 
