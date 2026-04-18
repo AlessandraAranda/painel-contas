@@ -938,7 +938,7 @@ document.getElementById('bexp').addEventListener('click',()=>{
 // =============================================
 // ANÁLISE / KPIs
 // =============================================
-let anChartEmpObj=null,anChartStatusObj=null,anChartFornObj=null,anChartMensalObj=null,anChartDiarioObj=null,anChartCatObj=null;
+let anChartEmpObj=null,anChartStatusObj=null,anChartFornObj=null,anChartMensalObj=null,anChartDiarioObj=null,anChartCatObj=null,anChartPlanAprovObj=null;
 
 function parseHistDate2(s){
   const p=s.split(',')[0].trim().split('/');
@@ -1124,8 +1124,6 @@ function renderAnalise(){
   anChartCatObj=new Chart(document.getElementById('anChartCat'),{type:'bar',data:{labels:top10c.map(x=>x[0].length>28?x[0].substring(0,28)+'...':x[0]),datasets:[{label:'Total',data:top10c.map(x=>x[1]),backgroundColor:'#34d399',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}}}});
 
   // Planejado vs aprovado
-  if(anChartPlanAprovObj)anChartPlanAprovObj.destroy();
-  anChartPlanAprovObj=new Chart(document.getElementById('anChartPlanAprov'),{type:'bar',data:{labels:emps,datasets:[{label:'A pagar',data:empAberto,backgroundColor:'#e0e7ff',borderRadius:4,borderSkipped:false},{label:'Aprovado',data:empAprov,backgroundColor:'#6366f1',borderRadius:4,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}});
 
   // Cards por empresa
   const empTextColors={'ROSIL':'#1d4ed8','RSL':'#065f46','LUCRO PRESUMIDO':'#9a3412'};
