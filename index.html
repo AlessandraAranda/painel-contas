@@ -1169,109 +1169,7 @@ if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist')
 // PAINEL LATERAL DE RASTREAMENTO
 // =============================================
 
-function openSidePanel(id){
-  const r = D.find(x=>x.id===id);
-  if(!r) return;
 
-  activePanelId = id;
-  document.querySelectorAll('tbody tr').forEach(tr=>tr.classList.remove('active-row'));
-  const tr = document.querySelector(`tbody tr[data-id="${id}"]`);
-  if(tr) tr.classList.add('active-row');
-
-  // Find original ref
-  const origRef = r.parcialRef || r.id;
-  const origRow = D.find(x=>x.id===origRef) || r;
-
-  // Find all related rows (original + all partials)
-  const related = D.filter(x=>x.id===origRef || x.parcialRef===origRef).sort((a,b)=>a.dt-b.dt);
-
-  // Find approvals related to this item
-  const approvals = [];
-  H.forEach(h=>{
-    h.items.forEach(i=>{
-      if(i.forn===origRow.forn && i.dsc.replace(/ \[SALDO.*\]/,'')===origRow.dsc.replace(/ \[SALDO.*\]/,'')){
-        approvals.push({dt:h.dt,lb:h.lb,va:i.va,vp:i.vp});
-      }
-    });
-  });
-
-  const totalPago = approvals.reduce((a,ap)=>a+ap.va,0);
-  const totalPrev = origRow.val;
-  const saldoAtual = related.filter(x=>!ci.has(x.id)).reduce((a,x)=>a+x.val,0);
-  const pct = totalPrev>0?((totalPago/totalPrev)*100).toFixed(1):0;
-
-  document.getElementById('spTitle').textContent = r.forn.length>25?r.forn.substring(0,25)+'...':r.forn;
-
-  let html = '';
-
-  // Info do lançamento
-  html += `<div class="sp-section">
-    <div class="sp-section-title">Lançamento</div>
-    <div class="sp-row"><span class="sp-label">Empresa</span><span class="sp-val"><span class="et ${ec(r.emp)}" style="font-size:10px;padding:1px 6px">${esc(r.emp)}</span></span></div>
-    <div class="sp-row"><span class="sp-label">Fornecedor</span><span class="sp-val" style="font-family:Inter,sans-serif;font-size:12px;max-width:200px;text-align:right">${esc(r.forn)}</span></div>
-    <div class="sp-row"><span class="sp-label">Vencimento</span><span class="sp-val">${r.dts}</span></div>
-    <div class="sp-row"><span class="sp-label">Status</span><span class="sp-val"><span class="bg ${sta(r.dt)==='atrasado'?'ba':sta(r.dt)==='hoje'?'bh':sta(r.dt)==='pago'?'bp':'bf'}">${sta(r.dt)==='atrasado'?'Atrasado':sta(r.dt)==='hoje'?'Hoje':sta(r.dt)==='pago'?'✓ Pago':'A vencer'}</span></span></div>
-    <div class="sp-row"><span class="sp-label">Descrição</span><span class="sp-val" style="font-family:Inter,sans-serif;font-size:11px;max-width:200px;text-align:right;color:#6b7280">${esc(r.dsc)}</span></div>
-  </div>`;
-
-  // Resumo financeiro
-  html += `<div class="sp-section">
-    <div class="sp-section-title">Resumo financeiro</div>
-    <div class="sp-row"><span class="sp-label">Valor original</span><span class="sp-val">${brl(totalPrev)}</span></div>
-    <div class="sp-row"><span class="sp-label">Total pago</span><span class="sp-val" style="color:#3b82f6">${brl(totalPago)}</span></div>
-    <div class="sp-row"><span class="sp-label">Saldo em aberto</span><span class="sp-val" style="color:${saldoAtual>0?'#dc2626':'#059669'}">${brl(saldoAtual)}</span></div>
-    <div class="sp-row"><span class="sp-label">% pago</span><span class="sp-val" style="color:#059669">${pct}%</span></div>
-    <div style="margin-top:10px;background:#f3f4f6;border-radius:6px;height:6px;overflow:hidden">
-      <div style="height:100%;background:#3b82f6;width:${Math.min(pct,100)}%;border-radius:6px;transition:width .3s"></div>
-    </div>
-  </div>`;
-
-  // Timeline
-  html += `<div class="sp-section">
-    <div class="sp-section-title">Linha do tempo</div>
-    <div class="sp-timeline">`;
-
-  // Original entry
-  html += `<div class="sp-titem open">
-    <div class="sp-titem-date">Lançamento original · ${origRow.dts}</div>
-    <div class="sp-titem-desc">${esc(origRow.dsc.replace(/ \[SALDO.*\]/,''))}</div>
-    <div class="sp-titem-val" style="color:#374151">${brl(origRow.val)}</div>
-  </div>`;
-
-  // Approvals
-  approvals.forEach(ap=>{
-    html += `<div class="sp-titem paid">
-      <div class="sp-titem-date">✓ Aprovado · ${ap.dt.split(',')[0]}</div>
-      <div class="sp-titem-desc" style="color:#1d4ed8">${esc(ap.lb)}</div>
-      <div class="sp-titem-val" style="color:#3b82f6">Pago: ${brl(ap.va)}${ap.va<ap.vp?' <span style="color:#f59e0b;font-size:10px">(parcial)</span>':''}</div>
-    </div>`;
-  });
-
-  // Partial balances
-  related.filter(x=>x.id!==origRef&&x.parcial).forEach(p=>{
-    const isPaid = !D.find(x=>x.id===p.id);
-    html += `<div class="sp-titem ${isPaid?'paid':'partial'}">
-      <div class="sp-titem-date">Saldo gerado · parcela ${p.parcelNum||2}</div>
-      <div class="sp-titem-desc" style="color:#d97706">${esc(p.dsc)}</div>
-      <div class="sp-titem-val" style="color:#f59e0b">${brl(p.val)} em aberto</div>
-    </div>`;
-  });
-
-  if(approvals.length===0 && related.filter(x=>x.parcial).length===0){
-    html += `<div style="font-size:12px;color:#9ca3af;padding:8px 0">Nenhum pagamento registrado ainda.</div>`;
-  }
-
-  html += `</div></div>`;
-
-  document.getElementById('spBody').innerHTML = html;
-  document.getElementById('sidePanel').classList.add('open');
-}
-
-function closeSidePanel(){
-  document.getElementById('sidePanel').classList.remove('open');
-  document.querySelectorAll('tbody tr').forEach(tr=>tr.classList.remove('active-row'));
-  activePanelId=null;
-}
 
 // spClose listener added after DOM ready (see showPanel)
 
@@ -1373,7 +1271,6 @@ async function checkPassword(pwd){
 
 function showPanel(){
   document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('mainContent').style.display = 'block';
   rh();uhc();load();
   // Load shared state after panel opens
   setTimeout(loadEstadoRemoto, 1500);
@@ -1430,9 +1327,6 @@ window.addEventListener('DOMContentLoaded', function(){
   if(isSessionValid()){
     showPanel();
   } else {
-    const mc = document.getElementById('mainContent');
-    const sp = document.getElementById('sidePanel');
-    if(mc) mc.style.display = 'none';
     setTimeout(()=>{ if(loginPwd) loginPwd.focus(); }, 100);
   }
 });
