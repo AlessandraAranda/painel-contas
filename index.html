@@ -1182,24 +1182,41 @@ if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist')
 // =============================================
 async function apiPost(action, dados){
   try {
-    const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados)) + '&t=' + Date.now();
-    const res = await fetch(url, {redirect:'follow'});
+    const dadosStr = JSON.stringify(dados);
+    // Use POST for large payloads to avoid URL limits
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(dadosStr)
+    }).catch(()=>
+      // Fallback to GET if POST fails (CORS)
+      fetch(API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(dadosStr) + '&t=' + Date.now(), {redirect:'follow'})
+    );
     const txt = await res.text();
     return JSON.parse(txt);
   } catch(e){ console.warn('apiPost error:', e); return {error: e.toString()}; }
 }
 
 async function saveRevisaoRemota(){
+  // Save minimal data to stay within URL limits
   const payload = {
     items: D.filter(r=>ci.has(r.id)).map(r=>({
-      id:r.id, emp:r.emp, forn:r.forn, dts:r.dts, dsc:r.dsc,
-      val:r.val, vp: pv[r.id]!==undefined?pv[r.id]:r.val,
-      dt: r.dt ? r.dt.toISOString() : null
+      emp:r.emp,
+      forn:r.forn,
+      dts:r.dts,
+      dsc:r.dsc,
+      val:r.val,
+      vp: pv[r.id]!==undefined?pv[r.id]:r.val
     })),
     ts: new Date().toLocaleString('pt-BR')
   };
+  // Check size - if too large, warn
+  const json = JSON.stringify(payload);
+  if(json.length > 6000){
+    console.warn('Revisão muito grande para compartilhar:', payload.items.length, 'itens,', json.length, 'chars');
+  }
   const r = await apiPost('saveRevisao', payload);
-  return r.ok;
+  return r && r.ok;
 }
 
 async function loadEstadoRemoto(){
@@ -1214,9 +1231,12 @@ async function loadEstadoRemoto(){
       localStorage.setItem('cp_h', JSON.stringify(H));
     }
 
-    // Load revisao - match by forn+dts+dsc since IDs regenerate
+    // Load revisao - REPLACE local selection with Drive data
     if(data.revisao && data.revisao.items && data.revisao.items.length){
       const rev = data.revisao;
+      // Clear local selection first - Drive is source of truth
+      ci = new Set();
+      pv = {};
       let matched = 0;
       rev.items.forEach(item=>{
         // Find matching row in D by empresa + fornecedor + data + valor
@@ -1238,6 +1258,12 @@ async function loadEstadoRemoto(){
         updateRev();ren();rh();
         console.log('Revisão remota carregada:', matched, 'lançamentos');
       }
+    } else if(data.revisao === null) {
+      // Drive has no revisao - clear local selection too
+      ci = new Set();
+      pv = {};
+      localStorage.removeItem('cp_sel');
+      updateRev();ren();
     }
   } catch(e){ console.warn('Estado remoto indisponível', e); }
 }
