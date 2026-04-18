@@ -1217,12 +1217,18 @@ async function loadEstadoRemoto(){
       const rev = data.revisao;
       let matched = 0;
       rev.items.forEach(item=>{
-        // Find matching row in D by fornecedor + data + descrição
+        // Find matching row in D by empresa + fornecedor + data + descrição + valor
         const found = D.find(r=>
-          r.forn===item.forn &&
+          r.emp===item.emp &&
+          r.forn.trim()===item.forn.trim() &&
           r.dts===item.dts &&
-          r.dsc===item.dsc &&
-          r.val===item.val
+          r.dsc.trim()===item.dsc.trim() &&
+          Math.abs(r.val - item.val) < 0.01
+        ) || D.find(r=>
+          r.emp===item.emp &&
+          r.forn.trim()===item.forn.trim() &&
+          r.dts===item.dts &&
+          Math.abs(r.val - item.val) < 0.01
         );
         if(found){
           ci.add(found.id);
