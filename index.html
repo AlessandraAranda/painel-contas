@@ -606,6 +606,8 @@ async function load(){
   });
   loadAvulsos();smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
+  // Load shared state AFTER all data is loaded
+  loadEstadoRemoto();
   const n=Object.values(fs).filter(s=>s==='ok').length;
   document.getElementById('hsub').textContent=`${D.length} lançamentos em aberto · ${n}/${FILES.length} arquivos carregados`;
 }
@@ -1217,19 +1219,14 @@ async function loadEstadoRemoto(){
       const rev = data.revisao;
       let matched = 0;
       rev.items.forEach(item=>{
-        // Find matching row in D by empresa + fornecedor + data + descrição + valor
+        // Find matching row in D by empresa + fornecedor + data + valor
         const found = D.find(r=>
-          r.emp===item.emp &&
-          r.forn.trim()===item.forn.trim() &&
-          r.dts===item.dts &&
-          r.dsc.trim()===item.dsc.trim() &&
-          Math.abs(r.val - item.val) < 0.01
-        ) || D.find(r=>
           r.emp===item.emp &&
           r.forn.trim()===item.forn.trim() &&
           r.dts===item.dts &&
           Math.abs(r.val - item.val) < 0.01
         );
+        console.log('Buscando:', item.emp, item.forn, item.dts, item.val, '->', found ? 'ENCONTRADO id='+found.id : 'NAO ENCONTRADO');
         if(found){
           ci.add(found.id);
           if(item.vp !== item.val) pv[found.id] = item.vp;
@@ -1278,8 +1275,7 @@ async function checkPassword(pwd){
 function showPanel(){
   document.getElementById('loginScreen').style.display = 'none';
   rh();uhc();load();
-  // Load shared state after panel opens
-  setTimeout(loadEstadoRemoto, 1500);
+
 }
 
 async function handleLogin(){
