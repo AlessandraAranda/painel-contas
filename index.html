@@ -246,7 +246,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
     </div>
     <div style="overflow-x:auto">
       <table class="ht" id="rvTable" style="display:none">
-        <thead><tr><th></th><th>Empresa</th><th>Fornecedor</th><th>Vencimento</th><th>Status</th><th>Descrição</th><th style="text-align:right">Previsto</th><th style="text-align:right">A pagar</th></tr></thead>
+        <thead><tr><th></th><th class="rv-sort" data-col="emp" style="cursor:pointer;user-select:none">Empresa <span class="rv-arr" data-col="emp">↕</span></th><th class="rv-sort" data-col="forn" style="cursor:pointer;user-select:none">Fornecedor <span class="rv-arr" data-col="forn">↕</span></th><th class="rv-sort" data-col="dts" style="cursor:pointer;user-select:none">Vencimento <span class="rv-arr" data-col="dts">↕</span></th><th class="rv-sort" data-col="sta" style="cursor:pointer;user-select:none">Status <span class="rv-arr" data-col="sta">↕</span></th><th>Descrição</th><th class="rv-sort" data-col="val" style="cursor:pointer;user-select:none;text-align:right">Previsto <span class="rv-arr" data-col="val">↕</span></th><th style="text-align:right">A pagar</th></tr></thead>
         <tbody id="rvTbody"></tbody>
       </table>
     </div>
@@ -606,8 +606,6 @@ async function load(){
   });
   loadAvulsos();smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
-  // Load shared state AFTER all data is loaded
-  loadEstadoRemoto();
   const n=Object.values(fs).filter(s=>s==='ok').length;
   document.getElementById('hsub').textContent=`${D.length} lançamentos em aberto · ${n}/${FILES.length} arquivos carregados`;
 }
@@ -889,6 +887,15 @@ document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>
   document.addEventListener('click',e=>{if(!inp.contains(e.target)&&!drop.contains(e.target))drop.style.display='none';});
 })();
 window.addEventListener('DOMContentLoaded',function(){
+  // Revision table sort
+  document.addEventListener('click', e=>{
+    const th = e.target.closest('.rv-sort');
+    if(!th) return;
+    const col = th.dataset.col;
+    if(rvSortCol===col) rvSortDir*=-1;
+    else{rvSortCol=col;rvSortDir=1;}
+    renderRev();
+  });
   // Revisão buttons
   document.getElementById('brLimpar').addEventListener('click',()=>{
     if(!confirm('Limpar toda a seleção?'))return;
@@ -954,6 +961,8 @@ function updateRev(){
   if(el) el.textContent=n?'('+n+')':'';
 }
 
+let rvSortCol='dts', rvSortDir=1;
+
 function renderRev(){
   const items=D.filter(r=>ci.has(r.id));
   const rvEmpty=document.getElementById('rvEmpty');
@@ -976,7 +985,20 @@ function renderRev(){
   if(ge('rvPrev')) ge('rvPrev').textContent=brl(totPrev);
   if(ge('rvAprov')) ge('rvAprov').textContent=brl(totAprov);
   if(ge('rvDiff')) ge('rvDiff').textContent=brl(diff);
-  if(rvTbody) rvTbody.innerHTML=items.map(r=>{
+  // Sort items
+  const sortedItems = [...items].sort((a,b)=>{
+    let va, vb;
+    if(rvSortCol==='dts'){va=a.dt?a.dt.getTime():0;vb=b.dt?b.dt.getTime():0;}
+    else if(rvSortCol==='val'){va=a.val;vb=b.val;}
+    else if(rvSortCol==='sta'){va=sta(a.dt);vb=sta(b.dt);}
+    else{va=String(a[rvSortCol]||'').toLowerCase();vb=String(b[rvSortCol]||'').toLowerCase();}
+    return va>vb?rvSortDir:va<vb?-rvSortDir:0;
+  });
+  // Update arrows
+  document.querySelectorAll('.rv-arr').forEach(el=>{
+    el.textContent = el.dataset.col===rvSortCol ? (rvSortDir===1?'↑':'↓') : '↕';
+  });
+  if(rvTbody) rvTbody.innerHTML=sortedItems.map(r=>{
     const s=sta(r.dt);
     const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
     const bc=s==='atrasado'?'ba':s==='hoje'?'bh':s==='pago'?'bp':'bf';
@@ -1182,41 +1204,24 @@ if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist')
 // =============================================
 async function apiPost(action, dados){
   try {
-    const dadosStr = JSON.stringify(dados);
-    // Use POST for large payloads to avoid URL limits
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: 'action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(dadosStr)
-    }).catch(()=>
-      // Fallback to GET if POST fails (CORS)
-      fetch(API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(dadosStr) + '&t=' + Date.now(), {redirect:'follow'})
-    );
+    const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados)) + '&t=' + Date.now();
+    const res = await fetch(url, {redirect:'follow'});
     const txt = await res.text();
     return JSON.parse(txt);
   } catch(e){ console.warn('apiPost error:', e); return {error: e.toString()}; }
 }
 
 async function saveRevisaoRemota(){
-  // Save minimal data to stay within URL limits
   const payload = {
     items: D.filter(r=>ci.has(r.id)).map(r=>({
-      emp:r.emp,
-      forn:r.forn,
-      dts:r.dts,
-      dsc:r.dsc,
-      val:r.val,
-      vp: pv[r.id]!==undefined?pv[r.id]:r.val
+      id:r.id, emp:r.emp, forn:r.forn, dts:r.dts, dsc:r.dsc,
+      val:r.val, vp: pv[r.id]!==undefined?pv[r.id]:r.val,
+      dt: r.dt ? r.dt.toISOString() : null
     })),
     ts: new Date().toLocaleString('pt-BR')
   };
-  // Check size - if too large, warn
-  const json = JSON.stringify(payload);
-  if(json.length > 6000){
-    console.warn('Revisão muito grande para compartilhar:', payload.items.length, 'itens,', json.length, 'chars');
-  }
   const r = await apiPost('saveRevisao', payload);
-  return r && r.ok;
+  return r.ok;
 }
 
 async function loadEstadoRemoto(){
@@ -1231,22 +1236,18 @@ async function loadEstadoRemoto(){
       localStorage.setItem('cp_h', JSON.stringify(H));
     }
 
-    // Load revisao - REPLACE local selection with Drive data
+    // Load revisao - match by forn+dts+dsc since IDs regenerate
     if(data.revisao && data.revisao.items && data.revisao.items.length){
       const rev = data.revisao;
-      // Clear local selection first - Drive is source of truth
-      ci = new Set();
-      pv = {};
       let matched = 0;
       rev.items.forEach(item=>{
-        // Find matching row in D by empresa + fornecedor + data + valor
+        // Find matching row in D by fornecedor + data + descrição
         const found = D.find(r=>
-          r.emp===item.emp &&
-          r.forn.trim()===item.forn.trim() &&
+          r.forn===item.forn &&
           r.dts===item.dts &&
-          Math.abs(r.val - item.val) < 0.01
+          r.dsc===item.dsc &&
+          r.val===item.val
         );
-        console.log('Buscando:', item.emp, item.forn, item.dts, item.val, '->', found ? 'ENCONTRADO id='+found.id : 'NAO ENCONTRADO');
         if(found){
           ci.add(found.id);
           if(item.vp !== item.val) pv[found.id] = item.vp;
@@ -1258,12 +1259,6 @@ async function loadEstadoRemoto(){
         updateRev();ren();rh();
         console.log('Revisão remota carregada:', matched, 'lançamentos');
       }
-    } else if(data.revisao === null) {
-      // Drive has no revisao - clear local selection too
-      ci = new Set();
-      pv = {};
-      localStorage.removeItem('cp_sel');
-      updateRev();ren();
     }
   } catch(e){ console.warn('Estado remoto indisponível', e); }
 }
@@ -1301,7 +1296,8 @@ async function checkPassword(pwd){
 function showPanel(){
   document.getElementById('loginScreen').style.display = 'none';
   rh();uhc();load();
-
+  // Load shared state after panel opens
+  setTimeout(loadEstadoRemoto, 1500);
 }
 
 async function handleLogin(){
