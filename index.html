@@ -451,7 +451,7 @@ const SESSION_HOURS = 4;
 const FILES=['ROSIL.xlsx','RSL.xlsx','LUCRO PRESUMIDO.xlsx'];
 const FIDS={'ROSIL.xlsx':'1umzGUQjhAI8EZ5xoF81Cnc6NoUpK5-mI66VztuE2Huw','RSL.xlsx':'1lc2chhQEsOgWCMKg4uw9GBLJuZNYR0UXEI4adVNTQBo','LUCRO PRESUMIDO.xlsx':'1DMbAhxnboR3Hh1LfqpkIfAgwjmeaJW4esHu5fu_5F7A'};
 
-const td=new Date();td.setHours(0,0,0,0);
+const _nowBR=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}));const td=new Date(_nowBR.getFullYear(),_nowBR.getMonth(),_nowBR.getDate());
 const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const sta=d=>{if(!d)return'futuro';const x=new Date(d);x.setHours(0,0,0,0);return x<td?'atrasado':x.getTime()===td.getTime()?'hoje':'futuro';};
@@ -585,7 +585,9 @@ async function load(){
   if(!ok){serr('Não foi possível carregar os arquivos. Verifique se estão na pasta do Drive.');return;}
 
   // LANÇAMENTOS FIXOS
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  // Use Brasilia timezone for "today"
+  const nowBR = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}));
+  const hoje = new Date(nowBR.getFullYear(), nowBR.getMonth(), nowBR.getDate());
   const diaSemana = hoje.getDay(); // 0=Dom,1=Seg,2=Ter,3=Qua,4=Qui,5=Sex,6=Sab
 
   // Fixos diários RSL
@@ -626,7 +628,7 @@ async function load(){
   }
   ni = applyCustomFixos(D, ni, hoje);
   loadAvulsos();smn();loadFilters();loadSelection();ren();updateRev();
-  document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
+  document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});
   const n=Object.values(fs).filter(s=>s==='ok').length;
   document.getElementById('hsub').textContent=`${D.length} lançamentos em aberto · ${n}/${FILES.length} arquivos carregados`;
 }
