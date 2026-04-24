@@ -30,7 +30,7 @@ body{font-family:'Inter',sans-serif;background:#f5f6f8;color:#1a1d23;min-height:
 .dot{display:inline-block;width:6px;height:6px;border-radius:50%}
 .dok{background:#10b981}.derr{background:#ef4444}
 .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;padding:16px 28px}
-.sc{background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:14px 16px;transition:box-shadow .15s}
+.sc{background:#fff;border:1px solid #e8eaed;border-radius:8px;padding:8px 12px;transition:box-shadow .15s}
 .sc:hover{box-shadow:0 2px 8px rgba(0,0,0,.07)}
 .slb{font-size:11px;font-weight:500;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
 .sv{font-size:19px;font-weight:600;color:#1a1d23;font-family:monospace;letter-spacing:-.5px}
@@ -163,13 +163,14 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   <div class="hbtns">
     <span class="lu" id="lu"></span>
     <button class="btn btn-sm" id="bref">↺ Atualizar</button>
+    <button class="btn btn-sm" id="bFixos" style="color:#6b7280;border-color:#e2e5ea">⚙ Fixos</button>
     <button class="btn btn-sm" id="bLogout" style="color:#9ca3af;border-color:#e2e5ea">↩ Sair</button>
     
     <button class="btn btn-p btn-sm" id="bexp">↓ Exportar CSV</button>
   </div>
 </div>
 
-<div class="tabs">
+<div class="tabs" style="position:sticky;top:57px;z-index:101;background:#fff">
   <div class="tab on" data-tab="p">Painel do dia</div>
   <div class="tab" data-tab="r">Revisão <span id="rc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
   <div class="tab" data-tab="h">Histórico <span id="hc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
@@ -186,7 +187,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   </div>
   <div id="mc" style="display:none">
     <div class="fbar2" id="fb2"></div>
-    <div class="sum">
+    <div class="sum" style="position:sticky;top:57px;z-index:100;background:#f5f6f8;padding-top:8px;padding-bottom:4px">
       <div class="sc"><div class="slb">Total em aberto</div><div class="sv" id="st">—</div><div class="ssb" id="stn"></div></div>
       <div class="sc"><div class="slb">Atrasados</div><div class="sv r" id="sa">—</div><div class="ssb" id="san"></div></div>
       <div class="sc"><div class="slb">Vence hoje</div><div class="sv a" id="sh">—</div><div class="ssb" id="shn"></div></div>
@@ -514,7 +515,7 @@ function saveSelection(){
   window._revTimer = setTimeout(()=>{
     if(ci.size > 0) saveRevisaoRemota();
     else clearRevisaoRemota();
-  }, 2000);
+  }, 1000);
 }
 function loadSelection(){
   try{
@@ -584,28 +585,47 @@ async function load(){
   }
   if(!ok){serr('Não foi possível carregar os arquivos. Verifique se estão na pasta do Drive.');return;}
 
-  // LANÇAMENTOS FIXOS DIÁRIOS — RSL
+  // LANÇAMENTOS FIXOS
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const diasUteis = [1,2,3,4,5,6,0]; // todos os dias da semana
-  const diaSemana = hoje.getDay();
-  // Adiciona sempre (todos os dias da semana)
-  const fixos = [
-    {forn:'LALAMOVE',        dsc:'FRETE DIÁRIO',        val:200.00},
-    {forn:'ABASTECIMENTO DIVERSOS', dsc:'COMBUSTÍVEL DIÁRIO', val:1200.00},
-    {forn:'CONECTCAR',       dsc:'PEDÁGIO DIÁRIO',       val:100.00},
+  const diaSemana = hoje.getDay(); // 0=Dom,1=Seg,2=Ter,3=Qua,4=Qui,5=Sex,6=Sab
+
+  // Fixos diários RSL
+  const fixosDiarios = [
+    {emp:'RSL', forn:'LALAMOVE',             dsc:'FRETE DIÁRIO',        val:200.00},
+    {emp:'RSL', forn:'ABASTECIMENTO DIVERSOS',dsc:'COMBUSTÍVEL DIÁRIO',  val:1200.00},
+    {emp:'RSL', forn:'CONECTCAR',            dsc:'PEDÁGIO DIÁRIO',       val:100.00},
   ];
-  fixos.forEach(f=>{
-    D.push({
-      id: ni++,
-      emp: 'RSL',
-      forn: f.forn,
-      dt: new Date(hoje),
-      dts: hoje.toLocaleDateString('pt-BR'),
-      dsc: f.dsc,
-      val: f.val,
-      fixo: true
-    });
+  fixosDiarios.forEach(f=>{
+    D.push({id:ni++,emp:f.emp,forn:f.forn,dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:f.dsc,val:f.val,fixo:true});
   });
+
+  // Fixos semanais — toda SEGUNDA-FEIRA (diaSemana === 1)
+  if(diaSemana === 1){
+    const fixosSegunda = [
+      {emp:'LUCRO PRESUMIDO', forn:'SEVERINO ESTRELA CABRAL',        dsc:'VT SEMANAL',  val:125.00},
+      {emp:'ROSIL',           forn:'CLAUDIO ESTRELA - VT',           dsc:'VT SEMANAL',  val:210.30},
+      {emp:'ROSIL',           forn:'JOÃO RAIMUNDO MATOS VA',         dsc:'VA SEMANAL',  val:100.00},
+      {emp:'ROSIL',           forn:'LUIZ DIAS',                      dsc:'VT SEMANAL',  val:31.00},
+      {emp:'RSL',             forn:'LUIS CARLOS GAMA-VA',            dsc:'VA SEMANAL',  val:200.00},
+      {emp:'RSL',             forn:'JOÃO VIEIRA - VT',               dsc:'VT SEMANAL',  val:200.00},
+      {emp:'RSL',             forn:'CLAUDECIR GOMES',                dsc:'VT SEMANAL',  val:75.00},
+      {emp:'RSL',             forn:'DEICOLA',                        dsc:'VT SEMANAL',  val:62.00},
+      {emp:'RSL',             forn:'FRANCISCO HENRIQUE',             dsc:'VT SEMANAL',  val:32.25},
+      {emp:'RSL',             forn:'JOAQUIM ROBERTO',                dsc:'VT SEMANAL',  val:40.00},
+      {emp:'RSL',             forn:'LAURA ESMARIA',                  dsc:'VT SEMANAL',  val:62.00},
+      {emp:'RSL',             forn:'MAX ROBERTO SANTOS DA COSTA',    dsc:'VT SEMANAL',  val:106.00},
+      {emp:'RSL',             forn:'ALEX PACHECO DA SILVA',          dsc:'VT SEMANAL - PIX',val:40.00},
+    ];
+    fixosSegunda.forEach(f=>{
+      D.push({id:ni++,emp:f.emp,forn:f.forn,dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:f.dsc,val:f.val,fixo:true});
+    });
+  }
+
+  // Fixos semanais — toda SEXTA-FEIRA (diaSemana === 5)
+  if(diaSemana === 5){
+    D.push({id:ni++,emp:'RSL',forn:'HORAS EXTRAS',dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:'HORAS EXTRAS SEMANAIS',val:2000.00,fixo:true});
+  }
+  ni = applyCustomFixos(D, ni, hoje);
   loadAvulsos();smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
   const n=Object.values(fs).filter(s=>s==='ok').length;
@@ -908,6 +928,90 @@ document.getElementById('ca').addEventListener('change',e=>{gs(gf()).forEach(r=>
   });
   document.addEventListener('click',e=>{if(!inp.contains(e.target)&&!drop.contains(e.target))drop.style.display='none';});
 })();
+// =============================================
+// LANÇAMENTOS FIXOS PERSONALIZADOS
+// =============================================
+const FIXOS_KEY = 'cp_fixos_custom';
+let customFixos = [];
+
+const perMap = {diario:-1, seg:1, ter:2, qua:3, qui:4, sex:5};
+const perLabel = {diario:'Diário', seg:'Toda segunda', ter:'Toda terça', qua:'Toda quarta', qui:'Toda quinta', sex:'Toda sexta'};
+
+function loadCustomFixos(){
+  try { customFixos = JSON.parse(localStorage.getItem(FIXOS_KEY)||'[]'); } catch(e){ customFixos=[]; }
+}
+
+function saveFixos(){
+  localStorage.setItem(FIXOS_KEY, JSON.stringify(customFixos));
+  renderFixosList();
+  closeFixos();
+  load(); // reload to apply
+}
+
+function addFixo(){
+  const emp = document.getElementById('fxEmp').value;
+  const per = document.getElementById('fxPer').value;
+  const val = parseFloat(document.getElementById('fxVal').value)||0;
+  const forn = document.getElementById('fxForn').value.trim();
+  const dsc = document.getElementById('fxDsc').value.trim();
+  if(!forn){ alert('Informe o fornecedor.'); return; }
+  if(!val){ alert('Informe o valor.'); return; }
+  customFixos.push({id: Date.now(), emp, per, val, forn, dsc});
+  renderFixosList();
+  // Clear form
+  document.getElementById('fxForn').value='';
+  document.getElementById('fxDsc').value='';
+  document.getElementById('fxVal').value='';
+}
+
+function removeFixo(id){
+  customFixos = customFixos.filter(f=>f.id!==id);
+  renderFixosList();
+}
+
+function renderFixosList(){
+  const el = document.getElementById('fxList');
+  if(!el) return;
+  if(!customFixos.length){
+    el.innerHTML='<div style="text-align:center;color:#9ca3af;padding:20px;font-size:13px">Nenhum lançamento fixo configurado ainda.</div>';
+    return;
+  }
+  const empColors = {'ROSIL':'#eff6ff','RSL':'#f0fdf4','LUCRO PRESUMIDO':'#fff7ed'};
+  const empText = {'ROSIL':'#1d4ed8','RSL':'#065f46','LUCRO PRESUMIDO':'#9a3412'};
+  el.innerHTML = customFixos.map(f=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1px solid #e8eaed;border-radius:8px;margin-bottom:8px">
+      <span style="background:${empColors[f.emp]||'#f3f4f6'};color:${empText[f.emp]||'#374151'};font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap">${f.emp}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;color:#1a1d23;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.forn}</div>
+        <div style="font-size:11px;color:#9ca3af">${f.dsc||'—'} · ${perLabel[f.per]||f.per}</div>
+      </div>
+      <span style="font-size:13px;font-weight:600;font-family:monospace;color:#374151;white-space:nowrap">${brl(f.val)}</span>
+      <button onclick="removeFixo(${f.id})" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:18px;line-height:1;padding:2px 4px">×</button>
+    </div>`).join('');
+}
+
+function openFixos(){
+  renderFixosList();
+  document.getElementById('movFixos').style.display='flex';
+}
+
+function closeFixos(){
+  document.getElementById('movFixos').style.display='none';
+}
+
+// Apply custom fixos during load
+function applyCustomFixos(D, ni, hoje){
+  loadCustomFixos();
+  const dia = hoje.getDay();
+  customFixos.forEach(f=>{
+    const perDia = perMap[f.per];
+    if(perDia===-1 || perDia===dia){
+      D.push({id:ni++,emp:f.emp,forn:f.forn,dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:f.dsc,val:f.val,fixo:true});
+    }
+  });
+  return ni;
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   // Revision table sort
   document.addEventListener('click', e=>{
@@ -919,6 +1023,8 @@ window.addEventListener('DOMContentLoaded',function(){
     renderRev();
   });
   // Revisão buttons
+  document.getElementById('bFixos').addEventListener('click', openFixos);
+  document.getElementById('movFixos').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeFixos(); });
   document.getElementById('brLimpar').addEventListener('click',()=>{
     if(!confirm('Limpar toda a seleção?'))return;
     ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
@@ -1370,7 +1476,12 @@ function showPanel(){
   document.getElementById('loginScreen').style.display = 'none';
   rh();uhc();load();
   // Load shared state after panel opens
-  setTimeout(loadEstadoRemoto, 1500);
+  setTimeout(loadEstadoRemoto, 300);
+  // Polling every 30 seconds
+  if(window._pollingInterval) clearInterval(window._pollingInterval);
+  window._pollingInterval = setInterval(()=>{
+    if(!window._loadingEstado) loadEstadoRemoto();
+  }, 30000);
 }
 
 async function handleLogin(){
@@ -1434,5 +1545,63 @@ window.addEventListener('DOMContentLoaded', function(){
 
 
 </div><!-- /layout-wrap -->
+<!-- MODAL FIXOS -->
+<div id="movFixos" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto">
+  <div style="background:#fff;border-radius:14px;padding:28px;width:100%;max-width:780px;box-shadow:0 20px 60px rgba(0,0,0,.15)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="font-size:16px;font-weight:600;color:#1a1d23">⚙ Lançamentos Fixos</h2>
+      <button onclick="closeFixos()" style="background:none;border:none;cursor:pointer;font-size:22px;color:#9ca3af;line-height:1">×</button>
+    </div>
+
+    <!-- Form to add new -->
+    <div style="background:#f9fafb;border:1px solid #e8eaed;border-radius:10px;padding:16px;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">Adicionar lançamento fixo</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px">Empresa</label>
+          <select id="fxEmp" style="width:100%;border:1px solid #e2e5ea;border-radius:6px;padding:7px 10px;font-size:13px;font-family:Inter,sans-serif;outline:none">
+            <option value="ROSIL">ROSIL</option>
+            <option value="RSL">RSL</option>
+            <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px">Periodicidade</label>
+          <select id="fxPer" style="width:100%;border:1px solid #e2e5ea;border-radius:6px;padding:7px 10px;font-size:13px;font-family:Inter,sans-serif;outline:none">
+            <option value="diario">Diário</option>
+            <option value="seg">Toda segunda-feira</option>
+            <option value="ter">Toda terça-feira</option>
+            <option value="qua">Toda quarta-feira</option>
+            <option value="qui">Toda quinta-feira</option>
+            <option value="sex">Toda sexta-feira</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px">Valor padrão (R$)</label>
+          <input id="fxVal" type="number" step="0.01" min="0" placeholder="0,00" style="width:100%;border:1px solid #e2e5ea;border-radius:6px;padding:7px 10px;font-size:13px;font-family:Inter,sans-serif;outline:none;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px">Fornecedor</label>
+          <input id="fxForn" type="text" placeholder="Nome do fornecedor" style="width:100%;border:1px solid #e2e5ea;border-radius:6px;padding:7px 10px;font-size:13px;font-family:Inter,sans-serif;outline:none;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px">Descrição</label>
+          <input id="fxDsc" type="text" placeholder="Descrição do lançamento" style="width:100%;border:1px solid #e2e5ea;border-radius:6px;padding:7px 10px;font-size:13px;font-family:Inter,sans-serif;outline:none;box-sizing:border-box">
+        </div>
+      </div>
+      <button onclick="addFixo()" style="background:#1a1d23;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;font-family:Inter,sans-serif">+ Adicionar</button>
+    </div>
+
+    <!-- List of custom fixos -->
+    <div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Lançamentos configurados</div>
+    <div id="fxList" style="max-height:320px;overflow-y:auto"></div>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px">
+      <button onclick="saveFixos()" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 24px;font-size:13px;font-weight:500;cursor:pointer;font-family:Inter,sans-serif">✓ Salvar e fechar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
