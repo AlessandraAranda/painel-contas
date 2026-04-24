@@ -444,7 +444,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 // =============================================
 // AUTENTICAÇÃO
 // =============================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzsmeZ19x3a73ok5vPzSnMTs3lhhaeuhc97Mn_-eze2i9VzXPLnzRW0VBmOX92wl8lq/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwC6R7XDPgOY3P7oZgeH2bPsDg18WETkqhMwhtI3gDLaqXGpy-QOsSKo1U5I2OwVWry/exec';
 const SECRET_TOKEN = 'rsl-tk-2026-x9z';
 const SESSION_KEY = 'rsl_session';
 const SESSION_HOURS = 4;
@@ -941,10 +941,26 @@ function loadCustomFixos(){
   try { customFixos = JSON.parse(localStorage.getItem(FIXOS_KEY)||'[]'); } catch(e){ customFixos=[]; }
 }
 
-function saveFixos(){
+function loadFixosFromDrive(fixosData){
+  if(fixosData && fixosData.length){
+    customFixos = fixosData;
+    localStorage.setItem(FIXOS_KEY, JSON.stringify(customFixos));
+  }
+}
+
+async function saveFixos(){
   localStorage.setItem(FIXOS_KEY, JSON.stringify(customFixos));
   renderFixosList();
   closeFixos();
+  // Save to Drive
+  setSyncStatus('⟳ Salvando fixos...', '#9ca3af');
+  const r = await apiPost('saveFixos', customFixos);
+  if(r && r.ok){
+    setSyncStatus('✓ Fixos salvos no Drive', '#10b981');
+    setTimeout(()=>setSyncStatus('','#9ca3af'), 2000);
+  } else {
+    setSyncStatus('⚠ Erro ao salvar fixos', '#ef4444');
+  }
   load(); // reload to apply
 }
 
@@ -1382,6 +1398,11 @@ async function loadEstadoRemoto(){
     const url = API_URL + '?action=getEstado&token=' + SECRET_TOKEN + '&t=' + Date.now();
     const res = await fetch(url);
     const data = await res.json();
+
+    // Load fixos from Drive
+    if(data.fixos && data.fixos.length){
+      loadFixosFromDrive(data.fixos);
+    }
 
     // Load historico - Drive is source of truth
     if(data.historico && data.historico.length){
