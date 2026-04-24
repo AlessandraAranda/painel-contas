@@ -787,8 +787,9 @@ function addAvulso(){
   window._avulsosList.push(entry);
   // Persist to localStorage
   saveAvulsosLocal();
-  // Save to Drive
-  saveSelection();
+  // Save immediately to Drive (no debounce - avulsos must be saved right away)
+  clearTimeout(window._revTimer);
+  saveRevisaoRemota();
   // Clear fields but keep modal open for more entries
   document.getElementById('avForn').value='';
   document.getElementById('avDesc').value='';
@@ -1448,7 +1449,8 @@ async function loadEstadoRemoto(){
     }
 
     // Load revisao - Drive is source of truth
-    // Always reset local selection first
+    // Save existing avulsos before reset
+    const existingAvulsos = (window._avulsosList||[]).filter(a=>ci.has(a.id));
     ci = new Set();
     pv = {};
 
@@ -1486,6 +1488,13 @@ async function loadEstadoRemoto(){
             matched++;
           }
         }
+      });
+      // Restore local avulsos not yet synced to Drive
+      existingAvulsos.forEach(a=>{
+        if(!window._avulsosList.find(x=>x.forn===a.forn&&x.dts===a.dts&&x.val===a.val)){
+          window._avulsosList.push(a);
+        }
+        ci.add(a.id);
       });
       localStorage.setItem('cp_sel',JSON.stringify({ids:[...ci],pv:Object.fromEntries(Object.entries(pv))}));
       updateRev();ren();
