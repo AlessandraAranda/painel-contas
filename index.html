@@ -162,6 +162,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   </div>
   <div class="hbtns">
     <span class="lu" id="lu"></span>
+    <button class="btn btn-sm" id="bref">↺ Atualizar</button>
     <button class="btn btn-sm" id="bFixos" style="color:#6b7280;border-color:#e2e5ea">⚙ Fixos</button>
     <button class="btn btn-sm" id="bLogout" style="color:#9ca3af;border-color:#e2e5ea">↩ Sair</button>
     
@@ -1033,6 +1034,7 @@ window.addEventListener('DOMContentLoaded',function(){
     renderRev();
   });
   // Revisão buttons
+  document.getElementById('bref').addEventListener('click',()=>load());
   document.getElementById('bFixos').addEventListener('click', openFixos);
   document.getElementById('movFixos').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeFixos(); });
   document.getElementById('brLimpar').addEventListener('click',()=>{
