@@ -1414,6 +1414,7 @@ async function saveRevisaoRemota(){
   setSyncStatus('⟳ Sincronizando...','#9ca3af');
   const r = await apiPost('saveRevisao', payload);
   if(r && r.ok){
+    window._lastSaveToDrive = Date.now();
     setSyncStatus('✓ Sincronizado com Drive','#10b981');
     setTimeout(()=>setSyncStatus('','#9ca3af'), 2000);
   } else {
@@ -1429,6 +1430,8 @@ async function saveRevisaoRemota(){
 
 async function loadEstadoRemoto(){
   if(window._loadingEstado) return; // prevent concurrent calls
+  // Skip if we just saved (give Drive time to update)
+  if(window._lastSaveToDrive && Date.now() - window._lastSaveToDrive < 5000) return;
   window._loadingEstado = true;
   try {
     const url = API_URL + '?action=getEstado&token=' + SECRET_TOKEN + '&t=' + Date.now();
@@ -1449,8 +1452,9 @@ async function loadEstadoRemoto(){
     }
 
     // Load revisao - Drive is source of truth
-    // Save existing avulsos before reset
+    // Save existing avulsos before reset (they may not be in Drive yet)
     const existingAvulsos = (window._avulsosList||[]).filter(a=>ci.has(a.id));
+    const existingDItems = [...ci].filter(id=>D.find(r=>r.id===id));
     ci = new Set();
     pv = {};
 
@@ -1494,7 +1498,7 @@ async function loadEstadoRemoto(){
         if(!window._avulsosList.find(x=>x.forn===a.forn&&x.dts===a.dts&&x.val===a.val)){
           window._avulsosList.push(a);
         }
-        ci.add(a.id);
+        if(!ci.has(a.id)) ci.add(a.id);
       });
       localStorage.setItem('cp_sel',JSON.stringify({ids:[...ci],pv:Object.fromEntries(Object.entries(pv))}));
       updateRev();ren();
