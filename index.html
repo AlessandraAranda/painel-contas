@@ -1365,16 +1365,34 @@ async function apiPost(action, dados){
 }
 
 async function saveRevisaoRemota(){
+  // Include both regular items (from D) and manual avulsos
+  const dItems = D.filter(r=>ci.has(r.id)).map(r=>({
+    emp:r.emp, forn:r.forn, dts:r.dts, dsc:r.dsc,
+    val:r.val, vp: pv[r.id]!==undefined?pv[r.id]:r.val
+  }));
+  const avItems = (window._avulsosList||[]).filter(a=>ci.has(a.id)).map(a=>({
+    emp:a.emp, forn:a.forn, dts:a.dts, dsc:a.dsc,
+    val:a.val, vp: pv[a.id]!==undefined?pv[a.id]:a.val,
+    manual: true
+  }));
   const payload = {
-    items: D.filter(r=>ci.has(r.id)).map(r=>({
-      id:r.id, emp:r.emp, forn:r.forn, dts:r.dts, dsc:r.dsc,
-      val:r.val, vp: pv[r.id]!==undefined?pv[r.id]:r.val,
-      dt: r.dt ? r.dt.toISOString() : null
-    })),
-    ts: new Date().toLocaleString('pt-BR')
+    items: [...dItems, ...avItems],
+    ts: new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})
   };
+  setSyncStatus('⟳ Sincronizando...','#9ca3af');
   const r = await apiPost('saveRevisao', payload);
-  return r.ok;
+  if(r && r.ok){
+    setSyncStatus('✓ Sincronizado com Drive','#10b981');
+    setTimeout(()=>setSyncStatus('','#9ca3af'), 2000);
+  } else {
+    setSyncStatus('⚠ Erro ao sincronizar','#ef4444');
+    setTimeout(async()=>{
+      const r2 = await apiPost('saveRevisao', payload);
+      setSyncStatus(r2&&r2.ok?'✓ Sincronizado':'⚠ Falha na sincronização', r2&&r2.ok?'#10b981':'#ef4444');
+      if(r2&&r2.ok) setTimeout(()=>setSyncStatus('','#9ca3af'), 2000);
+    }, 2000);
+  }
+  return r && r.ok;
 }
 
 async function loadEstadoRemoto(){
