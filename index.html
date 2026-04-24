@@ -432,7 +432,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       <input type="number" id="avValor" placeholder="0,00" min="0" step="0.01" style="width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:7px 10px;outline:none;height:36px">
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" id="bAvulsoCancel">Cancelar</button>
+      <button class="btn" id="bAvulsoCancel">✓ Fechar e ver revisão</button>
       <button class="btn" id="bAvulsoSave" style="background:#7e22ce;border-color:#7e22ce;color:#fff">+ Adicionar</button>
     </div>
   </div>
@@ -627,7 +627,7 @@ async function load(){
     D.push({id:ni++,emp:'RSL',forn:'HORAS EXTRAS',dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:'HORAS EXTRAS SEMANAIS',val:2000.00,fixo:true});
   }
   ni = applyCustomFixos(D, ni, hoje);
-  loadAvulsos();smn();loadFilters();loadSelection();ren();updateRev();
+  loadAvulsos();loadAvulsosLocal();smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});
   const n=Object.values(fs).filter(s=>s==='ok').length;
   document.getElementById('hsub').textContent=`${D.length} lançamentos em aberto · ${n}/${FILES.length} arquivos carregados`;
@@ -785,20 +785,50 @@ function addAvulso(){
   // Store in avulsos list
   if(!window._avulsosList) window._avulsosList = [];
   window._avulsosList.push(entry);
-  // Save to Drive as part of revisao
+  // Persist to localStorage
+  saveAvulsosLocal();
+  // Save to Drive
   saveSelection();
-  closeAvulsoModal();
+  // Clear fields but keep modal open for more entries
+  document.getElementById('avForn').value='';
+  document.getElementById('avDesc').value='';
+  document.getElementById('avValor').value='';
+  document.getElementById('avForn').focus();
   updateRev();renderRev();
-  stab('r');
+  // Show confirmation
+  const btn = document.getElementById('bAvulsoSave');
+  const orig = btn.textContent;
+  btn.textContent = '✓ Adicionado!';
+  btn.style.background = '#10b981';
+  setTimeout(()=>{btn.textContent=orig;btn.style.background='';}, 1500);
 }
 
 function getAvulsoById(id){
   return window._avulsosList ? window._avulsosList.find(a=>a.id===id) : null;
 }
 
+const AV_LIST_KEY = 'cp_avulsos_list';
+
+function saveAvulsosLocal(){
+  const toSave = (window._avulsosList||[]).map(a=>({
+    ...a, dt: a.dt ? a.dt.toISOString() : null
+  }));
+  localStorage.setItem(AV_LIST_KEY, JSON.stringify(toSave));
+}
+
+function loadAvulsosLocal(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(AV_LIST_KEY)||'[]');
+    window._avulsosList = saved.map(a=>({
+      ...a, dt: a.dt ? new Date(a.dt) : null
+    }));
+  } catch(e){ window._avulsosList = []; }
+}
+
 function closeAvulsoModal(){
   document.getElementById('movAvulso').style.display='none';
   ['avForn','avDesc','avValor','avData'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  if((window._avulsosList||[]).length > 0) stab('r');
 }
 
 function csav(){
@@ -1165,6 +1195,7 @@ function removeAvulso(id){
   if(!confirm('Excluir este lançamento manual?')) return;
   window._avulsosList = (window._avulsosList||[]).filter(a=>a.id!==id);
   ci.delete(id);
+  saveAvulsosLocal();
   saveSelection();
   updateRev();renderRev();
 }
