@@ -206,9 +206,9 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       <button class="btn btn-p btn-sm" id="bfil">🔍 Filtrar</button>
       <button class="btn btn-sm" id="bcf">Limpar filtros</button>
     </div>
-    <div class="tw">
-      <table>
-        <thead><tr>
+    <div class="tw" style="overflow:auto;max-height:calc(100vh - 280px)">
+      <table style="border-collapse:collapse">
+        <thead style="position:sticky;top:0;z-index:10;background:#fff"><tr>
           <th style="width:34px" class="st" data-col="sel" title="Ordenar por selecionados"><input type="checkbox" id="ca"></th>
           <th class="st" data-col="empresa" style="width:110px">Empresa ↕</th>
           <th class="st" data-col="fornecedor" style="min-width:200px">Fornecedor ↕</th>
@@ -237,17 +237,17 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
     <div class="hh">
       <h2>Revisão de pagamentos</h2>
       <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn btn-sm" id="bnovolcto" style="border-color:#e9d5ff;color:#7e22ce;background:#fdf4ff">+ Novo lançamento</button>
         <span style="font-size:13px;color:#6b7280"><b id="rvCount">0</b> lançamentos · Previsto: <b id="rvPrev">R$ 0,00</b> · A aprovar: <b id="rvAprov">R$ 0,00</b> · Desconto: <b id="rvDiff">R$ 0,00</b></span>
+        <button class="btn btn-sm" id="bnovolcto" style="border-color:#e9d5ff;color:#7e22ce;background:#fdf4ff">+ Novo lançamento</button>
         <button class="btn btn-sm" id="brLimpar" style="color:#dc2626;border-color:#fca5a5">Limpar seleção</button>
       </div>
     </div>
     <div id="rvEmpty" style="padding:40px;text-align:center;color:#9ca3af">
       Nenhum lançamento selecionado.<br>Selecione lançamentos no Painel do dia para iniciar a revisão.
     </div>
-    <div style="overflow-x:auto">
-      <table class="ht" id="rvTable" style="display:none">
-        <thead><tr><th></th><th class="rv-sort" data-col="emp" style="cursor:pointer;user-select:none">Empresa <span class="rv-arr" data-col="emp">↕</span></th><th class="rv-sort" data-col="forn" style="cursor:pointer;user-select:none">Fornecedor <span class="rv-arr" data-col="forn">↕</span></th><th class="rv-sort" data-col="dts" style="cursor:pointer;user-select:none">Vencimento <span class="rv-arr" data-col="dts">↕</span></th><th class="rv-sort" data-col="sta" style="cursor:pointer;user-select:none">Status <span class="rv-arr" data-col="sta">↕</span></th><th>Descrição</th><th class="rv-sort" data-col="val" style="cursor:pointer;user-select:none;text-align:right">Previsto <span class="rv-arr" data-col="val">↕</span></th><th style="text-align:right">A pagar</th></tr></thead>
+    <div style="overflow:auto;max-height:calc(100vh - 280px)">
+      <table class="ht" id="rvTable" style="display:none;border-collapse:collapse">
+        <thead style="position:sticky;top:0;z-index:10;background:#fff"><tr><th></th><th class="rv-sort" data-col="emp" style="cursor:pointer;user-select:none">Empresa <span class="rv-arr" data-col="emp">↕</span></th><th class="rv-sort" data-col="forn" style="cursor:pointer;user-select:none">Fornecedor <span class="rv-arr" data-col="forn">↕</span></th><th class="rv-sort" data-col="dts" style="cursor:pointer;user-select:none">Vencimento <span class="rv-arr" data-col="dts">↕</span></th><th class="rv-sort" data-col="sta" style="cursor:pointer;user-select:none">Status <span class="rv-arr" data-col="sta">↕</span></th><th>Descrição</th><th class="rv-sort" data-col="val" style="cursor:pointer;user-select:none;text-align:right">Previsto <span class="rv-arr" data-col="val">↕</span></th><th style="text-align:right">A pagar</th></tr></thead>
         <tbody id="rvTbody"></tbody>
       </table>
     </div>
@@ -1282,29 +1282,53 @@ async function loadEstadoRemoto(){
       rh(); // refresh history tab
     }
 
-    // Load revisao - match by forn+dts+dsc since IDs regenerate
+    // Load revisao - Drive is source of truth
+    // Always reset local selection first
+    ci = new Set();
+    pv = {};
+
     if(data.revisao && data.revisao.items && data.revisao.items.length){
       const rev = data.revisao;
       let matched = 0;
       rev.items.forEach(item=>{
-        // Find matching row in D by fornecedor + data + descrição
-        const found = D.find(r=>
-          r.forn===item.forn &&
-          r.dts===item.dts &&
-          r.dsc===item.dsc &&
-          r.val===item.val
-        );
-        if(found){
-          ci.add(found.id);
-          if(item.vp !== item.val) pv[found.id] = item.vp;
+        if(item.manual){
+          // Restore manual avulso entry
+          const newId = Date.now() + matched + Math.floor(Math.random()*1000);
+          const avEntry = {
+            id:newId, emp:item.emp, forn:item.forn,
+            dts:item.dts, dsc:item.dsc, val:item.val,
+            avulso:true, manual:true,
+            dt: item.dts?(()=>{const p=item.dts.split('/');return new Date(p[2],p[1]-1,p[0]);})():null
+          };
+          if(!window._avulsosList) window._avulsosList=[];
+          if(!window._avulsosList.find(a=>a.forn===item.forn&&a.dts===item.dts&&a.val===item.val)){
+            window._avulsosList.push(avEntry);
+          }
+          ci.add(newId);
+          if(item.vp !== item.val) pv[newId] = item.vp;
           matched++;
+        } else {
+          // Match by empresa + fornecedor + data + valor
+          const found = D.find(r=>
+            r.emp===item.emp &&
+            r.forn.trim()===item.forn.trim() &&
+            r.dts===item.dts &&
+            Math.abs(r.val - item.val) < 0.01
+          );
+          if(found){
+            ci.add(found.id);
+            if(item.vp !== item.val) pv[found.id] = item.vp;
+            matched++;
+          }
         }
       });
-      if(matched > 0){
-        localStorage.setItem('cp_sel',JSON.stringify({ids:[...ci],pv:Object.fromEntries(Object.entries(pv))}));
-        updateRev();ren();rh();
-        console.log('Revisão remota carregada:', matched, 'lançamentos');
-      }
+      localStorage.setItem('cp_sel',JSON.stringify({ids:[...ci],pv:Object.fromEntries(Object.entries(pv))}));
+      updateRev();ren();
+      console.log('Revisão remota carregada:', matched, '/', rev.items.length, 'lançamentos');
+    } else {
+      // No revisao on Drive - clear local too
+      localStorage.removeItem('cp_sel');
+      updateRev();ren();
     }
   } catch(e){ console.warn('Estado remoto indisponível', e); }
 }
