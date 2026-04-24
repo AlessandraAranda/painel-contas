@@ -1079,23 +1079,11 @@ document.querySelectorAll('th.st').forEach(th=>th.addEventListener('click',()=>{
   });
   ren();
 }));
-document.getElementById('bref').addEventListener('click',load);
-document.getElementById('bret').addEventListener('click',load);
 // bsav removed - using brAprovar2 instead
 document.getElementById('bcs').addEventListener('click',()=>document.getElementById('mov').style.display='none');
 document.getElementById('bks').addEventListener('click',csav);
 document.getElementById('slb').addEventListener('keydown',e=>{if(e.key==='Enter')csav();});
 if(document.getElementById('bch'))document.getElementById('bch').addEventListener('click',()=>{if(!confirm('Apagar todo o histórico?'))return;H=[];localStorage.removeItem('cp_h');rh();});
-document.getElementById('bexp').addEventListener('click',()=>{
-  const sel=D.filter(r=>ci.has(r.id));
-  if(!sel.length){alert('Selecione ao menos um lançamento para exportar.');return;}
-  const rows=[['Empresa','Fornecedor','Vencimento','Status','Descrição','Valor Previsto','Valor a Pagar']];
-  sel.forEach(r=>{const vp=pv[r.id]!==undefined?pv[r.id]:r.val;rows.push([r.emp,r.forn,r.dts,sta(r.dt),r.dsc,r.val.toFixed(2),vp.toFixed(2)]);});
-  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`contas_pagar_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;a.click();
-});
-
 });
 
 // =============================================
