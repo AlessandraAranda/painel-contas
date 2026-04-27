@@ -523,7 +523,12 @@ async function loadPagos(){
 
 function renderPagos(){
   if(!pgLoaded){ loadPagos(); return; }
-  const empF = document.getElementById('pgEmp').value;
+  const pgEmpEl = document.getElementById('pgEmp');
+  const pgTbodyEl = document.getElementById('pgTbody');
+  const pgStatusEl = document.getElementById('pgStatus');
+  if(!pgEmpEl || !pgTbodyEl) return; // Tab not visible yet
+
+  const empF = pgEmpEl.value;
   const dtIni = document.getElementById('pgDtIni').value;
   const dtFim = document.getElementById('pgDtFim').value;
 
@@ -533,13 +538,13 @@ function renderPagos(){
   if(dtFim) filt = filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
 
   const tot = filt.reduce((a,r)=>a+r.val,0);
-  document.getElementById('pgStatus').textContent = filt.length+' pagamentos · Total: '+brl(tot);
+  if(pgStatusEl) pgStatusEl.textContent = filt.length+' pagamentos · Total: '+brl(tot);
 
   const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
   const empColors={'PG-ROSIL':'rosil','PG-RSL':'rsl','PG-LUCRO PRESUMIDO':'lp'};
 
   const sorted = [...filt].sort((a,b)=>b.dt-a.dt);
-  document.getElementById('pgTbody').innerHTML = sorted.map(r=>`
+  pgTbodyEl.innerHTML = sorted.map(r=>`
     <tr>
       <td><span class="et ${empColors[r.emp]||''}">${empShort[r.emp]||r.emp}</span></td>
       <td style="font-weight:500">${esc(r.forn)}</td>
