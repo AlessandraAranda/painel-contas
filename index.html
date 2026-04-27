@@ -174,6 +174,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   <div class="tab" data-tab="r">Revisão <span id="rc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
   <div class="tab" data-tab="h">Histórico <span id="hc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
   <div class="tab" data-tab="a">Análise</div>
+  <div class="tab" data-tab="pg">Pagos</div>
 </div>
 
 <div id="tp">
@@ -390,6 +391,71 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   </div>
 </div>
 
+<div id="tpg" style="display:none">
+  <div class="hw">
+    <!-- FILTROS PAGOS -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:500;color:#6b7280">Filtrar:</span>
+      <select id="pgEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
+        <option value="">Todas as empresas</option>
+        <option value="PG-ROSIL">ROSIL</option>
+        <option value="PG-RSL">RSL</option>
+        <option value="PG-LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
+      </select>
+      <input type="date" id="pgDtIni" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
+      <input type="date" id="pgDtFim" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
+      <button id="pgClear" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#6b7280;font-family:Inter,sans-serif">Limpar</button>
+    </div>
+
+    <!-- STATUS PAGOS -->
+    <div id="pgStatus" style="font-size:12px;color:#9ca3af;margin-bottom:12px"></div>
+
+    <!-- KPI CARDS PAGOS -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:20px">
+      <div class="sc"><div class="slb">Total pago</div><div class="sv g" id="pgTot">R$ 0</div><div class="ssb" id="pgTotN">0 lançamentos</div></div>
+      <div class="sc"><div class="slb">ROSIL</div><div class="sv v" id="pgRosil">R$ 0</div><div class="ssb" id="pgRosilN">0 lançamentos</div></div>
+      <div class="sc"><div class="slb">RSL</div><div class="sv v" id="pgRsl">R$ 0</div><div class="ssb" id="pgRslN">0 lançamentos</div></div>
+      <div class="sc"><div class="slb">Lucro Presumido</div><div class="sv v" id="pgLucro">R$ 0</div><div class="ssb" id="pgLucroN">0 lançamentos</div></div>
+      <div class="sc"><div class="slb">Ticket médio</div><div class="sv" id="pgTicket">R$ 0</div><div class="ssb">por lançamento</div></div>
+    </div>
+
+    <!-- GRÁFICOS ROW 1 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
+        <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Distribuição por empresa</div>
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">% do total pago</div>
+        <canvas id="pgChartEmp" height="200"></canvas>
+      </div>
+      <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
+        <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Evolução mensal</div>
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Total pago por mês</div>
+        <canvas id="pgChartMensal" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- TOP 10 FORNECEDORES PAGOS -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Top 10 maiores pagamentos</div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Por fornecedor</div>
+      <canvas id="pgChartForn" height="110"></canvas>
+    </div>
+
+    <!-- TABELA PAGOS -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:14px">Lançamentos pagos</div>
+      <div style="overflow:auto;max-height:400px">
+        <table class="ht" style="margin:0">
+          <thead style="position:sticky;top:0;background:#fff;z-index:5"><tr>
+            <th>Empresa</th><th>Fornecedor</th><th>Vencimento</th><th>Descrição</th><th style="text-align:right">Valor</th>
+          </tr></thead>
+          <tbody id="pgTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <div class="bb" id="bb" style="display:none">
   <div class="bif">
     <span>Exibindo <b id="cv">0</b></span>
@@ -443,13 +509,135 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 // =============================================
 // AUTENTICAÇÃO
 // =============================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbwC6R7XDPgOY3P7oZgeH2bPsDg18WETkqhMwhtI3gDLaqXGpy-QOsSKo1U5I2OwVWry/exec';
+// Pagos data
+let DPG = [];
+let pgLoaded = false;
+let pgChartEmpObj=null, pgChartMensalObj=null, pgChartFornObj=null;
+
+async function loadPagos(){
+  if(pgLoaded) return;
+  document.getElementById('pgStatus').textContent = '⟳ Carregando dados de pagamentos...';
+  DPG = [];
+  for(const emp of FILES_PG){
+    try {
+      const res = await fetch(`${API_URL}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
+      const json = await res.json();
+      if(json.error || json.length < 2) continue;
+      const rows = json;
+      const h = rows[0].map(x=>String(x||'').toLowerCase().trim());
+      const iD=h.findIndex(x=>x.includes('data')), iC=h.findIndex(x=>x.includes('client')||x.includes('forn')), i8=h.findIndex(x=>x.includes('descri')), i9=h.findIndex(x=>x.includes('valor prev'));
+      for(let i=1;i<rows.length;i++){
+        const row=rows[i];
+        const dtStr=row[iD]||'';
+        if(!dtStr||!dtStr.includes('/'))continue;
+        const p=dtStr.split('/');
+        if(p.length<3)continue;
+        const dt=new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
+        if(isNaN(dt.getTime()))continue;
+        const valStr=String(row[i9]||'0').replace(/\./g,'').replace(',','.');
+        const val=parseFloat(valStr)||0;
+        if(!val)continue;
+        DPG.push({
+          emp, forn:String(row[iC]||'').trim(),
+          dt, dts:dtStr,
+          dsc:String(row[i8]||'').trim(),
+          val
+        });
+      }
+    } catch(e){ console.warn('Erro ao carregar', emp, e); }
+  }
+  pgLoaded = true;
+  document.getElementById('pgStatus').textContent = `${DPG.length} pagamentos carregados`;
+  renderPagos();
+}
+
+function renderPagos(){
+  if(!pgLoaded){ loadPagos(); return; }
+  const empF = document.getElementById('pgEmp').value;
+  const dtIni = document.getElementById('pgDtIni').value;
+  const dtFim = document.getElementById('pgDtFim').value;
+
+  let filt = DPG;
+  if(empF) filt = filt.filter(r=>r.emp===empF);
+  if(dtIni) filt = filt.filter(r=>r.dt>=new Date(dtIni+'T00:00:00'));
+  if(dtFim) filt = filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
+
+  const tot = filt.reduce((a,r)=>a+r.val,0);
+  const ticket = filt.length ? tot/filt.length : 0;
+
+  const byEmp = (emp) => filt.filter(r=>r.emp===emp);
+  const sumEmp = (emp) => byEmp(emp).reduce((a,r)=>a+r.val,0);
+
+  document.getElementById('pgTot').textContent = brl(tot);
+  document.getElementById('pgTotN').textContent = filt.length+' lançamentos';
+  document.getElementById('pgRosil').textContent = brl(sumEmp('PG-ROSIL'));
+  document.getElementById('pgRosilN').textContent = byEmp('PG-ROSIL').length+' lançamentos';
+  document.getElementById('pgRsl').textContent = brl(sumEmp('PG-RSL'));
+  document.getElementById('pgRslN').textContent = byEmp('PG-RSL').length+' lançamentos';
+  document.getElementById('pgLucro').textContent = brl(sumEmp('PG-LUCRO PRESUMIDO'));
+  document.getElementById('pgLucroN').textContent = byEmp('PG-LUCRO PRESUMIDO').length+' lançamentos';
+  document.getElementById('pgTicket').textContent = brl(ticket);
+
+  const emps = ['PG-ROSIL','PG-RSL','PG-LUCRO PRESUMIDO'];
+  const empLabels = ['ROSIL','RSL','LUCRO PRESUMIDO'];
+  const empVals = emps.map(e=>sumEmp(e));
+
+  if(pgChartEmpObj) pgChartEmpObj.destroy();
+  pgChartEmpObj = new Chart(document.getElementById('pgChartEmp'),{
+    type:'doughnut',
+    data:{labels:empLabels,datasets:[{data:empVals,backgroundColor:['#bfdbfe','#a7f3d0','#fed7aa'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)+' ('+((ctx.raw/(tot||1))*100).toFixed(1)+'%)'}}}}
+  });
+
+  // Monthly chart
+  const monMap={};
+  filt.forEach(r=>{
+    const k=String(r.dt.getFullYear())+'-'+String(r.dt.getMonth()+1).padStart(2,'0');
+    if(!monMap[k])monMap[k]={label:String(r.dt.getMonth()+1).padStart(2,'0')+'/'+r.dt.getFullYear(),val:0};
+    monMap[k].val+=r.val;
+  });
+  const mkeys=Object.keys(monMap).sort();
+  if(pgChartMensalObj) pgChartMensalObj.destroy();
+  pgChartMensalObj = new Chart(document.getElementById('pgChartMensal'),{
+    type:'bar',
+    data:{labels:mkeys.map(k=>monMap[k].label),datasets:[{label:'Pago',data:mkeys.map(k=>monMap[k].val),backgroundColor:'#6ee7b7',borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}
+  });
+
+  // Top 10 fornecedores
+  const fornMap={};
+  filt.forEach(r=>{if(!fornMap[r.forn])fornMap[r.forn]=0;fornMap[r.forn]+=r.val;});
+  const top10=Object.entries(fornMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(pgChartFornObj) pgChartFornObj.destroy();
+  pgChartFornObj = new Chart(document.getElementById('pgChartForn'),{
+    type:'bar',
+    data:{labels:top10.map(x=>x[0].length>28?x[0].substring(0,28)+'...':x[0]),datasets:[{label:'Pago',data:top10.map(x=>x[1]),backgroundColor:'#34d399',borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}}}
+  });
+
+  // Table
+  const sorted = [...filt].sort((a,b)=>b.dt-a.dt);
+  const empColors={'PG-ROSIL':'rosil','PG-RSL':'rsl','PG-LUCRO PRESUMIDO':'lp'};
+  const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
+  document.getElementById('pgTbody').innerHTML = sorted.map(r=>`
+    <tr>
+      <td><span class="et ${empColors[r.emp]||''}">${empShort[r.emp]||r.emp}</span></td>
+      <td style="font-weight:500">${esc(r.forn)}</td>
+      <td class="mn">${r.dts}</td>
+      <td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td>
+      <td class="mn" style="text-align:right;font-weight:600;color:#059669">${brl(r.val)}</td>
+    </tr>`).join('');
+}
+
+const API_URL = 'https://script.google.com/macros/s/AKfycbzbFhEAq3J1j9Q0YmpUs-0TdgqQpz9YBDqR3_HPQy5Dkfyhk6vibjKDmhJPnAjlugOq/exec';
 const SECRET_TOKEN = 'rsl-tk-2026-x9z';
 const SESSION_KEY = 'rsl_session';
 const SESSION_HOURS = 4;
 
 const FILES=['ROSIL.xlsx','RSL.xlsx','LUCRO PRESUMIDO.xlsx'];
 const FIDS={'ROSIL.xlsx':'1umzGUQjhAI8EZ5xoF81Cnc6NoUpK5-mI66VztuE2Huw','RSL.xlsx':'1lc2chhQEsOgWCMKg4uw9GBLJuZNYR0UXEI4adVNTQBo','LUCRO PRESUMIDO.xlsx':'1DMbAhxnboR3Hh1LfqpkIfAgwjmeaJW4esHu5fu_5F7A'};
+const FILES_PG=['PG-ROSIL','PG-RSL','PG-LUCRO PRESUMIDO'];
+const FIDS_PG={'PG-ROSIL':'1bvsz50tDz8QK3xObQylyMbcBPp6OTeNh8HeInzLStDs','PG-RSL':'11n_AItRU2yJlPtT6PI47EisZMXrotlpyfcSkPZzXWLU','PG-LUCRO PRESUMIDO':'12aHNupJyZKigHRQl-zGWY5ok5CLuS8_JXvcHDbtldt8'};
 
 const _nowBR=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}));const td=new Date(_nowBR.getFullYear(),_nowBR.getMonth(),_nowBR.getDate());
 const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -627,7 +815,11 @@ async function load(){
     D.push({id:ni++,emp:'RSL',forn:'HORAS EXTRAS',dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:'HORAS EXTRAS SEMANAIS',val:2000.00,fixo:true});
   }
   ni = applyCustomFixos(D, ni, hoje);
-  loadAvulsos();loadAvulsosLocal();smn();loadFilters();loadSelection();ren();updateRev();
+  loadAvulsos();
+  loadAvulsosLocal();
+  // Add avulso IDs to ci immediately so they survive polling reset
+  (window._avulsosList||[]).forEach(a=>ci.add(a.id));
+  smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});
   const n=Object.values(fs).filter(s=>s==='ok').length;
   document.getElementById('hsub').textContent=`${D.length} lançamentos em aberto · ${n}/${FILES.length} arquivos carregados`;
@@ -901,9 +1093,11 @@ function stab(t){
   se('th2',t==='h'?'block':'none');
   se('tr2',t==='r'?'block':'none');
   se('ta',t==='a'?'block':'none');
+  se('tpg',t==='pg'?'block':'none');
   se('bb',(t==='p'&&D.length)?'flex':'none');
   if(t==='r') renderRev();
   if(t==='a') renderAnalise();
+  if(t==='pg') renderPagos();
 }
 document.querySelectorAll('.tab').forEach(x=>x.addEventListener('click',()=>stab(x.dataset.tab)));
 
@@ -1067,7 +1261,16 @@ window.addEventListener('DOMContentLoaded',function(){
     renderRev();
   });
   // Revisão buttons
-  document.getElementById('bref').addEventListener('click',()=>load());
+  document.getElementById('bref').addEventListener('click',()=>{pgLoaded=false;load();});
+  document.getElementById('pgEmp').addEventListener('change', renderPagos);
+  document.getElementById('pgDtIni').addEventListener('change', renderPagos);
+  document.getElementById('pgDtFim').addEventListener('change', renderPagos);
+  document.getElementById('pgClear').addEventListener('click',()=>{
+    document.getElementById('pgEmp').selectedIndex=0;
+    document.getElementById('pgDtIni').value='';
+    document.getElementById('pgDtFim').value='';
+    renderPagos();
+  });
   document.getElementById('bFixos').addEventListener('click', openFixos);
   document.getElementById('movFixos').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeFixos(); });
   document.getElementById('brLimpar').addEventListener('click',()=>{
@@ -1453,7 +1656,7 @@ async function loadEstadoRemoto(){
 
     // Load revisao - Drive is source of truth
     // Save existing avulsos before reset (they may not be in Drive yet)
-    const existingAvulsos = (window._avulsosList||[]).filter(a=>ci.has(a.id));
+    const existingAvulsos = [...(window._avulsosList||[])]; // ALL local avulsos
     const existingDItems = [...ci].filter(id=>D.find(r=>r.id===id));
     ci = new Set();
     pv = {};
