@@ -393,7 +393,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 
 <div id="tpg" style="display:none">
   <div class="hw">
-    <!-- FILTROS PAGOS -->
+    <!-- FILTROS + EXPORT -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="font-size:12px;font-weight:500;color:#6b7280">Filtrar:</span>
       <select id="pgEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
@@ -405,45 +405,16 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       <input type="date" id="pgDtIni" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
       <input type="date" id="pgDtFim" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
       <button id="pgClear" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#6b7280;font-family:Inter,sans-serif">Limpar</button>
+      <div style="flex:1"></div>
+      <button id="pgExport" style="padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:#3b82f6;color:#fff;font-family:Inter,sans-serif">↓ Exportar CSV</button>
     </div>
 
-    <!-- STATUS PAGOS -->
+    <!-- STATUS -->
     <div id="pgStatus" style="font-size:12px;color:#9ca3af;margin-bottom:12px"></div>
 
-    <!-- KPI CARDS PAGOS -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:20px">
-      <div class="sc"><div class="slb">Total pago</div><div class="sv g" id="pgTot">R$ 0</div><div class="ssb" id="pgTotN">0 lançamentos</div></div>
-      <div class="sc"><div class="slb">ROSIL</div><div class="sv v" id="pgRosil">R$ 0</div><div class="ssb" id="pgRosilN">0 lançamentos</div></div>
-      <div class="sc"><div class="slb">RSL</div><div class="sv v" id="pgRsl">R$ 0</div><div class="ssb" id="pgRslN">0 lançamentos</div></div>
-      <div class="sc"><div class="slb">Lucro Presumido</div><div class="sv v" id="pgLucro">R$ 0</div><div class="ssb" id="pgLucroN">0 lançamentos</div></div>
-      <div class="sc"><div class="slb">Ticket médio</div><div class="sv" id="pgTicket">R$ 0</div><div class="ssb">por lançamento</div></div>
-    </div>
-
-    <!-- GRÁFICOS ROW 1 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
-        <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Distribuição por empresa</div>
-        <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">% do total pago</div>
-        <canvas id="pgChartEmp" height="200"></canvas>
-      </div>
-      <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
-        <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Evolução mensal</div>
-        <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Total pago por mês</div>
-        <canvas id="pgChartMensal" height="200"></canvas>
-      </div>
-    </div>
-
-    <!-- TOP 10 FORNECEDORES PAGOS -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Top 10 maiores pagamentos</div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Por fornecedor</div>
-      <canvas id="pgChartForn" height="110"></canvas>
-    </div>
-
-    <!-- TABELA PAGOS -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:14px">Lançamentos pagos</div>
-      <div style="overflow:auto;max-height:400px">
+    <!-- TABELA -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden">
+      <div style="overflow:auto;max-height:calc(100vh - 240px)">
         <table class="ht" style="margin:0">
           <thead style="position:sticky;top:0;background:#fff;z-index:5"><tr>
             <th>Empresa</th><th>Fornecedor</th><th>Vencimento</th><th>Descrição</th><th style="text-align:right">Valor</th>
@@ -512,7 +483,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 // Pagos data
 let DPG = [];
 let pgLoaded = false;
-let pgChartEmpObj=null, pgChartMensalObj=null, pgChartFornObj=null;
 
 async function loadPagos(){
   if(pgLoaded) return;
@@ -1263,6 +1233,24 @@ window.addEventListener('DOMContentLoaded',function(){
   // Revisão buttons
   document.getElementById('bref').addEventListener('click',()=>{pgLoaded=false;load();});
   document.getElementById('pgEmp').addEventListener('change', renderPagos);
+  document.getElementById('pgExport').addEventListener('click',()=>{
+    if(!DPG.length){alert('Nenhum dado para exportar.');return;}
+    const empF=document.getElementById('pgEmp').value;
+    const dtIni=document.getElementById('pgDtIni').value;
+    const dtFim=document.getElementById('pgDtFim').value;
+    const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
+    let filt=DPG;
+    if(empF)filt=filt.filter(r=>r.emp===empF);
+    if(dtIni)filt=filt.filter(r=>r.dt>=new Date(dtIni+'T00:00:00'));
+    if(dtFim)filt=filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
+    const rows=[['Empresa','Fornecedor','Vencimento','Descrição','Valor']];
+    filt.sort((a,b)=>b.dt-a.dt).forEach(r=>rows.push([empShort[r.emp]||r.emp,r.forn,r.dts,r.dsc,r.val.toFixed(2).replace('.',',')]));
+    const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+    a.download=`pagos_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;
+    a.click();
+  });
   document.getElementById('pgDtIni').addEventListener('change', renderPagos);
   document.getElementById('pgDtFim').addEventListener('change', renderPagos);
   document.getElementById('pgClear').addEventListener('click',()=>{
