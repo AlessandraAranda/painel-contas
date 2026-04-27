@@ -1492,6 +1492,11 @@ if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist')
 // =============================================
 // ESTADO COMPARTILHADO (Google Drive)
 // =============================================
+function setSyncStatus(msg, color){
+  const el=document.getElementById('syncStatus');
+  if(el){el.textContent=msg;el.style.color=color||'#9ca3af';}
+}
+
 async function apiPost(action, dados){
   try {
     const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados)) + '&t=' + Date.now();
