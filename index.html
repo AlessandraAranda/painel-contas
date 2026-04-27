@@ -1067,7 +1067,8 @@ function applyCustomFixos(D, ni, hoje){
 let DPG=[], pgLoaded=false;
 
 async function loadPagos(){
-  if(pgLoaded) return;
+  if(pgLoaded || window._loadingPagos) return;
+  window._loadingPagos = true;
   const st=document.getElementById('pgStatus');
   if(st) st.textContent='⟳ Carregando dados de pagamentos...';
   DPG=[];
@@ -1097,6 +1098,7 @@ async function loadPagos(){
     }catch(e){console.warn('Erro ao carregar',emp,e);}
   }
   pgLoaded=true;
+  window._loadingPagos = false;
   renderPagos();
 }
 
