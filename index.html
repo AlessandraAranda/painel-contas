@@ -1117,6 +1117,19 @@ function renderPagos(){
   if(dtFim) filt=filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
   const tot=filt.reduce((a,r)=>a+r.val,0);
   if(pgStatusEl) pgStatusEl.textContent=filt.length+' pagamentos · Total: '+brl(tot);
+
+  // Update KPI cards
+  const byEmp=(emp)=>filt.filter(r=>r.emp===emp);
+  const sumEmp=(emp)=>byEmp(emp).reduce((a,r)=>a+r.val,0);
+  const se2=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  se2('pgTot',brl(tot));
+  se2('pgTotN',filt.length+' lançamentos');
+  se2('pgRosil',brl(sumEmp('PG-ROSIL')));
+  se2('pgRosilN',byEmp('PG-ROSIL').length+' lançamentos');
+  se2('pgRsl',brl(sumEmp('PG-RSL')));
+  se2('pgRslN',byEmp('PG-RSL').length+' lançamentos');
+  se2('pgLucro',brl(sumEmp('PG-LUCRO PRESUMIDO')));
+  se2('pgLucroN',byEmp('PG-LUCRO PRESUMIDO').length+' lançamentos');
   const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
   const empCls={'PG-ROSIL':'rosil','PG-RSL':'rsl','PG-LUCRO PRESUMIDO':'lp'};
   pgTbodyEl.innerHTML=[...filt].sort((a,b)=>b.dt-a.dt).map(r=>`
@@ -1800,6 +1813,14 @@ window.addEventListener('DOMContentLoaded', function(){
       <button id="pgExport" style="padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:#3b82f6;color:#fff;font-family:Inter,sans-serif">↓ Exportar CSV</button>
     </div>
     <div id="pgStatus" style="font-size:12px;color:#9ca3af;margin-bottom:12px"></div>
+
+    <!-- KPI CARDS PAGOS -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px">
+      <div class="sc"><div class="slb">Total pago</div><div class="sv" id="pgTot" style="color:#1a1d23">R$ 0</div><div class="ssb" id="pgTotN">0 lançamentos</div></div>
+      <div class="sc"><div class="slb">ROSIL</div><div class="sv" id="pgRosil" style="color:#1d4ed8">R$ 0</div><div class="ssb" id="pgRosilN">0 lançamentos</div></div>
+      <div class="sc"><div class="slb">RSL</div><div class="sv" id="pgRsl" style="color:#065f46">R$ 0</div><div class="ssb" id="pgRslN">0 lançamentos</div></div>
+      <div class="sc"><div class="slb">Lucro Presumido</div><div class="sv" id="pgLucro" style="color:#9a3412">R$ 0</div><div class="ssb" id="pgLucroN">0 lançamentos</div></div>
+    </div>
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden">
       <div style="overflow:auto;max-height:calc(100vh - 240px)">
         <table class="ht" style="margin:0">
