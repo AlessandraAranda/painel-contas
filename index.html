@@ -444,7 +444,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 // =============================================
 // AUTENTICAÇÃO
 // =============================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzbFhEAq3J1j9Q0YmpUs-0TdgqQpz9YBDqR3_HPQy5Dkfyhk6vibjKDmhJPnAjlugOq/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwC6R7XDPgOY3P7oZgeH2bPsDg18WETkqhMwhtI3gDLaqXGpy-QOsSKo1U5I2OwVWry/exec';
 const SECRET_TOKEN = 'rsl-tk-2026-x9z';
 const SESSION_KEY = 'rsl_session';
 const SESSION_HOURS = 4;
@@ -573,6 +573,9 @@ async function load(){
         if(!row||row.every(c=>c===''||c===null||c===undefined))continue;
         const dscVal=String(row[iDs]||'');
         if(dscVal.toLowerCase().includes('acumulado'))continue;
+        // Ocultar mútuos
+        const dscUp=dscVal.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+        if(dscUp.includes('MUTUO')||dscUp.includes('MUTUA'))continue;
         const rawDate=row[iD];
         const dt=parseXlsxDate(rawDate);
         if(!dt)continue;
@@ -908,7 +911,7 @@ function stab(t){
   se('bb',(t==='p'&&D.length)?'flex':'none');
   if(t==='r') renderRev();
   if(t==='a') renderAnalise();
-  if(t==='pg'){document.getElementById('tpg').style.display='block';renderPagos();}
+  if(t==='pg') renderPagos();
 }
 document.querySelectorAll('.tab').forEach(x=>x.addEventListener('click',()=>stab(x.dataset.tab)));
 
@@ -1061,22 +1064,19 @@ function applyCustomFixos(D, ni, hoje){
   return ni;
 }
 
-// =============================================
-// PAGOS
-// =============================================
-let DPG=[], pgLoaded=false;
+let DPG=[],pgLoaded=false;
 
 async function loadPagos(){
-  if(pgLoaded || window._loadingPagos) return;
-  window._loadingPagos = true;
+  if(pgLoaded||window._loadingPagos)return;
+  window._loadingPagos=true;
   const st=document.getElementById('pgStatus');
-  if(st) st.textContent='⟳ Carregando dados de pagamentos...';
+  if(st)st.textContent='⟳ Carregando dados de pagamentos...';
   DPG=[];
   for(const emp of FILES_PG){
     try{
       const res=await fetch(`${API_URL}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
       const rows=await res.json();
-      if(rows.error||rows.length<2) continue;
+      if(rows.error||rows.length<2)continue;
       const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
       const iDt=h.findIndex(x=>x.includes('data'));
       const iFn=h.findIndex(x=>x.includes('client')||x.includes('forn'));
@@ -1085,21 +1085,37 @@ async function loadPagos(){
       for(let i=1;i<rows.length;i++){
         const row=rows[i];
         const dtStr=row[iDt]||'';
-        if(!dtStr||!dtStr.includes('/')) continue;
+        if(!dtStr||!dtStr.includes('/'))continue;
         const p=dtStr.split('/');
-        if(p.length<3) continue;
+        if(p.length<3)continue;
         const dt=new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
-        if(isNaN(dt.getTime())) continue;
+        if(isNaN(dt.getTime()))continue;
+        const dsc=String(row[iDs]||'').trim();
+        const dscUp=dsc.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+        if(dscUp.includes('MUTUO')||dscUp.includes('MUTUA'))continue;
         const valStr=String(row[iVl]||'0').replace(/\./g,'').replace(',','.');
         const val=parseFloat(valStr)||0;
-        if(!val) continue;
-        DPG.push({emp,forn:String(row[iFn]||'').trim(),dt,dts:dtStr,dsc:String(row[iDs]||'').trim(),val});
+        if(!val)continue;
+        DPG.push({emp,forn:String(row[iFn]||'').trim(),dt,dts:dtStr,dsc,val});
       }
     }catch(e){console.warn('Erro ao carregar',emp,e);}
   }
   pgLoaded=true;
-  window._loadingPagos = false;
+  window._loadingPagos=false;
   renderPagos();
+}
+
+function getPgKey(dt, per){
+  if(per==='dia') return dt.toLocaleDateString('pt-BR');
+  if(per==='mes'){
+    return String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
+  }
+  // semanal - get Monday of the week
+  const d=new Date(dt);
+  const day=d.getDay()||7;
+  d.setDate(d.getDate()-day+1);
+  const d2=new Date(d);d2.setDate(d2.getDate()+6);
+  return d.toLocaleDateString('pt-BR')+' a '+d2.toLocaleDateString('pt-BR');
 }
 
 function renderPagos(){
@@ -1107,39 +1123,57 @@ function renderPagos(){
   const pgEmpEl=document.getElementById('pgEmp');
   const pgTbodyEl=document.getElementById('pgTbody');
   const pgStatusEl=document.getElementById('pgStatus');
-  if(!pgEmpEl||!pgTbodyEl) return;
+  const pgPerEl=document.getElementById('pgPer');
+  if(!pgEmpEl||!pgTbodyEl)return;
   const empF=pgEmpEl.value;
+  const per=pgPerEl?pgPerEl.value:'dia';
   const dtIni=document.getElementById('pgDtIni').value;
   const dtFim=document.getElementById('pgDtFim').value;
-  let filt=DPG;
-  if(empF) filt=filt.filter(r=>r.emp===empF);
-  if(dtIni) filt=filt.filter(r=>r.dt>=new Date(dtIni+'T00:00:00'));
-  if(dtFim) filt=filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
-  const tot=filt.reduce((a,r)=>a+r.val,0);
-  if(pgStatusEl) pgStatusEl.textContent=filt.length+' pagamentos · Total: '+brl(tot);
 
-  // Update KPI cards
+  let filt=DPG;
+  if(empF)filt=filt.filter(r=>r.emp===empF);
+  if(dtIni)filt=filt.filter(r=>r.dt>=new Date(dtIni+'T00:00:00'));
+  if(dtFim)filt=filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
+
+  const tot=filt.reduce((a,r)=>a+r.val,0);
+  if(pgStatusEl)pgStatusEl.textContent=filt.length+' pagamentos · Total: '+brl(tot);
+
   const byEmp=(emp)=>filt.filter(r=>r.emp===emp);
   const sumEmp=(emp)=>byEmp(emp).reduce((a,r)=>a+r.val,0);
   const se2=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  se2('pgTot',brl(tot));
-  se2('pgTotN',filt.length+' lançamentos');
-  se2('pgRosil',brl(sumEmp('PG-ROSIL')));
-  se2('pgRosilN',byEmp('PG-ROSIL').length+' lançamentos');
-  se2('pgRsl',brl(sumEmp('PG-RSL')));
-  se2('pgRslN',byEmp('PG-RSL').length+' lançamentos');
-  se2('pgLucro',brl(sumEmp('PG-LUCRO PRESUMIDO')));
-  se2('pgLucroN',byEmp('PG-LUCRO PRESUMIDO').length+' lançamentos');
+  se2('pgTot',brl(tot)); se2('pgTotN',filt.length+' lançamentos');
+  se2('pgRosil',brl(sumEmp('PG-ROSIL'))); se2('pgRosilN',byEmp('PG-ROSIL').length+' lançamentos');
+  se2('pgRsl',brl(sumEmp('PG-RSL'))); se2('pgRslN',byEmp('PG-RSL').length+' lançamentos');
+  se2('pgLucro',brl(sumEmp('PG-LUCRO PRESUMIDO'))); se2('pgLucroN',byEmp('PG-LUCRO PRESUMIDO').length+' lançamentos');
+
   const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
   const empCls={'PG-ROSIL':'rosil','PG-RSL':'rsl','PG-LUCRO PRESUMIDO':'lp'};
-  pgTbodyEl.innerHTML=[...filt].sort((a,b)=>b.dt-a.dt).map(r=>`
-    <tr>
-      <td><span class="et ${empCls[r.emp]||''}">${empShort[r.emp]||r.emp}</span></td>
-      <td style="font-weight:500">${esc(r.forn)}</td>
-      <td class="mn">${r.dts}</td>
-      <td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td>
-      <td class="mn" style="text-align:right;font-weight:600;color:#059669">${brl(r.val)}</td>
-    </tr>`).join('');
+
+  // Group by period
+  const groups={};
+  [...filt].sort((a,b)=>b.dt-a.dt).forEach(r=>{
+    const k=getPgKey(r.dt,per);
+    if(!groups[k]){groups[k]={label:k,items:[],tot:0};}
+    groups[k].items.push(r);
+    groups[k].tot+=r.val;
+  });
+
+  let html='';
+  Object.values(groups).forEach(g=>{
+    html+=`<tr style="background:#f8fafc"><td colspan="5" style="padding:10px 14px;font-weight:600;font-size:13px;color:#1a1d23;border-bottom:2px solid #e8eaed">
+      📅 ${g.label} <span style="font-weight:400;color:#6b7280;font-size:12px">· ${g.items.length} lançamentos · Total: ${brl(g.tot)}</span>
+    </td></tr>`;
+    g.items.forEach(r=>{
+      html+=`<tr>
+        <td><span class="et ${empCls[r.emp]||''}">${empShort[r.emp]||r.emp}</span></td>
+        <td style="font-weight:500">${esc(r.forn)}</td>
+        <td class="mn">${r.dts}</td>
+        <td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td>
+        <td class="mn" style="text-align:right;font-weight:600;color:#059669">${brl(r.val)}</td>
+      </tr>`;
+    });
+  });
+  pgTbodyEl.innerHTML=html||'<tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af">Nenhum dado encontrado</td></tr>';
 }
 
 window.addEventListener('DOMContentLoaded',function(){
@@ -1154,32 +1188,19 @@ window.addEventListener('DOMContentLoaded',function(){
   });
   // Revisão buttons
   document.getElementById('bref').addEventListener('click',()=>{pgLoaded=false;load();});
-  const pgEmpEl=document.getElementById('pgEmp');
-  const pgDtIniEl=document.getElementById('pgDtIni');
-  const pgDtFimEl=document.getElementById('pgDtFim');
+  ['pgPer','pgEmp','pgDtIni','pgDtFim'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('change',renderPagos);});
   const pgClearEl=document.getElementById('pgClear');
-  const pgExportEl=document.getElementById('pgExport');
-  if(pgEmpEl) pgEmpEl.addEventListener('change',renderPagos);
-  if(pgDtIniEl) pgDtIniEl.addEventListener('change',renderPagos);
-  if(pgDtFimEl) pgDtFimEl.addEventListener('change',renderPagos);
-  if(pgClearEl) pgClearEl.addEventListener('click',()=>{
-    if(pgEmpEl) pgEmpEl.selectedIndex=0;
-    if(pgDtIniEl) pgDtIniEl.value='';
-    if(pgDtFimEl) pgDtFimEl.value='';
+  if(pgClearEl)pgClearEl.addEventListener('click',()=>{
+    ['pgEmp'].forEach(id=>{const e=document.getElementById(id);if(e)e.selectedIndex=0;});
+    ['pgDtIni','pgDtFim'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
     renderPagos();
   });
-  if(pgExportEl) pgExportEl.addEventListener('click',()=>{
-    if(!DPG.length){alert('Nenhum dado para exportar.');return;}
+  const pgExportEl=document.getElementById('pgExport');
+  if(pgExportEl)pgExportEl.addEventListener('click',()=>{
+    if(!DPG.length){alert('Nenhum dado.');return;}
     const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
-    let filt=DPG;
-    const empF=pgEmpEl?pgEmpEl.value:'';
-    const dtIni=pgDtIniEl?pgDtIniEl.value:'';
-    const dtFim=pgDtFimEl?pgDtFimEl.value:'';
-    if(empF) filt=filt.filter(r=>r.emp===empF);
-    if(dtIni) filt=filt.filter(r=>r.dt>=new Date(dtIni+'T00:00:00'));
-    if(dtFim) filt=filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
     const rows=[['Empresa','Fornecedor','Vencimento','Descrição','Valor']];
-    filt.sort((a,b)=>b.dt-a.dt).forEach(r=>rows.push([empShort[r.emp]||r.emp,r.forn,r.dts,r.dsc,r.val.toFixed(2).replace('.',',')]));
+    [...DPG].sort((a,b)=>b.dt-a.dt).forEach(r=>rows.push([empShort[r.emp]||r.emp,r.forn,r.dts,r.dsc,r.val.toFixed(2).replace('.',',')]));
     const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
     const a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
@@ -1505,11 +1526,10 @@ if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist')
 // =============================================
 // ESTADO COMPARTILHADO (Google Drive)
 // =============================================
-function setSyncStatus(msg, color){
+function setSyncStatus(msg,color){
   const el=document.getElementById('syncStatus');
   if(el){el.textContent=msg;el.style.color=color||'#9ca3af';}
 }
-
 async function apiPost(action, dados){
   try {
     const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados)) + '&t=' + Date.now();
@@ -1795,11 +1815,15 @@ window.addEventListener('DOMContentLoaded', function(){
   </div>
 </div>
 
-<!-- PAGOS TAB -->
 <div id="tpg" style="display:none">
   <div class="hw">
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="font-size:12px;font-weight:500;color:#6b7280">Filtrar:</span>
+      <span style="font-size:12px;font-weight:500;color:#6b7280">Agrupar:</span>
+      <select id="pgPer" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
+        <option value="dia">Diário</option>
+        <option value="sem">Semanal</option>
+        <option value="mes">Mensal</option>
+      </select>
       <select id="pgEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
         <option value="">Todas as empresas</option>
         <option value="PG-ROSIL">ROSIL</option>
@@ -1813,8 +1837,6 @@ window.addEventListener('DOMContentLoaded', function(){
       <button id="pgExport" style="padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:#3b82f6;color:#fff;font-family:Inter,sans-serif">↓ Exportar CSV</button>
     </div>
     <div id="pgStatus" style="font-size:12px;color:#9ca3af;margin-bottom:12px"></div>
-
-    <!-- KPI CARDS PAGOS -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px">
       <div class="sc"><div class="slb">Total pago</div><div class="sv" id="pgTot" style="color:#1a1d23">R$ 0</div><div class="ssb" id="pgTotN">0 lançamentos</div></div>
       <div class="sc"><div class="slb">ROSIL</div><div class="sv" id="pgRosil" style="color:#1d4ed8">R$ 0</div><div class="ssb" id="pgRosilN">0 lançamentos</div></div>
@@ -1822,7 +1844,7 @@ window.addEventListener('DOMContentLoaded', function(){
       <div class="sc"><div class="slb">Lucro Presumido</div><div class="sv" id="pgLucro" style="color:#9a3412">R$ 0</div><div class="ssb" id="pgLucroN">0 lançamentos</div></div>
     </div>
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden">
-      <div style="overflow:auto;max-height:calc(100vh - 240px)">
+      <div style="overflow:auto;max-height:calc(100vh - 320px)">
         <table class="ht" style="margin:0">
           <thead style="position:sticky;top:0;background:#fff;z-index:5"><tr>
             <th>Empresa</th><th>Fornecedor</th><th>Vencimento</th><th>Descrição</th><th style="text-align:right">Valor</th>
@@ -1833,6 +1855,5 @@ window.addEventListener('DOMContentLoaded', function(){
     </div>
   </div>
 </div>
-
 </body>
 </html>
