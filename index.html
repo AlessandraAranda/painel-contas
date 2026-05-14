@@ -170,12 +170,11 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 </div>
 
 <div class="tabs" style="position:sticky;top:57px;z-index:101;background:#fff">
-  <div class="tab on" data-tab="p">Painel do dia</div>
-  <div class="tab" data-tab="r">Revisão <span id="rc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
-  <div class="tab" data-tab="h">Histórico <span id="hc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
-  <div class="tab" data-tab="a">Análise</div>
+  <div class="tab on" data-tab="p">Em Aberto</div>
+  <div class="tab" data-tab="r">À Pagar - Aprovação <span id="rc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
+  <div class="tab" data-tab="h">Histórico de Aprovação <span id="hc" style="font-size:11px;color:#9ca3af;margin-left:3px"></span></div>
   <div class="tab" data-tab="pg">Pagos</div>
-  <div class="tab" data-tab="fd">Fechamento</div>
+  <div class="tab" data-tab="fd">Fechamento Diário</div>
 </div>
 
 <div id="tp">
@@ -260,138 +259,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   </div>
 </div>
 
-<div id="ta" style="display:none">
-  <div class="hw">
-
-    <!-- FILTROS -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="font-size:12px;font-weight:500;color:#6b7280">Filtrar:</span>
-      <select id="anEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-        <option value="">Todas as empresas</option>
-        <option value="ROSIL">ROSIL</option>
-        <option value="RSL">RSL</option>
-        <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
-      </select>
-      <div style="width:1px;height:18px;background:#e2e5ea;margin:0 2px"></div>
-      <span style="font-size:12px;color:#6b7280">Período de aprovação:</span>
-      <input type="date" id="anDtIni" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-      <input type="date" id="anDtFim" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-      <button id="anClearF" style="padding:5px 12px;border-radius:6px;font-family:Inter,sans-serif;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#6b7280">Limpar</button>
-    </div>
-
-    <!-- CARDS KPI -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:20px">
-      <div class="sc"><div class="slb">Total a pagar</div><div class="sv" id="anTotAberto">R$ 0</div><div class="ssb" id="anTotAbertoN">0 lançamentos</div></div>
-      <div class="sc"><div class="slb">Total aprovado</div><div class="sv v" id="anTotAprov">R$ 0</div><div class="ssb" id="anTotAprovN">—</div></div>
-      <div class="sc"><div class="slb">% aprovado</div><div class="sv g" id="anPctAprov">0%</div><div class="ssb">do total a pagar</div></div>
-      <div class="sc"><div class="slb">Atrasados</div><div class="sv r" id="anAtrasado">R$ 0</div><div class="ssb" id="anAtrasadoN">0 lançamentos</div></div>
-      <div class="sc"><div class="slb">Ticket médio</div><div class="sv" id="anTicket">R$ 0</div><div class="ssb">por lançamento</div></div>
-      <div class="sc"><div class="slb">Média mensal</div><div class="sv" id="anMensal">R$ 0</div><div class="ssb" id="anMensalN">—</div></div>
-    </div>
-
-    <!-- KPI MATÉRIA-PRIMA -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:18px 24px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:4px">Matéria-Prima vs Despesas Totais</div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Lançamentos com "MATERIA PRIMA" na descrição</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;align-items:center">
-        <div class="sc" style="background:#f0fdf4;border-color:#a7f3d0">
-          <div class="slb" style="color:#065f46">Matéria-Prima</div>
-          <div class="sv g" id="anMpVal">R$ 0</div>
-          <div class="ssb" id="anMpN">0 lançamentos</div>
-        </div>
-        <div class="sc" style="background:#eff6ff;border-color:#bfdbfe">
-          <div class="slb" style="color:#1d4ed8">Outras despesas</div>
-          <div class="sv v" id="anMpOutros">R$ 0</div>
-          <div class="ssb" id="anMpOutrosN">0 lançamentos</div>
-        </div>
-        <div class="sc" style="background:#fdf4ff;border-color:#e9d5ff">
-          <div class="slb" style="color:#7e22ce">MP % sobre total</div>
-          <div class="sv" id="anMpPct" style="color:#7e22ce">0%</div>
-          <div class="ssb">do total a pagar</div>
-        </div>
-        <div style="min-width:160px">
-          <div style="font-size:11px;color:#6b7280;margin-bottom:6px">Proporção visual</div>
-          <div style="background:#e0e7ff;border-radius:6px;height:10px;overflow:hidden">
-            <div id="anMpBar" style="height:100%;background:#10b981;border-radius:6px;transition:width .4s;width:0%"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px">
-            <span style="font-size:10px;color:#059669">● MP</span>
-            <span style="font-size:10px;color:#3b82f6">● Outras</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ROW 1: Pizza empresa + Status -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
-        <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Distribuição por empresa</div>
-        <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">% do total a pagar</div>
-        <canvas id="anChartEmp" height="180"></canvas>
-      </div>
-      <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px">
-        <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Por status</div>
-        <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Atrasado · Hoje · A vencer</div>
-        <canvas id="anChartStatus" height="180"></canvas>
-      </div>
-    </div>
-
-    <!-- ROW 2: Fluxo diário -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:#1a1d23">Fluxo diário — a pagar vs aprovado</div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:2px">Por data de aprovação</div>
-        </div>
-        <select id="anPeriodo" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-          <option value="15">15 dias</option>
-          <option value="30" selected>30 dias</option>
-          <option value="60">60 dias</option>
-        </select>
-      </div>
-      <div style="display:flex;gap:16px;margin-bottom:12px">
-        <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;background:#bfdbfe;border-radius:2px"></span>A pagar</span>
-        <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px"></span>Aprovado</span>
-      </div>
-      <canvas id="anChartDiario" height="90"></canvas>
-    </div>
-
-    <!-- ROW 3: Fluxo mensal -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:#1a1d23">Fluxo mensal — a pagar vs aprovado</div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:2px">Consolidado por mês</div>
-        </div>
-        <select id="anAno" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-          <option value="0">Todos os anos</option>
-        </select>
-      </div>
-      <div style="display:flex;gap:16px;margin-bottom:12px">
-        <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;background:#fca5a5;border-radius:2px"></span>A pagar</span>
-        <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:2px"></span>Aprovado</span>
-      </div>
-      <canvas id="anChartMensal" height="90"></canvas>
-    </div>
-
-    <!-- ROW 4: Top 10 fornecedores -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Top 10 fornecedores</div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Maiores valores em aberto</div>
-      <canvas id="anChartForn" height="110"></canvas>
-    </div>
-
-    <!-- ROW 5: Top 10 categorias -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:3px">Top 10 categorias (por descrição)</div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:14px">Agrupado por palavra-chave da descrição</div>
-      <canvas id="anChartCat" height="110"></canvas>
-    </div>
-    <div id="anEmpCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px"></div>
-
-  </div>
-</div>
-
 <div class="bb" id="bb" style="display:none">
   <div class="bif">
     <span>Exibindo <b id="cv">0</b></span>
@@ -460,6 +327,17 @@ const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const sta=d=>{if(!d)return'futuro';const x=new Date(d);x.setHours(0,0,0,0);return x<td?'atrasado':x.getTime()===td.getTime()?'hoje':'futuro';};
 const ec=e=>e==='ROSIL'?'eR':e==='RSL'?'eS':'eL';
+
+// Detecção robusta de mútuos (inclui variações e erros de digitação)
+function isMutuo(dsc){
+  if(!dsc)return false;
+  const s=dsc.toUpperCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'') // remove acentos
+    .replace(/\s+/g,' ').trim();
+  // Variações: MUTUO, MÚTUO, MOUTU, MOUTO, MUTTUO, MUTTU, MUTOU, MUUTO
+  return /MU[TU]{1,2}[OUA][OUA]?/.test(s) || s.includes('MOUTO') || s.includes('MOUTU');
+}
+
 
 // ---- DATE PARSER (robusto para Excel serial e strings dd/mm/yyyy) ----
 function parseXlsxDate(v) {
@@ -574,7 +452,7 @@ async function load(){
         const dscVal=String(row[iDs]||'');
         if(dscVal.toLowerCase().includes('acumulado'))continue;
         const dscUp=dscVal.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-        if(dscUp.includes('MUTUO')||dscUp.includes('MUTUA'))continue;
+        if(isMutuo(dscVal||dsc||''))continue;
         const dt=parseXlsxDate(row[iD]);
         if(!dt)continue;
         const val=parseFloat(String(row[iV]||'0').trim().replace(/\./g,'').replace(',','.'))||0;
@@ -594,49 +472,13 @@ async function load(){
   });
   if(!ok){serr('Não foi possível carregar os arquivos. Verifique se estão na pasta do Drive.');return;}
 
-  // LANÇAMENTOS FIXOS
-  // Use Brasilia timezone for "today"
+  // Only apply custom fixos (hardcoded ones removed)
   const nowBR = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}));
   const hoje = new Date(nowBR.getFullYear(), nowBR.getMonth(), nowBR.getDate());
-  const diaSemana = hoje.getDay(); // 0=Dom,1=Seg,2=Ter,3=Qua,4=Qui,5=Sex,6=Sab
-
-  // Fixos diários RSL
-  const fixosDiarios = [
-    {emp:'RSL', forn:'LALAMOVE',             dsc:'FRETE DIÁRIO',        val:200.00},
-    {emp:'RSL', forn:'ABASTECIMENTO DIVERSOS',dsc:'COMBUSTÍVEL DIÁRIO',  val:1200.00},
-    {emp:'RSL', forn:'CONECTCAR',            dsc:'PEDÁGIO DIÁRIO',       val:100.00},
-  ];
-  fixosDiarios.forEach(f=>{
-    D.push({id:ni++,emp:f.emp,forn:f.forn,dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:f.dsc,val:f.val,fixo:true});
-  });
-
-  // Fixos semanais — toda SEGUNDA-FEIRA (diaSemana === 1)
-  if(diaSemana === 1){
-    const fixosSegunda = [
-      {emp:'LUCRO PRESUMIDO', forn:'SEVERINO ESTRELA CABRAL',        dsc:'VT SEMANAL',  val:125.00},
-      {emp:'ROSIL',           forn:'CLAUDIO ESTRELA - VT',           dsc:'VT SEMANAL',  val:210.30},
-      {emp:'ROSIL',           forn:'JOÃO RAIMUNDO MATOS VA',         dsc:'VA SEMANAL',  val:100.00},
-      {emp:'ROSIL',           forn:'LUIZ DIAS',                      dsc:'VT SEMANAL',  val:31.00},
-      {emp:'RSL',             forn:'LUIS CARLOS GAMA-VA',            dsc:'VA SEMANAL',  val:200.00},
-      {emp:'RSL',             forn:'JOÃO VIEIRA - VT',               dsc:'VT SEMANAL',  val:200.00},
-      {emp:'RSL',             forn:'CLAUDECIR GOMES',                dsc:'VT SEMANAL',  val:75.00},
-      {emp:'RSL',             forn:'DEICOLA',                        dsc:'VT SEMANAL',  val:62.00},
-      {emp:'RSL',             forn:'FRANCISCO HENRIQUE',             dsc:'VT SEMANAL',  val:32.25},
-      {emp:'RSL',             forn:'JOAQUIM ROBERTO',                dsc:'VT SEMANAL',  val:40.00},
-      {emp:'RSL',             forn:'LAURA ESMARIA',                  dsc:'VT SEMANAL',  val:62.00},
-      {emp:'RSL',             forn:'MAX ROBERTO SANTOS DA COSTA',    dsc:'VT SEMANAL',  val:106.00},
-      {emp:'RSL',             forn:'ALEX PACHECO DA SILVA',          dsc:'VT SEMANAL - PIX',val:40.00},
-    ];
-    fixosSegunda.forEach(f=>{
-      D.push({id:ni++,emp:f.emp,forn:f.forn,dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:f.dsc,val:f.val,fixo:true});
-    });
-  }
-
-  // Fixos semanais — toda SEXTA-FEIRA (diaSemana === 5)
-  if(diaSemana === 5){
-    D.push({id:ni++,emp:'RSL',forn:'HORAS EXTRAS',dt:new Date(hoje),dts:hoje.toLocaleDateString('pt-BR'),dsc:'HORAS EXTRAS SEMANAIS',val:2000.00,fixo:true});
-  }
   ni = applyCustomFixos(D, ni, hoje);
+
+  // Lançamento único fixo — Saldo inicial
+  D.push({id:ni++,emp:'ROSIL',forn:'ROSIL',dt:new Date(2026,2,31),dts:'31/03/2026',dsc:'SALDO DO DIA 31/03',val:1014.23,fixo:true});
   loadAvulsos();loadAvulsosLocal();smn();loadFilters();loadSelection();ren();updateRev();
   document.getElementById('lu').textContent='Atualizado: '+new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'});
   const n=Object.values(fs).filter(s=>s==='ok').length;
@@ -831,12 +673,10 @@ function stab(t){
   se('tp',t==='p'?'block':'none');
   se('th2',t==='h'?'block':'none');
   se('tr2',t==='r'?'block':'none');
-  se('ta',t==='a'?'block':'none');
   se('tpg',t==='pg'?'block':'none');
   se('tfd',t==='fd'?'block':'none');
   se('bb',(t==='p'&&D.length)?'flex':'none');
   if(t==='r') renderRev();
-  if(t==='a') renderAnalise();
   if(t==='pg') renderPagos();
   if(t==='fd') renderFechamento();
 }
@@ -1045,7 +885,7 @@ async function loadPagos(){
         const dt=new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));if(isNaN(dt.getTime()))continue;
         const dsc=String(row[iDs]||'').trim();
         const dscUp=dsc.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-        if(dscUp.includes('MUTUO')||dscUp.includes('MUTUA'))continue;
+        if(isMutuo(dscVal||dsc||''))continue;
         const valStr=String(row[iVl]||'0').replace(/\./g,'').replace(',','.');
         const val=parseFloat(valStr)||0;if(!val)continue;
         const tipo=dscUp.includes('ENTRADA')||dscUp.includes('RECEBIMENTO')||dscUp.includes('DEPOSITO')||dscUp.includes('SALDO')?'entrada':'saida';
@@ -1136,8 +976,23 @@ async function renderFechamento(){
   se('fdEntTbody',null);document.getElementById('fdEntTbody').innerHTML=entradas.length?entradas.map(r=>row({...r,val:r.val})).join(''):empty('entrada');
   document.getElementById('fdSaiTbody').innerHTML=saidas.length?saidas.map(r=>row({...r})).join(''):empty('saída');
   const hoje=new Date();hoje.setHours(23,59,59,999);
-  const h60=new Date(hoje);h60.setDate(h60.getDate()-60);h60.setHours(0,0,0,0);
-  const pendencias=D.filter(r=>r.dt&&r.dt>=h60&&r.dt<=hoje&&sta(r.dt)==='atrasado');
+  const period=parseInt(document.getElementById('fdPendPeriod')?.value||'60');
+  const h60=new Date(hoje);h60.setDate(h60.getDate()-period);h60.setHours(0,0,0,0);
+  const periodLabel=document.getElementById('fdPendPeriodLabel');
+  if(periodLabel)periodLabel.textContent='Últimos '+period+' dias até hoje';
+  const filtEmp=document.getElementById('fdFiltEmp')?.value||'';
+  const filtForn=(document.getElementById('fdFiltForn')?.value||'').toLowerCase().trim();
+  const filtDt=document.getElementById('fdFiltDt')?.value||'';
+  const filtDsc=(document.getElementById('fdFiltDsc')?.value||'').toLowerCase().trim();
+
+  const pendencias=D.filter(r=>{
+    if(!r.dt||r.dt<h60||r.dt>hoje||sta(r.dt)!=='atrasado')return false;
+    if(filtEmp&&r.emp!==filtEmp)return false;
+    if(filtForn&&!r.forn.toLowerCase().includes(filtForn))return false;
+    if(filtDt&&r.dts!==new Date(filtDt+'T00:00:00').toLocaleDateString('pt-BR'))return false;
+    if(filtDsc&&!r.dsc.toLowerCase().includes(filtDsc))return false;
+    return true;
+  });
   const pSort=[...pendencias].sort((a,b)=>{
     let av,bv;
     if(fdSortCol==='dts'){av=a.dt?a.dt.getTime():0;bv=b.dt?b.dt.getTime():0;}
@@ -1222,13 +1077,6 @@ if(document.getElementById('bch'))document.getElementById('bch').addEventListene
 // =============================================
 // ANÁLISE / KPIs
 // =============================================
-let anChartEmpObj=null,anChartStatusObj=null,anChartFornObj=null,anChartMensalObj=null,anChartDiarioObj=null,anChartCatObj=null,anChartPlanAprovObj=null;
-
-function parseHistDate2(s){
-  const p=s.split(',')[0].trim().split('/');
-  if(p.length<3)return null;
-  return new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));
-}
 
 function updateRev(){
   const n=ci.size;
@@ -1298,156 +1146,6 @@ function renderRev(){
 
 
 
-function renderAnalise(){
-  const empF=document.getElementById('anEmp').value;
-  const dtIni=document.getElementById('anDtIni').value;
-  const dtFim=document.getElementById('anDtFim').value;
-  const periodo=parseInt(document.getElementById('anPeriodo').value);
-  const anoF=document.getElementById('anAno').value;
-  const now=new Date();now.setHours(23,59,59,999);
-  const cutoff=new Date(now-periodo*86400000);
-
-  const dFilt=empF?D.filter(r=>r.emp===empF):D;
-  const hAll=empF?H.map(e=>({...e,filteredItems:e.items.filter(i=>i.emp===empF)})).filter(e=>e.filteredItems.length):H.map(e=>({...e,filteredItems:e.items}));
-  const hFilt=hAll.filter(e=>{
-    const d=parseHistDate2(e.dt);if(!d)return true;
-    if(dtIni&&d<new Date(dtIni+'T00:00:00'))return false;
-    if(dtFim&&d>new Date(dtFim+'T23:59:59'))return false;
-    return true;
-  });
-
-  // Populate year filter
-  const anosD=dFilt.map(r=>r.dt?String(r.dt.getFullYear()):'');
-  const anosH=hAll.map(e=>{const d=parseHistDate2(e.dt);return d?String(d.getFullYear()):'';});
-  const anos=[...new Set([...anosD,...anosH].filter(Boolean))].sort().reverse();
-  const anoSel=document.getElementById('anAno').value;
-  document.getElementById('anAno').innerHTML='<option value="0">Todos os anos</option>'+anos.map(a=>`<option value="${a}"${anoSel===a?' selected':''}>${a}</option>`).join('');
-
-  const totAberto=dFilt.filter(r=>!r.pago).reduce((a,r)=>a+r.val,0);
-  const totAprov=hFilt.reduce((a,e)=>a+e.filteredItems.reduce((b,i)=>b+i.va,0),0);
-  const pctAprov=totAberto>0?((totAprov/totAberto)*100).toFixed(1):0;
-  const ticket=dFilt.length?totAberto/dFilt.length:0;
-  const atrasados=dFilt.filter(r=>sta(r.dt)==='atrasado');
-  const hojes=dFilt.filter(r=>sta(r.dt)==='hoje');
-  const futuros=dFilt.filter(r=>sta(r.dt)==='futuro');
-  const monMap={};
-  dFilt.forEach(r=>{if(!r.dt)return;const k=String(r.dt.getFullYear())+'-'+String(r.dt.getMonth()+1).padStart(2,'0');if(!monMap[k])monMap[k]=0;monMap[k]+=r.val;});
-  const monVals=Object.values(monMap);
-  const mediaMensal=monVals.length?monVals.reduce((a,v)=>a+v,0)/monVals.length:0;
-
-  // Matéria-Prima KPI
-  const mpRows=dFilt.filter(r=>{
-    const d=r.dsc.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    return d.includes('MATERIA PRIMA')||d.includes('MATERIA-PRIMA');
-  });
-  const mpVal=mpRows.reduce((a,r)=>a+r.val,0);
-  const mpOutros=totAberto-mpVal;
-  const mpPct=totAberto>0?((mpVal/totAberto)*100).toFixed(1):0;
-  if(document.getElementById('anMpVal'))document.getElementById('anMpVal').textContent=brl(mpVal);
-  if(document.getElementById('anMpN'))document.getElementById('anMpN').textContent=mpRows.length+' lançamentos';
-  if(document.getElementById('anMpOutros'))document.getElementById('anMpOutros').textContent=brl(mpOutros);
-  if(document.getElementById('anMpOutrosN'))document.getElementById('anMpOutrosN').textContent=(dFilt.length-mpRows.length)+' lançamentos';
-  if(document.getElementById('anMpPct'))document.getElementById('anMpPct').textContent=mpPct+'%';
-  if(document.getElementById('anMpBar'))document.getElementById('anMpBar').style.width=Math.min(mpPct,100)+'%';
-
-  document.getElementById('anTotAberto').textContent=brl(totAberto);
-  document.getElementById('anTotAbertoN').textContent=dFilt.length+' lançamentos';
-  document.getElementById('anTotAprov').textContent=brl(totAprov);
-  document.getElementById('anTotAprovN').textContent=hFilt.length+' aprovações';
-  document.getElementById('anPctAprov').textContent=pctAprov+'%';
-  document.getElementById('anAtrasado').textContent=brl(atrasados.reduce((a,r)=>a+r.val,0));
-  document.getElementById('anAtrasadoN').textContent=atrasados.length+' lançamentos';
-  document.getElementById('anTicket').textContent=brl(ticket);
-  document.getElementById('anMensal').textContent=brl(mediaMensal);
-  document.getElementById('anMensalN').textContent=Object.keys(monMap).length+' meses';
-
-  const emps=['ROSIL','RSL','LUCRO PRESUMIDO'];
-  const empAberto=emps.map(e=>dFilt.filter(r=>r.emp===e).reduce((a,r)=>a+r.val,0));
-  const empAprov=emps.map(e=>hFilt.reduce((a,en)=>a+en.filteredItems.filter(i=>i.emp===e).reduce((b,i)=>b+i.va,0),0));
-
-  // Pizza empresa
-  if(anChartEmpObj)anChartEmpObj.destroy();
-  anChartEmpObj=new Chart(document.getElementById('anChartEmp'),{type:'doughnut',data:{labels:emps,datasets:[{data:empAberto,backgroundColor:['#bfdbfe','#a7f3d0','#fed7aa'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)+' ('+((ctx.raw/(totAberto||1))*100).toFixed(1)+'%)'}}}}});
-
-  // Rosca status
-  const statusData=[atrasados.reduce((a,r)=>a+r.val,0),hojes.reduce((a,r)=>a+r.val,0),futuros.reduce((a,r)=>a+r.val,0)];
-  if(anChartStatusObj)anChartStatusObj.destroy();
-  anChartStatusObj=new Chart(document.getElementById('anChartStatus'),{type:'doughnut',data:{labels:['Atrasado','Vence hoje','A vencer'],datasets:[{data:statusData,backgroundColor:['#fca5a5','#fde68a','#a7f3d0'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)+' ('+((ctx.raw/(statusData.reduce((a,v)=>a+v,1)))*100).toFixed(1)+'%)'}}}}});
-
-  // Fluxo diário
-  const dayMapD={};
-  dFilt.forEach(r=>{if(!r.dt)return;const d=r.dt;if(d<cutoff||d>now)return;const dd=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getFullYear());if(!dayMapD[dd])dayMapD[dd]={p:0,a:0};dayMapD[dd].p+=r.val;});
-  hFilt.forEach(e=>{const d=parseHistDate2(e.dt);if(!d||d<cutoff||d>now)return;const dd=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getFullYear());if(!dayMapD[dd])dayMapD[dd]={p:0,a:0};e.filteredItems.forEach(i=>dayMapD[dd].a+=i.va);});
-  const ddays=Object.keys(dayMapD).sort((a,b)=>{const pa=a.split('/'),pb=b.split('/');return new Date(pa[2],+pa[1]-1,+pa[0])-new Date(pb[2],+pb[1]-1,+pb[0]);});
-  if(anChartDiarioObj)anChartDiarioObj.destroy();
-  anChartDiarioObj=new Chart(document.getElementById('anChartDiario'),{type:'bar',data:{labels:ddays,datasets:[{label:'A pagar',data:ddays.map(d=>dayMapD[d].p),backgroundColor:'#bfdbfe',borderRadius:4,borderSkipped:false,categoryPercentage:0.7},{label:'Aprovado',data:ddays.map(d=>dayMapD[d].a),backgroundColor:'#3b82f6',borderRadius:4,borderSkipped:false,categoryPercentage:0.7}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}});
-
-  // Fluxo mensal
-  const monMapM={};
-  dFilt.forEach(r=>{if(!r.dt)return;const y=String(r.dt.getFullYear()),m=String(r.dt.getMonth()+1).padStart(2,'0');if(anoF&&anoF!=='0'&&y!==anoF)return;const k=y+'-'+m;if(!monMapM[k])monMapM[k]={label:m+'/'+y,p:0,a:0};monMapM[k].p+=r.val;});
-  hFilt.forEach(e=>{const d=parseHistDate2(e.dt);if(!d)return;const y=String(d.getFullYear()),m=String(d.getMonth()+1).padStart(2,'0');if(anoF&&anoF!=='0'&&y!==anoF)return;const k=y+'-'+m;if(!monMapM[k])monMapM[k]={label:m+'/'+y,p:0,a:0};e.filteredItems.forEach(i=>monMapM[k].a+=i.va);});
-  const mkeys=Object.keys(monMapM).sort();
-  if(anChartMensalObj)anChartMensalObj.destroy();
-  anChartMensalObj=new Chart(document.getElementById('anChartMensal'),{type:'bar',data:{labels:mkeys.map(k=>monMapM[k].label),datasets:[{label:'A pagar',data:mkeys.map(k=>monMapM[k].p),backgroundColor:'#fca5a5',borderRadius:4,borderSkipped:false,categoryPercentage:0.7},{label:'Aprovado',data:mkeys.map(k=>monMapM[k].a),backgroundColor:'#ef4444',borderRadius:4,borderSkipped:false,categoryPercentage:0.7}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}}}}});
-
-  // Top 10 fornecedores
-  const fornMap={};dFilt.forEach(r=>{if(!fornMap[r.forn])fornMap[r.forn]=0;fornMap[r.forn]+=r.val;});
-  const top10f=Object.entries(fornMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  if(anChartFornObj)anChartFornObj.destroy();
-  anChartFornObj=new Chart(document.getElementById('anChartForn'),{type:'bar',data:{labels:top10f.map(x=>x[0].length>28?x[0].substring(0,28)+'...':x[0]),datasets:[{label:'Em aberto',data:top10f.map(x=>x[1]),backgroundColor:'#818cf8',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}}}});
-
-  // Top 10 categorias por palavra-chave da descrição
-  const catMap={};
-  dFilt.forEach(r=>{
-    const words=r.dsc.toUpperCase().split(/[\s\-\/]+/).filter(w=>w.length>3&&!['PARA','PELO','PELA','REF','NF','COM','DOS','DAS','DES','NAO'].includes(w));
-    const cat=words[0]||'OUTROS';
-    if(!catMap[cat])catMap[cat]=0;catMap[cat]+=r.val;
-  });
-  const top10c=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  if(anChartCatObj)anChartCatObj.destroy();
-  anChartCatObj=new Chart(document.getElementById('anChartCat'),{type:'bar',data:{labels:top10c.map(x=>x[0].length>28?x[0].substring(0,28)+'...':x[0]),datasets:[{label:'Total',data:top10c.map(x=>x[1]),backgroundColor:'#34d399',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+brl(ctx.raw)}}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},color:'#6b7280',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},border:{display:false}},y:{grid:{display:false},ticks:{font:{size:11},color:'#374151'}}}}});
-
-  // Planejado vs aprovado
-
-  // Cards por empresa
-  const empTextColors={'ROSIL':'#1d4ed8','RSL':'#065f46','LUCRO PRESUMIDO':'#9a3412'};
-  document.getElementById('anEmpCards').innerHTML=emps.map((e,i)=>{
-    const ab=empAberto[i],ap=empAprov[i];
-    const pct=ab>0?((ap/ab)*100).toFixed(1):0;
-    const cnt=dFilt.filter(r=>r.emp===e).length;
-    const atStr=dFilt.filter(r=>r.emp===e&&sta(r.dt)==='atrasado').length;
-    return`<div class="sc" style="border-left:3px solid ${empTextColors[e]}">
-      <div style="font-size:12px;font-weight:600;color:${empTextColors[e]};margin-bottom:10px">${e}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">A pagar</div><div style="font-size:15px;font-weight:600;font-family:monospace">${brl(ab)}</div><div style="font-size:11px;color:#9ca3af">${cnt} lanç.</div></div>
-        <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">Aprovado</div><div style="font-size:15px;font-weight:600;font-family:monospace;color:#6366f1">${brl(ap)}</div><div style="font-size:11px;color:#9ca3af">${pct}% pago</div></div>
-      </div>
-      <div style="margin-top:10px;padding-top:8px;border-top:1px solid #f3f4f6;font-size:11px;color:#dc2626">${atStr} lançamento${atStr!==1?'s':''} atrasado${atStr!==1?'s':''}</div>
-    </div>`;
-  }).join('');
-}
-
-['anEmp','anDtIni','anDtFim','anPeriodo','anAno'].forEach(id=>{
-  document.getElementById(id).addEventListener('change',renderAnalise);
-});
-if(document.getElementById('anClearF'))document.getElementById('anClearF').addEventListener('click',()=>{
-  document.getElementById('anDtIni').value='';
-  document.getElementById('anDtFim').value='';
-  document.getElementById('anEmp').selectedIndex=0;
-  renderAnalise();
-});
-
-// Export all history
-if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist').addEventListener('click',()=>{
-  if(!H.length){alert('Nenhum histórico para exportar.');return;}
-  const rows=[['Data Aprovação','Identificação','Empresa','Fornecedor','Vencimento','Descrição','Valor Previsto','Valor Aprovado']];
-  H.forEach(h=>h.items.forEach(i=>rows.push([h.dt,h.lb,i.emp,i.forn,i.dts,i.dsc,i.vp.toFixed(2),i.va.toFixed(2)])));
-  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`historico_completo_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;
-  a.click();
-});
 
 // =============================================
 // PAINEL LATERAL DE RASTREAMENTO
@@ -1676,11 +1374,7 @@ window.addEventListener('DOMContentLoaded', function(){
     const todayStr = new Date().toISOString().split('T')[0];
     fdDataEl.value = todayStr;
   }
-  const fdHojeEl = document.getElementById('fdHoje');
-  if(fdHojeEl) fdHojeEl.addEventListener('click',()=>{
-    document.getElementById('fdData').value=new Date().toISOString().split('T')[0];
-    renderFechamento();
-  });
+
   // Fechamento sort
   document.addEventListener('click',e=>{
     const th=e.target.closest('.fd-sort');
@@ -1798,7 +1492,6 @@ window.addEventListener('DOMContentLoaded', function(){
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <span style="font-size:13px;font-weight:600;color:#1a1d23">📅 Data do fechamento:</span>
       <input type="date" id="fdData" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:6px 12px;outline:none;height:34px">
-      <button id="fdHoje" style="padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#6b7280;font-family:Inter,sans-serif">Hoje</button>
       <div id="fdStatus" style="font-size:12px;color:#9ca3af;margin-left:8px"></div>
     </div>
 
@@ -1830,8 +1523,8 @@ window.addEventListener('DOMContentLoaded', function(){
 
     <!-- SALDO FINAL -->
     <div style="background:#1a1d23;border-radius:10px;padding:18px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div style="font-size:13px;font-weight:500;color:#9ca3af">Saldo após pagamentos do dia</div>
-      <div style="font-size:26px;font-weight:700;font-family:monospace" id="fdSaldoFinal" style="color:#fff">R$ 0,00</div>
+      <div style="font-size:15px;font-weight:600;color:#9ca3af">Saldo após pagamentos do dia</div>
+      <div style="font-size:28px;font-weight:700;font-family:monospace;color:#fff" id="fdSaldoFinal">R$ 0,00</div>
     </div>
 
     <!-- ENTRADAS DO DIA -->
@@ -1869,21 +1562,42 @@ window.addEventListener('DOMContentLoaded', function(){
     <!-- PENDÊNCIAS (Atrasados - 60 dias) -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden;margin-bottom:16px">
       <div style="padding:14px 18px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:#1a1d23">⚠️ Pendências em atraso</div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:2px">Últimos 60 dias até hoje</div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1a1d23">⚠️ Pendências em atraso</div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:2px" id="fdPendPeriodLabel">Últimos 60 dias até hoje</div>
+          </div>
+          <select id="fdPendPeriod" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:30px">
+            <option value="30">Últimos 30 dias</option>
+            <option value="60" selected>Últimos 60 dias</option>
+            <option value="90">Últimos 90 dias</option>
+          </select>
         </div>
         <div style="font-size:12px;color:#dc2626;font-weight:600" id="fdPendTotal"></div>
       </div>
       <div style="overflow:auto;max-height:400px">
         <table class="ht" style="margin:0" id="fdPendTable">
-          <thead style="position:sticky;top:0;background:#fff;z-index:5"><tr>
-            <th class="fd-sort" data-col="emp" style="cursor:pointer">Empresa ↕</th>
-            <th class="fd-sort" data-col="forn" style="cursor:pointer">Fornecedor ↕</th>
-            <th class="fd-sort" data-col="dts" style="cursor:pointer">Vencimento ↕</th>
-            <th style="min-width:160px">Descrição</th>
-            <th class="fd-sort" data-col="val" style="cursor:pointer;text-align:right">Valor ↕</th>
-          </tr></thead>
+          <thead style="position:sticky;top:0;background:#fff;z-index:5">
+            <tr>
+              <th class="fd-sort" data-col="emp" style="cursor:pointer">Empresa ↕</th>
+              <th class="fd-sort" data-col="forn" style="cursor:pointer">Fornecedor ↕</th>
+              <th class="fd-sort" data-col="dts" style="cursor:pointer">Vencimento ↕</th>
+              <th style="min-width:160px">Descrição</th>
+              <th class="fd-sort" data-col="val" style="cursor:pointer;text-align:right">Valor ↕</th>
+            </tr>
+            <tr style="background:#f9fafb">
+              <td><select id="fdFiltEmp" style="width:100%;border:1px solid #e2e5ea;border-radius:5px;font-size:11px;padding:3px 5px;outline:none;font-family:Inter,sans-serif;color:#374151">
+                <option value="">Todas</option>
+                <option value="ROSIL">ROSIL</option>
+                <option value="RSL">RSL</option>
+                <option value="LUCRO PRESUMIDO">LUCRO PRES.</option>
+              </select></td>
+              <td><input id="fdFiltForn" type="text" placeholder="Filtrar..." style="width:100%;border:1px solid #e2e5ea;border-radius:5px;font-size:11px;padding:3px 5px;outline:none;font-family:Inter,sans-serif;color:#374151"></td>
+              <td><input id="fdFiltDt" type="date" style="width:100%;border:1px solid #e2e5ea;border-radius:5px;font-size:11px;padding:3px 5px;outline:none;font-family:Inter,sans-serif;color:#374151"></td>
+              <td><input id="fdFiltDsc" type="text" placeholder="Filtrar..." style="width:100%;border:1px solid #e2e5ea;border-radius:5px;font-size:11px;padding:3px 5px;outline:none;font-family:Inter,sans-serif;color:#374151"></td>
+              <td><button id="fdFiltClear" style="width:100%;border:1px solid #e2e5ea;border-radius:5px;font-size:11px;padding:3px 5px;cursor:pointer;background:#fff;color:#6b7280;font-family:Inter,sans-serif">Limpar</button></td>
+            </tr>
+          </thead>
           <tbody id="fdPendTbody"></tbody>
         </table>
       </div>
