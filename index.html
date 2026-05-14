@@ -550,42 +550,48 @@ function loadFilters(){
 
 async function load(){
   sld();D=[];fs={};ci=new Set();pv={};ni=1;
-  let ok=false;
-  for(const fn of FILES){
+  // Helper to fetch and parse one file
+  async function fetchFile(fn){
     const emp=fn.replace('.xlsx','').trim().toUpperCase();
     const id=FIDS[fn];
-    if(!id){fs[fn]='not_found';continue;}
+    if(!id){fs[fn]='not_found';return[];}
     try{
-      // Fetch via Google Apps Script proxy
-      const API=API_URL;
-      const res=await fetch(`${API}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
+      const res=await fetch(`${API_URL}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
       if(!res.ok)throw new Error('HTTP '+res.status);
       const json=await res.json();
-      if(json.error){fs[fn]='error';console.error(emp,json.error);continue;}
+      if(json.error){fs[fn]='error';console.error(emp,json.error);return[];}
       const rows=json;
-      if(rows.length<2){fs[fn]='empty';continue;}
+      if(rows.length<2){fs[fn]='empty';return[];}
       const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
       const iD=h.findIndex(x=>x.includes('data'));
       const iF=h.findIndex(x=>x.includes('cliente')||x.includes('fornecedor'));
       const iDs=h.findIndex(x=>x.includes('descri'));
       const iV=h.findIndex(x=>x.includes('valor prev'));
+      const result=[];
       for(let i=1;i<rows.length;i++){
         const row=rows[i];
         if(!row||row.every(c=>c===''||c===null||c===undefined))continue;
         const dscVal=String(row[iDs]||'');
         if(dscVal.toLowerCase().includes('acumulado'))continue;
-        const rawDate=row[iD];
-        const dt=parseXlsxDate(rawDate);
+        const dscUp=dscVal.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+        if(dscUp.includes('MUTUO')||dscUp.includes('MUTUA'))continue;
+        const dt=parseXlsxDate(row[iD]);
         if(!dt)continue;
-        const valStr=String(row[iV]||'0').trim();
-        // Handle Brazilian format: "1.234,56" -> 1234.56
-        const val=parseFloat(valStr.replace(/\./g,'').replace(',','.'))||0;
+        const val=parseFloat(String(row[iV]||'0').trim().replace(/\./g,'').replace(',','.'))||0;
         if(!val)continue;
-        D.push({id:ni++,emp,forn:String(row[iF]||'-').trim(),dt,dts:fmtDate(dt),dsc:dscVal.trim(),val});
+        result.push({emp,forn:String(row[iF]||'-').trim(),dt,dts:fmtDate(dt),dsc:dscVal.trim(),val});
       }
-      fs[fn]='ok';ok=true;
-    }catch(e){fs[fn]='error';console.error(fn,e);}
+      fs[fn]='ok';
+      return result;
+    }catch(e){fs[fn]='error';console.error(fn,e);return[];}
   }
+
+  // Fetch all files in PARALLEL
+  let ok=false;
+  const results=await Promise.all(FILES.map(fn=>fetchFile(fn)));
+  results.forEach(rows=>{
+    if(rows.length){ok=true;rows.forEach(r=>D.push({id:ni++,...r}));}
+  });
   if(!ok){serr('Não foi possível carregar os arquivos. Verifique se estão na pasta do Drive.');return;}
 
   // LANÇAMENTOS FIXOS
@@ -826,9 +832,13 @@ function stab(t){
   se('th2',t==='h'?'block':'none');
   se('tr2',t==='r'?'block':'none');
   se('ta',t==='a'?'block':'none');
+  se('tpg',t==='pg'?'block':'none');
+  se('tfd',t==='fd'?'block':'none');
   se('bb',(t==='p'&&D.length)?'flex':'none');
   if(t==='r') renderRev();
   if(t==='a') renderAnalise();
+  if(t==='pg') renderPagos();
+  if(t==='fd') renderFechamento();
 }
 document.querySelectorAll('.tab').forEach(x=>x.addEventListener('click',()=>stab(x.dataset.tab)));
 
