@@ -981,6 +981,173 @@ function applyCustomFixos(D, ni, hoje){
   return ni;
 }
 
+// =============================================
+// AVULSOS
+// =============================================
+const AV_KEY='cp_avulsos';
+const AV_LIST_KEY='cp_avulsos_list';
+
+function saveAvulsos(){const avulsos=D.filter(r=>r.avulso);localStorage.setItem(AV_KEY,JSON.stringify(avulsos));}
+function loadAvulsos(){try{const saved=JSON.parse(localStorage.getItem(AV_KEY)||'[]');if(saved.some(r=>r.avulso&&!r.manual))localStorage.removeItem(AV_KEY);}catch(e){}}
+function saveAvulsosLocal(){const toSave=(window._avulsosList||[]).map(a=>({...a,dt:a.dt?a.dt.toISOString():null}));localStorage.setItem(AV_LIST_KEY,JSON.stringify(toSave));}
+function loadAvulsosLocal(){try{const saved=JSON.parse(localStorage.getItem(AV_LIST_KEY)||'[]');window._avulsosList=saved.map(a=>({...a,dt:a.dt?new Date(a.dt):null}));}catch(e){window._avulsosList=[];}}
+
+function addAvulso(){
+  const emp=document.getElementById('avEmp').value,dataVal=document.getElementById('avData').value,forn=document.getElementById('avForn').value.trim(),dsc=document.getElementById('avDesc').value.trim(),val=parseFloat(document.getElementById('avValor').value)||0;
+  if(!forn){alert('Informe o fornecedor.');return;}if(!dataVal){alert('Informe a data.');return;}if(!val){alert('Informe o valor.');return;}
+  const dt=new Date(dataVal+'T00:00:00');
+  const entry={id:Date.now(),emp,forn,dt,dts:dt.toLocaleDateString('pt-BR'),dsc,val,avulso:true,manual:true};
+  ci.add(entry.id);if(!window._avulsosList)window._avulsosList=[];window._avulsosList.push(entry);
+  saveAvulsosLocal();clearTimeout(window._revTimer);saveRevisaoRemota();
+  document.getElementById('avForn').value='';document.getElementById('avDesc').value='';document.getElementById('avValor').value='';document.getElementById('avForn').focus();
+  updateRev();renderRev();
+  const btn=document.getElementById('bAvulsoSave'),orig=btn.textContent;btn.textContent='✓ Adicionado!';btn.style.background='#10b981';setTimeout(()=>{btn.textContent=orig;btn.style.background='';},1500);
+}
+
+function closeAvulsoModal(){document.getElementById('movAvulso').style.display='none';['avForn','avDesc','avValor','avData'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});if((window._avulsosList||[]).length>0)stab('r');}
+function removeAvulso(id){if(!confirm('Excluir este lançamento manual?'))return;window._avulsosList=(window._avulsosList||[]).filter(a=>a.id!==id);ci.delete(id);saveAvulsosLocal();saveSelection();updateRev();renderRev();}
+function removeFromRev(id){ci.delete(id);saveSelection();updateRev();renderRev();ren();}
+function pvRev(id,val){pv[id]=parseFloat(val)||0;saveSelection();const items=D.filter(r=>ci.has(r.id));const totAprov=items.reduce((a,r)=>a+(pv[r.id]!==undefined?pv[r.id]:r.val),0);const totPrev=items.reduce((a,r)=>a+r.val,0);const ge=x=>document.getElementById(x);if(ge('rvAprov'))ge('rvAprov').textContent=brl(totAprov);if(ge('rvDiff'))ge('rvDiff').textContent=brl(totPrev-totAprov);upt();}
+function doApprove(){if(!ci.size){alert('Nenhum item selecionado.');return;}document.getElementById('slb').value='Pagamentos '+new Date().toLocaleDateString('pt-BR');document.getElementById('mov').style.display='flex';setTimeout(()=>document.getElementById('slb').select(),50);}
+
+// =============================================
+// PAGOS
+// =============================================
+let DPG=[],pgLoaded=false;
+
+async function loadPagos(){
+  if(pgLoaded||window._loadingPagos)return;
+  window._loadingPagos=true;
+  const st=document.getElementById('pgStatus');
+  if(st)st.textContent='⟳ Carregando dados de pagamentos...';
+  DPG=[];
+  for(const emp of FILES_PG){
+    try{
+      const res=await fetch(`${API_URL}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
+      const rows=await res.json();
+      if(rows.error||rows.length<2)continue;
+      const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
+      const iDt=h.findIndex(x=>x.includes('data')),iFn=h.findIndex(x=>x.includes('client')||x.includes('forn')),iDs=h.findIndex(x=>x.includes('descri')),iVl=h.findIndex(x=>x.includes('valor prev'));
+      for(let i=1;i<rows.length;i++){
+        const row=rows[i];
+        const dtStr=row[iDt]||'';if(!dtStr||!dtStr.includes('/'))continue;
+        const p=dtStr.split('/');if(p.length<3)continue;
+        const dt=new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));if(isNaN(dt.getTime()))continue;
+        const dsc=String(row[iDs]||'').trim();
+        const dscUp=dsc.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+        if(dscUp.includes('MUTUO')||dscUp.includes('MUTUA'))continue;
+        const valStr=String(row[iVl]||'0').replace(/\./g,'').replace(',','.');
+        const val=parseFloat(valStr)||0;if(!val)continue;
+        const tipo=dscUp.includes('ENTRADA')||dscUp.includes('RECEBIMENTO')||dscUp.includes('DEPOSITO')||dscUp.includes('SALDO')?'entrada':'saida';
+        DPG.push({emp,forn:String(row[iFn]||'').trim(),dt,dts:dtStr,dsc,val,tipo});
+      }
+    }catch(e){console.warn('Erro ao carregar',emp,e);}
+  }
+  pgLoaded=true;window._loadingPagos=false;
+  renderPagos();
+}
+
+function getPgKey(dt,per){
+  if(per==='dia')return dt.toLocaleDateString('pt-BR');
+  if(per==='mes')return String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
+  const d=new Date(dt);const day=d.getDay()||7;d.setDate(d.getDate()-day+1);const d2=new Date(d);d2.setDate(d2.getDate()+6);
+  return d.toLocaleDateString('pt-BR')+' a '+d2.toLocaleDateString('pt-BR');
+}
+
+function renderPagos(){
+  if(!pgLoaded){loadPagos();return;}
+  const pgEmpEl=document.getElementById('pgEmp'),pgTbodyEl=document.getElementById('pgTbody'),pgStatusEl=document.getElementById('pgStatus'),pgPerEl=document.getElementById('pgPer');
+  if(!pgEmpEl||!pgTbodyEl)return;
+  const empF=pgEmpEl.value,per=pgPerEl?pgPerEl.value:'dia';
+  const dtIni=document.getElementById('pgDtIni').value,dtFim=document.getElementById('pgDtFim').value;
+  let filt=DPG;
+  if(empF)filt=filt.filter(r=>r.emp===empF);
+  if(dtIni)filt=filt.filter(r=>r.dt>=new Date(dtIni+'T00:00:00'));
+  if(dtFim)filt=filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
+  const tot=filt.reduce((a,r)=>a+r.val,0);
+  if(pgStatusEl)pgStatusEl.textContent=filt.length+' pagamentos · Total: '+brl(tot);
+  const byEmp=emp=>filt.filter(r=>r.emp===emp),sumEmp=emp=>byEmp(emp).reduce((a,r)=>a+r.val,0);
+  const se2=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  se2('pgTot',brl(tot));se2('pgTotN',filt.length+' lançamentos');
+  se2('pgRosil',brl(sumEmp('PG-ROSIL')));se2('pgRosilN',byEmp('PG-ROSIL').length+' lançamentos');
+  se2('pgRsl',brl(sumEmp('PG-RSL')));se2('pgRslN',byEmp('PG-RSL').length+' lançamentos');
+  se2('pgLucro',brl(sumEmp('PG-LUCRO PRESUMIDO')));se2('pgLucroN',byEmp('PG-LUCRO PRESUMIDO').length+' lançamentos');
+  const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
+  const empCls={'PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
+  const groups={};
+  [...filt].sort((a,b)=>b.dt-a.dt).forEach(r=>{const k=getPgKey(r.dt,per);if(!groups[k]){groups[k]={label:k,items:[],tot:0};}groups[k].items.push(r);groups[k].tot+=r.val;});
+  let html='';
+  Object.values(groups).forEach(g=>{
+    html+=`<tr style="background:#f8fafc"><td colspan="5" style="padding:10px 14px;font-weight:600;font-size:13px;color:#1a1d23;border-bottom:2px solid #e8eaed">📅 ${g.label} <span style="font-weight:400;color:#6b7280;font-size:12px">· ${g.items.length} lançamentos · ${brl(g.tot)}</span></td></tr>`;
+    g.items.forEach(r=>{html+=`<tr><td><span class="et ${empCls[r.emp]||''}">${empShort[r.emp]||r.emp}</span></td><td style="font-weight:500">${esc(r.forn)}</td><td class="mn">${r.dts}</td><td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600;color:#059669">${brl(r.val)}</td></tr>`;});
+  });
+  pgTbodyEl.innerHTML=html||'<tr><td colspan="5" style="text-align:center;padding:40px;color:#9ca3af">Nenhum dado encontrado</td></tr>';
+}
+
+// =============================================
+// FECHAMENTO DIÁRIO
+// =============================================
+let fdSortCol='dts',fdSortDir=1;
+
+async function ensurePagosLoaded(){if(!pgLoaded)await loadPagos();}
+
+function calcSaldoAcumulado(ateDt){
+  if(!DPG.length)return 0;
+  let saldo=0;
+  const limite=new Date(ateDt);limite.setHours(0,0,0,0);
+  DPG.filter(r=>r.dt<limite).forEach(r=>{if(r.tipo==='entrada')saldo+=r.val;else saldo-=r.val;});
+  return saldo;
+}
+
+async function renderFechamento(){
+  await ensurePagosLoaded();
+  const fdDataEl=document.getElementById('fdData');
+  if(!fdDataEl)return;
+  const dateStr=fdDataEl.value;
+  if(!dateStr){document.getElementById('fdStatus').textContent='Selecione uma data para ver o fechamento';return;}
+  const dt=new Date(dateStr+'T00:00:00'),dtFim=new Date(dateStr+'T23:59:59');
+  const dtAnt=new Date(dt);dtAnt.setDate(dtAnt.getDate()-1);
+  const saldoAnt=calcSaldoAcumulado(dt);
+  const dodia=DPG.filter(r=>r.dt>=dt&&r.dt<=dtFim);
+  const entradas=dodia.filter(r=>r.tipo==='entrada'),saidas=dodia.filter(r=>r.tipo==='saida');
+  const totEnt=entradas.reduce((a,r)=>a+r.val,0),totSai=saidas.reduce((a,r)=>a+r.val,0);
+  const saldoFinal=saldoAnt+totEnt-totSai;
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  se('fdSaldoAnt',brl(saldoAnt));se('fdSaldoAntDt','Saldo em '+dtAnt.toLocaleDateString('pt-BR'));
+  se('fdTotEnt',brl(totEnt));se('fdEntN',entradas.length+' lançamentos');
+  se('fdTotSai',brl(totSai));se('fdSaiN',saidas.length+' lançamentos');
+  se('fdEntTotal',brl(totEnt));se('fdSaiTotal',brl(totSai));
+  const sfEl=document.getElementById('fdSaldoFinal');
+  if(sfEl){sfEl.textContent=brl(saldoFinal);sfEl.style.color=saldoFinal>=0?'#34d399':'#f87171';}
+  const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
+  const empCls={'PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
+  const row=r=>`<tr><td><span class="et ${empCls[r.emp]||''}">${empShort[r.emp]||r.emp}</span></td><td style="font-weight:500">${esc(r.forn)}</td><td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600">${brl(r.val)}</td></tr>`;
+  const empty=t=>`<tr><td colspan="4" style="text-align:center;padding:16px;color:#9ca3af">Nenhuma ${t} neste dia</td></tr>`;
+  se('fdEntTbody',null);document.getElementById('fdEntTbody').innerHTML=entradas.length?entradas.map(r=>row({...r,val:r.val})).join(''):empty('entrada');
+  document.getElementById('fdSaiTbody').innerHTML=saidas.length?saidas.map(r=>row({...r})).join(''):empty('saída');
+  const hoje=new Date();hoje.setHours(23,59,59,999);
+  const h60=new Date(hoje);h60.setDate(h60.getDate()-60);h60.setHours(0,0,0,0);
+  const pendencias=D.filter(r=>r.dt&&r.dt>=h60&&r.dt<=hoje&&sta(r.dt)==='atrasado');
+  const pSort=[...pendencias].sort((a,b)=>{
+    let av,bv;
+    if(fdSortCol==='dts'){av=a.dt?a.dt.getTime():0;bv=b.dt?b.dt.getTime():0;}
+    else if(fdSortCol==='val'){av=a.val;bv=b.val;}
+    else if(fdSortCol==='emp'){av=(a.emp||'').toLowerCase();bv=(b.emp||'').toLowerCase();}
+    else{av=(a.forn||'').toLowerCase();bv=(b.forn||'').toLowerCase();}
+    return av>bv?fdSortDir:av<bv?-fdSortDir:0;
+  });
+  const totPend=pSort.reduce((a,r)=>a+r.val,0);
+  se('fdPendTotal',pSort.length+' lançamentos · '+brl(totPend));
+  document.querySelectorAll('.fd-sort').forEach(th=>{const col=th.dataset.col;const arrow=col===fdSortCol?(fdSortDir===1?'↑':'↓'):'↕';th.innerHTML=th.textContent.trim().replace(/[↑↓↕]?$/,'').trim()+' '+arrow;});
+  document.getElementById('fdPendTbody').innerHTML=pSort.length?pSort.map(r=>`<tr>
+    <td><span class="et ${r.emp==='ROSIL'?'eR':r.emp==='RSL'?'eS':'eL'}">${esc(r.emp)}</span></td>
+    <td style="font-weight:500">${esc(r.forn)}</td><td class="mn">${r.dts}</td>
+    <td style="font-size:12px;color:#6b7280;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.dsc)}</td>
+    <td class="mn" style="text-align:right;color:#dc2626;font-weight:600">${brl(r.val)}</td>
+  </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:20px;color:#9ca3af">Nenhum lançamento atrasado nos últimos 60 dias</td></tr>';
+  se('fdStatus','');
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   // Revision table sort
   document.addEventListener('click', e=>{
@@ -1285,6 +1452,11 @@ if(document.getElementById('bExpAllHist'))document.getElementById('bExpAllHist')
 // =============================================
 // ESTADO COMPARTILHADO (Google Drive)
 // =============================================
+function setSyncStatus(msg,color){
+  const el=document.getElementById('syncStatus');
+  if(el){el.textContent=msg;el.style.color=color||'#9ca3af';}
+}
+
 async function apiPost(action, dados){
   try {
     const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados)) + '&t=' + Date.now();
