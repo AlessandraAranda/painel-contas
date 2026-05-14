@@ -228,7 +228,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 
 <div id="th2" style="display:none">
   <div class="hw">
-    <div class="hh"><h2>Histórico de aprovações</h2><div style="display:flex;gap:8px"><button class="btn btn-sm" id="bExpAllHist">↓ Exportar tudo (CSV)</button><button class="btn btn-d btn-sm" id="bch">Limpar tudo</button></div></div>
+    <div class="hh"><h2>Histórico de aprovações</h2><div style="display:flex;gap:8px"><button class="btn btn-sm" id="bExpAllHist">↓ Exportar tudo (CSV)</button></div></div>
     <div id="hl"></div>
   </div>
 </div>
@@ -635,7 +635,6 @@ function rh(){
       </div>
       <div style="display:flex;gap:7px;align-items:center">
         <button class="btn btn-sm" onclick="event.stopPropagation();xph(${i})">↓ CSV</button>
-        <button class="btn btn-d btn-sm" onclick="event.stopPropagation();dh(${i})">✕</button>
         <span style="color:#9ca3af;font-size:20px;line-height:1;transition:transform .2s" id="ar${i}">›</span>
       </div>
     </div>
@@ -1071,7 +1070,7 @@ document.querySelectorAll('th.st').forEach(th=>th.addEventListener('click',()=>{
 document.getElementById('bcs').addEventListener('click',()=>document.getElementById('mov').style.display='none');
 document.getElementById('bks').addEventListener('click',csav);
 document.getElementById('slb').addEventListener('keydown',e=>{if(e.key==='Enter')csav();});
-if(document.getElementById('bch'))document.getElementById('bch').addEventListener('click',()=>{if(!confirm('Apagar todo o histórico?'))return;H=[];localStorage.removeItem('cp_h');rh();});
+
 });
 
 // =============================================
