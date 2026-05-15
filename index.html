@@ -980,8 +980,18 @@ async function renderFechamento(){
   const dtAnt=new Date(dt);dtAnt.setDate(dtAnt.getDate()-1);
   const saldoAnt=calcSaldoAcumulado(dt);
   const dodia=DPG.filter(r=>r.dt>=dt&&r.dt<=dtFim);
-  const entradas=dodia.filter(r=>r.tipo==='entrada'),saidas=dodia.filter(r=>r.tipo==='saida');
-  const totEnt=entradas.reduce((a,r)=>a+r.val,0),totSai=saidas.reduce((a,r)=>a+r.val,0);
+  const entradas=dodia.filter(r=>r.tipo==='entrada');
+  const totEnt=entradas.reduce((a,r)=>a+r.val,0);
+
+  // Saídas = lançamentos em revisão (À Pagar - Aprovação), usando valor "a pagar"
+  const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
+  const dItems=D.filter(r=>ci.has(r.id));
+  const revisaoItems=[...dItems,...avItems];
+  const saidas=revisaoItems.map(r=>({
+    emp:r.emp, forn:r.forn, dsc:r.dsc, dts:r.dts,
+    val: pv[r.id]!==undefined?pv[r.id]:r.val
+  }));
+  const totSai=saidas.reduce((a,r)=>a+r.val,0);
   const saldoFinal=saldoAnt+totEnt-totSai;
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   se('fdSaldoAnt',brl(saldoAnt));se('fdSaldoAntDt','Saldo em '+dtAnt.toLocaleDateString('pt-BR'));
@@ -995,7 +1005,15 @@ async function renderFechamento(){
   const row=r=>`<tr><td><span class="et ${empCls[r.emp]||''}">${empShort[r.emp]||r.emp}</span></td><td style="font-weight:500">${esc(r.forn)}</td><td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600">${brl(r.val)}</td></tr>`;
   const empty=t=>`<tr><td colspan="4" style="text-align:center;padding:16px;color:#9ca3af">Nenhuma ${t} neste dia</td></tr>`;
   se('fdEntTbody',null);document.getElementById('fdEntTbody').innerHTML=entradas.length?entradas.map(r=>row({...r,val:r.val})).join(''):empty('entrada');
-  document.getElementById('fdSaiTbody').innerHTML=saidas.length?saidas.map(r=>row({...r})).join(''):empty('saída');
+  // Saídas table - show revision items
+  const empShortFd={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
+  const empClsFd={'ROSIL':'eR','RSL':'eS','LUCRO PRESUMIDO':'eL','PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
+  document.getElementById('fdSaiTbody').innerHTML=saidas.length?saidas.map(r=>`<tr>
+    <td><span class="et ${empClsFd[r.emp]||''}">${r.emp==='LUCRO PRESUMIDO'?'LUCRO PRES.':r.emp}</span></td>
+    <td style="font-weight:500">${esc(r.forn)}</td>
+    <td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td>
+    <td class="mn" style="text-align:right;font-weight:600;color:#dc2626">${brl(r.val)}</td>
+  </tr>`).join(''):empty('saída selecionada — selecione lançamentos na aba Em Aberto');
   const hoje=new Date();hoje.setHours(23,59,59,999);
   const period=parseInt(document.getElementById('fdPendPeriod')?.value||'60');
   const h60=new Date(hoje);h60.setDate(h60.getDate()-period);h60.setHours(0,0,0,0);
