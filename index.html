@@ -1420,6 +1420,19 @@ window.addEventListener('DOMContentLoaded', function(){
     if(fdSortCol===col)fdSortDir*=-1;else{fdSortCol=col;fdSortDir=1;}
     renderFechamento();
   });
+  // Fechamento pendencias period + filters
+  const fdPendPeriodEl=document.getElementById('fdPendPeriod');
+  if(fdPendPeriodEl)fdPendPeriodEl.addEventListener('change',renderFechamento);
+  ['fdFiltEmp','fdFiltForn','fdFiltDt','fdFiltDsc'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.addEventListener('input',renderFechamento);el.addEventListener('change',renderFechamento);}
+  });
+  const fdFiltClearEl=document.getElementById('fdFiltClear');
+  if(fdFiltClearEl)fdFiltClearEl.addEventListener('click',()=>{
+    ['fdFiltForn','fdFiltDt','fdFiltDsc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    const e=document.getElementById('fdFiltEmp');if(e)e.selectedIndex=0;
+    renderFechamento();
+  });
   // Pagos listeners
   ['pgPer','pgEmp','pgDtIni','pgDtFim'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('change',renderPagos);});
   const pgClearEl=document.getElementById('pgClear');
