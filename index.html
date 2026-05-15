@@ -311,7 +311,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 // =============================================
 // AUTENTICAÇÃO
 // =============================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzbFhEAq3J1j9Q0YmpUs-0TdgqQpz9YBDqR3_HPQy5Dkfyhk6vibjKDmhJPnAjlugOq/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxV7m4WFu3AYErl97PrRmkaOKl6gEPG01lmXtRg9DNJyXopQ_8F8hCP2LvP20tubGoM/exec';
 const SECRET_TOKEN = 'rsl-tk-2026-x9z';
 const SESSION_KEY = 'rsl_session';
 const SESSION_HOURS = 4;
@@ -320,6 +320,8 @@ const FILES=['ROSIL.xlsx','RSL.xlsx','LUCRO PRESUMIDO.xlsx'];
 const FIDS={'ROSIL.xlsx':'1umzGUQjhAI8EZ5xoF81Cnc6NoUpK5-mI66VztuE2Huw','RSL.xlsx':'1lc2chhQEsOgWCMKg4uw9GBLJuZNYR0UXEI4adVNTQBo','LUCRO PRESUMIDO.xlsx':'1DMbAhxnboR3Hh1LfqpkIfAgwjmeaJW4esHu5fu_5F7A'};
 const FILES_PG=['PG-ROSIL','PG-RSL','PG-LUCRO PRESUMIDO'];
 const FIDS_PG={'PG-ROSIL':'1bvsz50tDz8QK3xObQylyMbcBPp6OTeNh8HeInzLStDs','PG-RSL':'11n_AItRU2yJlPtT6PI47EisZMXrotlpyfcSkPZzXWLU','PG-LUCRO PRESUMIDO':'12aHNupJyZKigHRQl-zGWY5ok5CLuS8_JXvcHDbtldt8'};
+const FILES_REC=['ROSIL-REC','RSL-REC','LUCRO-REC'];
+const FIDS_REC={'ROSIL-REC':'1K5jQBLSQeBoZouY04HUwyhDTDtkeC-5W2O5Tp8FVdE8','RSL-REC':'1sasLc5O3x5vsFK1rCDXv20Pl1Dgu8b7UkOfcQrYTpNM','LUCRO-REC':'1jcY_J9Lx11TJJydIwY1ybkW8wZ3N_Sy8MwW978aEaIE'};
 
 const _nowBR=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}));const td=new Date(_nowBR.getFullYear(),_nowBR.getMonth(),_nowBR.getDate());
 const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -888,6 +890,27 @@ async function loadPagos(){
         const val=parseFloat(valStr)||0;if(!val)continue;
         const tipo=dscUp.includes('ENTRADA')||dscUp.includes('RECEBIMENTO')||dscUp.includes('DEPOSITO')||dscUp.includes('SALDO')?'entrada':'saida';
         DPG.push({emp,forn:String(row[iFn]||'').trim(),dt,dts:dtStr,dsc,val,tipo});
+      }
+    }catch(e){console.warn('Erro ao carregar',emp,e);}
+  }
+  // Load REC (recebimentos/entradas)
+  for(const emp of FILES_REC){
+    try{
+      const res=await fetch(`${API_URL}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
+      const rows=await res.json();
+      if(rows.error||rows.length<2)continue;
+      const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
+      const iDt=h.findIndex(x=>x.includes('data')),iFn=h.findIndex(x=>x.includes('client')||x.includes('forn')),iDs=h.findIndex(x=>x.includes('descri')),iVl=h.findIndex(x=>x.includes('valor prev'));
+      for(let i=1;i<rows.length;i++){
+        const row=rows[i];
+        const dtStr=row[iDt]||'';if(!dtStr||!dtStr.includes('/'))continue;
+        const p=dtStr.split('/');if(p.length<3)continue;
+        const dt=new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));if(isNaN(dt.getTime()))continue;
+        const dsc=String(row[iDs]||'').trim();
+        if(isMutuo(dsc))continue;
+        const valStr=String(row[iVl]||'0').replace(/\./g,'').replace(',','.');
+        const val=parseFloat(valStr)||0;if(!val)continue;
+        DPG.push({emp,forn:String(row[iFn]||'').trim(),dt,dts:dtStr,dsc,val,tipo:'entrada'});
       }
     }catch(e){console.warn('Erro ao carregar',emp,e);}
   }
@@ -1491,36 +1514,19 @@ window.addEventListener('DOMContentLoaded', function(){
       <div id="fdStatus" style="font-size:12px;color:#9ca3af;margin-left:8px"></div>
     </div>
 
-    <!-- SALDO INICIAL + ENTRADAS + SAÍDAS -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px">
-
-      <!-- Saldo dia anterior -->
-      <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:18px 20px">
-        <div style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Saldo do dia anterior</div>
-        <div style="font-size:22px;font-weight:700;font-family:monospace;color:#1a1d23" id="fdSaldoAnt">R$ 0,00</div>
-        <div style="font-size:11px;color:#9ca3af;margin-top:4px" id="fdSaldoAntDt">—</div>
+    <!-- FAIXA SALDO DO DIA ANTERIOR -->
+    <div style="background:#1a1d23;border-radius:10px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:16px;font-weight:600;color:#9ca3af">Saldo do dia anterior</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:2px" id="fdSaldoAntDt">—</div>
       </div>
-
-      <!-- Total entradas -->
-      <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:18px 20px">
-        <div style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total entradas</div>
-        <div style="font-size:22px;font-weight:700;font-family:monospace;color:#059669" id="fdTotEnt">R$ 0,00</div>
-        <div style="font-size:11px;color:#9ca3af;margin-top:4px" id="fdEntN">0 lançamentos</div>
-      </div>
-
-      <!-- Total saídas -->
-      <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:18px 20px">
-        <div style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total saídas</div>
-        <div style="font-size:22px;font-weight:700;font-family:monospace;color:#dc2626" id="fdTotSai">R$ 0,00</div>
-        <div style="font-size:11px;color:#9ca3af;margin-top:4px" id="fdSaiN">0 lançamentos</div>
-      </div>
-
+      <div style="font-size:22px;font-weight:700;font-family:monospace;color:#fff" id="fdSaldoAnt">R$ 0,00</div>
     </div>
 
-    <!-- SALDO FINAL -->
-    <div style="background:#1a1d23;border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div style="font-size:16px;font-weight:600;color:#9ca3af">Saldo após pagamentos do dia</div>
-      <div style="font-size:16px;font-weight:700;font-family:monospace;color:#fff" id="fdSaldoFinal">R$ 0,00</div>
+    <!-- hidden elements for totals used in JS -->
+    <div style="display:none">
+      <span id="fdTotEnt">0</span><span id="fdEntN">0</span>
+      <span id="fdTotSai">0</span><span id="fdSaiN">0</span>
     </div>
 
     <!-- ENTRADAS DO DIA -->
@@ -1540,7 +1546,7 @@ window.addEventListener('DOMContentLoaded', function(){
     </div>
 
     <!-- SAÍDAS DO DIA -->
-    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden;margin-bottom:20px">
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden;margin-bottom:16px">
       <div style="padding:14px 18px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between">
         <div style="font-size:13px;font-weight:600;color:#1a1d23">📉 Saídas do dia</div>
         <div style="font-size:12px;color:#dc2626;font-weight:600" id="fdSaiTotal"></div>
@@ -1553,6 +1559,12 @@ window.addEventListener('DOMContentLoaded', function(){
           <tbody id="fdSaiTbody"><tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af">Selecione uma data</td></tr></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- FAIXA SALDO FINAL DO DIA -->
+    <div style="background:#1a1d23;border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div style="font-size:16px;font-weight:600;color:#9ca3af">Saldo após pagamentos do dia</div>
+      <div style="font-size:16px;font-weight:700;font-family:monospace;color:#fff" id="fdSaldoFinal">R$ 0,00</div>
     </div>
 
     <!-- PENDÊNCIAS (Atrasados - 60 dias) -->
