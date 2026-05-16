@@ -1093,6 +1093,8 @@ async function renderFechamento(){
     <td class="mn" style="text-align:right;color:#dc2626;font-weight:600">${brl(r.val)}</td>
   </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:20px;color:#9ca3af">Nenhum lançamento atrasado nos últimos 60 dias</td></tr>';
   se('fdStatus','');
+  const fdTituloDataEl=document.getElementById('fdTituloData');
+  if(fdTituloDataEl)fdTituloDataEl.textContent=dt.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 }
 
 window.addEventListener('DOMContentLoaded',function(){
@@ -1636,8 +1638,9 @@ window.addEventListener('DOMContentLoaded', function(){
     </div>
 
     <!-- TÍTULO FECHAMENTO -->
-    <div style="background:#1a1d23;border-radius:10px;padding:14px 20px;margin-bottom:16px">
-      <div style="font-size:18px;font-weight:700;color:#fff;text-align:center;letter-spacing:.5px">Fechamento do Dia</div>
+    <div style="background:#1a1d23;border-radius:10px;padding:14px 20px;margin-bottom:16px;text-align:center">
+      <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px">Fluxo de Caixa</div>
+      <div style="font-size:13px;color:#6b7280;margin-top:4px" id="fdTituloData">—</div>
     </div>
 
     <!-- hidden elements -->
