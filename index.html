@@ -454,7 +454,7 @@ async function load(){
         const dscVal=String(row[iDs]||'');
         if(dscVal.toLowerCase().includes('acumulado'))continue;
         const dscUp=dscVal.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-        if(isMutuo(dscVal||dsc||''))continue;
+        if(isMutuo(dscVal))continue;
         const dt=parseXlsxDate(row[iD]);
         if(!dt)continue;
         const val=parseFloat(String(row[iV]||'0').trim().replace(/\./g,'').replace(',','.'))||0;
@@ -890,7 +890,7 @@ async function loadPagos(){
         const dt=new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));if(isNaN(dt.getTime()))continue;
         const dsc=String(row[iDs]||'').trim();
         const dscUp=dsc.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-        if(isMutuo(dscVal||dsc||''))continue;
+        if(isMutuo(dsc))continue;
         const valStr=String(row[iVl]||'0').replace(/\./g,'').replace(',','.');
         const val=parseFloat(valStr)||0;if(!val)continue;
         const tipo=dscUp.includes('ENTRADA')||dscUp.includes('RECEBIMENTO')||dscUp.includes('DEPOSITO')||dscUp.includes('SALDO')?'entrada':'saida';
