@@ -312,7 +312,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 // =============================================
 // AUTENTICAÇÃO
 // =============================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbxV7m4WFu3AYErl97PrRmkaOKl6gEPG01lmXtRg9DNJyXopQ_8F8hCP2LvP20tubGoM/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxCGrvDK0291SeJNpHkzKZcRWvw9T5A_WmU5wlrGemZrE_jhJM1HU624_bBmjRG01ma/exec';
 const SECRET_TOKEN = 'rsl-tk-2026-x9z';
 const SESSION_KEY = 'rsl_session';
 const SESSION_HOURS = 4;
@@ -680,7 +680,7 @@ function stab(t){
   se('bb',(t==='p'&&D.length)?'flex':'none');
   if(t==='r') renderRev();
   if(t==='pg') renderPagos();
-  if(t==='fd') renderFechamento();
+  if(t==='fd'){pgLoaded=false;recLoaded=false;renderFechamento();}
   if(t==='rec') renderRec();
 }
 document.querySelectorAll('.tab').forEach(x=>x.addEventListener('click',()=>stab(x.dataset.tab)));
@@ -919,12 +919,18 @@ async function loadRec(){
         const row=rows[i];
         const dtStr=row[iDt]||'';if(!dtStr||!dtStr.includes('/'))continue;
         const p=dtStr.split('/');if(p.length<3)continue;
-        const dt=new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));if(isNaN(dt.getTime()))continue;
+        const d0=parseInt(p[0]),d1=parseInt(p[1]),yr=parseInt(p[2].substring(0,4));
+        let day,mon;
+        if(d0>12){day=d0;mon=d1;}
+        else if(d1>12){day=d1;mon=d0;}
+        else{day=d0;mon=d1;}
+        const dt=new Date(yr,mon-1,day);if(isNaN(dt.getTime()))continue;
+        const dtsBR=String(day).padStart(2,'0')+'/'+String(mon).padStart(2,'0')+'/'+yr;
         const dsc=String(row[iDs]||'').trim();
         if(isMutuo(dsc))continue;
         const valStr=String(row[iVl]||'0').replace(/\./g,'').replace(',','.');
         const val=parseFloat(valStr)||0;if(!val)continue;
-        DREC.push({emp,forn:String(row[iFn]||'').trim(),dt,dts:dtStr,dsc,val});
+        DREC.push({emp,forn:String(row[iFn]||'').trim(),dt,dts:dtsBR,dsc,val});
       }
     }catch(e){console.warn('Erro ao carregar',emp,e);}
   }
