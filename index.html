@@ -883,6 +883,7 @@ async function loadPagos(){
       if(rows.error||rows.length<2)continue;
       const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
       const iDt=h.findIndex(x=>x.includes('data')),iFn=h.findIndex(x=>x.includes('client')||x.includes('forn')),iDs=h.findIndex(x=>x.includes('descri')),iVl=h.findIndex(x=>x.includes('valor prev'));
+      console.log('[PG]',emp,'cols:',{iDt,iFn,iDs,iVl},'sample row[1]:',rows[1]?rows[1][iDt]:'n/a');
       for(let i=1;i<rows.length;i++){
         const row=rows[i];
         const dtStr=row[iDt]||'';if(!dtStr||!dtStr.includes('/'))continue;
@@ -915,6 +916,7 @@ async function loadRec(){
       if(rows.error||rows.length<2)continue;
       const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
       const iDt=h.findIndex(x=>x.includes('data')),iFn=h.findIndex(x=>x.includes('client')||x.includes('forn')),iDs=h.findIndex(x=>x.includes('descri')),iVl=h.findIndex(x=>x.includes('valor prev'));
+      console.log('[PG]',emp,'cols:',{iDt,iFn,iDs,iVl},'sample row[1]:',rows[1]?rows[1][iDt]:'n/a');
       for(let i=1;i<rows.length;i++){
         const row=rows[i];
         const dtStr=row[iDt]||'';if(!dtStr||!dtStr.includes('/'))continue;
