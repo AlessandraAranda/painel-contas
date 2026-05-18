@@ -871,11 +871,12 @@ let DPG=[],pgLoaded=false;
 let DREC=[],recLoaded=false;
 
 async function loadPagos(){
-  if(pgLoaded||window._loadingPagos)return;
+  if(window._loadingPagos)return;
   window._loadingPagos=true;
+  pgLoaded=false;
+  DPG=[];
   const st=document.getElementById('pgStatus');
   if(st)st.textContent='⟳ Carregando dados de pagamentos...';
-  DPG=[];
   for(const emp of FILES_PG){
     try{
       const res=await fetch(`${API_URL}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
@@ -909,8 +910,10 @@ async function loadPagos(){
 }
 
 async function loadRec(){
-  if(recLoaded||window._loadingRec)return;
+  if(window._loadingRec)return;
   window._loadingRec=true;
+  recLoaded=false;
+  DREC=[];
   const st=document.getElementById('recStatus');
   if(st)st.textContent='⟳ Carregando dados de recebimentos...';
   DREC=[];
