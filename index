@@ -881,20 +881,26 @@ async function loadPagos(){
       const res=await fetch(`${API_URL}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
       const rows=await res.json();
       if(rows.error||rows.length<2)continue;
-      const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
-      const iDt=h.findIndex(x=>x.includes('data')),iFn=h.findIndex(x=>x.includes('client')||x.includes('forn')),iDs=h.findIndex(x=>x.includes('descri')),iVl=h.findIndex(x=>x.includes('valor prev'));
+      // Colunas fixas: 2=Data, 3=Cliente, 7=Descrição, 8=Valor Previsto, 14=DATA BR
       for(let i=1;i<rows.length;i++){
         const row=rows[i];
-        const dtStr=row[iDt]||'';if(!dtStr||!dtStr.includes('/'))continue;
+        // Usa coluna 14 (DATA BR dd/mm/yyyy) ou coluna 2
+        const dtStr=String(row[14]||row[2]||'').trim();
+        if(!dtStr||!dtStr.includes('/'))continue;
         const p=dtStr.split('/');if(p.length<3)continue;
-        const dt=new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0]));if(isNaN(dt.getTime()))continue;
-        const dsc=String(row[iDs]||'').trim();
-        const dscUp=dsc.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+        const d0=parseInt(p[0]),d1=parseInt(p[1]),yr=parseInt(p[2]);
+        if(!yr||yr<2000)continue;
+        // dd/mm/yyyy: d0<=12 pode ser dia ou mês — usa coluna 14 que é sempre BR
+        const dt=new Date(yr,d1-1,d0);if(isNaN(dt.getTime()))continue;
+        const dsc=String(row[7]||'').trim();
         if(isMutuo(dsc))continue;
-        const valStr=String(row[iVl]||'0').replace(/\./g,'').replace(',','.');
+        const forn=String(row[3]||'').trim();
+        if(!forn)continue;
+        const valStr=String(row[8]||'0').replace(/\./g,'').replace(',','.');
         const val=parseFloat(valStr)||0;if(!val)continue;
+        const dscUp=dsc.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
         const tipo=dscUp.includes('ENTRADA')||dscUp.includes('RECEBIMENTO')||dscUp.includes('DEPOSITO')||dscUp.includes('SALDO')?'entrada':'saida';
-        DPG.push({emp,forn:String(row[iFn]||'').trim(),dt,dts:dtStr,dsc,val,tipo});
+        DPG.push({emp,forn,dt,dts:String(d0).padStart(2,'0')+'/'+String(d1).padStart(2,'0')+'/'+yr,dsc,val,tipo});
       }
     }catch(e){console.warn('Erro ao carregar',emp,e);}
   }
@@ -913,11 +919,11 @@ async function loadRec(){
       const res=await fetch(`${API_URL}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
       const rows=await res.json();
       if(rows.error||rows.length<2)continue;
-      const h=rows[0].map(x=>String(x||'').toLowerCase().trim());
-      const iDt=h.findIndex(x=>x.includes('data')),iFn=h.findIndex(x=>x.includes('client')||x.includes('forn')),iDs=h.findIndex(x=>x.includes('descri')),iVl=h.findIndex(x=>x.includes('valor prev'));
+      // Colunas fixas: 2=Data, 3=Cliente, 7=Descrição, 8=Valor Previsto, 14=DATA BR
       for(let i=1;i<rows.length;i++){
         const row=rows[i];
-        const dtStr=row[iDt]||'';if(!dtStr||!dtStr.includes('/'))continue;
+        const dtStr=String(row[14]||row[2]||'').trim();
+        if(!dtStr||!dtStr.includes('/'))continue;
         const p=dtStr.split('/');if(p.length<3)continue;
         const d0=parseInt(p[0]),d1=parseInt(p[1]),yr=parseInt(p[2].substring(0,4));
         let day,mon;
