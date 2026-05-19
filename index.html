@@ -1019,7 +1019,17 @@ function renderPagos(){
 // =============================================
 let fdSortCol='dts',fdSortDir=1;
 
-async function ensurePagosLoaded(){if(!pgLoaded)await loadPagos();}
+async function ensurePagosLoaded(){
+  if(window._loadingPagos){
+    // Wait for ongoing load to finish
+    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingPagos){clearInterval(t);r();}},100);});
+  }
+  if(!pgLoaded) await loadPagos();
+  // Wait again if still loading
+  if(window._loadingPagos){
+    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingPagos){clearInterval(t);r();}},100);});
+  }
+}
 
 function calcSaldoAcumulado(ateDt){
   if(!DPG.length)return 0;
