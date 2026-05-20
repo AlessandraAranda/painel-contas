@@ -871,12 +871,11 @@ let DPG=[],pgLoaded=false;
 let DREC=[],recLoaded=false;
 
 async function loadPagos(){
-  if(window._loadingPagos)return;
+  if(pgLoaded||window._loadingPagos)return;
   window._loadingPagos=true;
-  pgLoaded=false;
-  DPG=[];
   const st=document.getElementById('pgStatus');
   if(st)st.textContent='⟳ Carregando dados de pagamentos...';
+  DPG=[];
   for(const emp of FILES_PG){
     try{
       const res=await fetch(`${API_URL}?action=data&name=${encodeURIComponent(emp)}&token=${SECRET_TOKEN}&t=${Date.now()}`);
@@ -910,10 +909,8 @@ async function loadPagos(){
 }
 
 async function loadRec(){
-  if(window._loadingRec)return;
+  if(recLoaded||window._loadingRec)return;
   window._loadingRec=true;
-  recLoaded=false;
-  DREC=[];
   const st=document.getElementById('recStatus');
   if(st)st.textContent='⟳ Carregando dados de recebimentos...';
   DREC=[];
@@ -923,8 +920,6 @@ async function loadRec(){
       const rows=await res.json();
       if(rows.error||rows.length<2)continue;
       // Colunas fixas: 2=Data, 3=Cliente, 7=Descrição, 8=Valor Previsto, 14=DATA BR
-      // Colunas fixas nas planilhas REC: 2=Data, 3=Cliente/Fornecedor, 7=Descrição, 8=Valor, 14=DATA BR
-      const iDs_rec=7, iVl_rec=8, iFn_rec=3;
       for(let i=1;i<rows.length;i++){
         const row=rows[i];
         const dtStr=String(row[14]||row[2]||'').trim();
@@ -937,11 +932,11 @@ async function loadRec(){
         else{day=d0;mon=d1;}
         const dt=new Date(yr,mon-1,day);if(isNaN(dt.getTime()))continue;
         const dtsBR=String(day).padStart(2,'0')+'/'+String(mon).padStart(2,'0')+'/'+yr;
-        const dsc=String(row[iDs_rec]||'').trim();
+        const dsc=String(row[iDs]||'').trim();
         if(isMutuo(dsc))continue;
-        const valStr=String(row[iVl_rec]||'0').replace(/\./g,'').replace(',','.');
+        const valStr=String(row[iVl]||'0').replace(/\./g,'').replace(',','.');
         const val=parseFloat(valStr)||0;if(!val)continue;
-        DREC.push({emp,forn:String(row[iFn_rec]||'').trim(),dt,dts:dtsBR,dsc,val});
+        DREC.push({emp,forn:String(row[iFn]||'').trim(),dt,dts:dtsBR,dsc,val});
       }
     }catch(e){console.warn('Erro ao carregar',emp,e);}
   }
@@ -1021,17 +1016,7 @@ function renderPagos(){
 // =============================================
 let fdSortCol='dts',fdSortDir=1;
 
-async function ensurePagosLoaded(){
-  if(window._loadingPagos){
-    // Wait for ongoing load to finish
-    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingPagos){clearInterval(t);r();}},100);});
-  }
-  if(!pgLoaded) await loadPagos();
-  // Wait again if still loading
-  if(window._loadingPagos){
-    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingPagos){clearInterval(t);r();}},100);});
-  }
-}
+async function ensurePagosLoaded(){if(!pgLoaded)await loadPagos();}
 
 function calcSaldoAcumulado(ateDt){
   if(!DPG.length)return 0;
@@ -1041,27 +1026,17 @@ function calcSaldoAcumulado(ateDt){
   return saldo;
 }
 
-async function ensureRecLoaded(){
-  if(window._loadingRec){
-    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingRec){clearInterval(t);r();}},100);});
-  }
-  if(!recLoaded) await loadRec();
-  if(window._loadingRec){
-    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingRec){clearInterval(t);r();}},100);});
-  }
-}
-
 async function renderFechamento(){
   await ensurePagosLoaded();
-  await ensureRecLoaded();
   const fdDataEl=document.getElementById('fdData');
   if(!fdDataEl)return;
   const dateStr=fdDataEl.value;
   if(!dateStr){document.getElementById('fdStatus').textContent='Selecione uma data para ver o fechamento';return;}
   const dt=new Date(dateStr+'T00:00:00'),dtFim=new Date(dateStr+'T23:59:59');
   const dtAnt=new Date(dt);dtAnt.setDate(dtAnt.getDate()-1);
-  // Entradas do dia vêm das planilhas REC (DREC)
-  const entradas=DREC.filter(r=>r.dt>=dt&&r.dt<=dtFim);
+  // No saldo anterior - just entradas - saidas of the day
+  const dodia=DPG.filter(r=>r.dt>=dt&&r.dt<=dtFim);
+  const entradas=dodia.filter(r=>r.tipo==='entrada');
   const totEnt=entradas.reduce((a,r)=>a+r.val,0);
 
   // Saídas = lançamentos em revisão (À Pagar - Aprovação), usando valor "a pagar"
@@ -1080,13 +1055,11 @@ async function renderFechamento(){
   se('fdEntTotal',brl(totEnt));se('fdSaiTotal',brl(totSai));
   const sfEl=document.getElementById('fdSaldoFinal');
   if(sfEl){sfEl.textContent=brl(saldoFinal);sfEl.style.color=saldoFinal>=0?'#34d399':'#f87171';}
-  const empShortEnt={'ROSIL-REC':'ROSIL','RSL-REC':'RSL','LUCRO-REC':'LUCRO PRESUMIDO'};
-  const empClsEnt={'ROSIL-REC':'eR','RSL-REC':'eS','LUCRO-REC':'eL'};
   const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
   const empCls={'PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
-  const rowEnt=r=>`<tr><td><span class="et ${empClsEnt[r.emp]||''}">${empShortEnt[r.emp]||r.emp}</span></td><td style="font-weight:500">${esc(r.forn)}</td><td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600;color:#059669">${brl(r.val)}</td></tr>`;
+  const row=r=>`<tr><td><span class="et ${empCls[r.emp]||''}">${empShort[r.emp]||r.emp}</span></td><td style="font-weight:500">${esc(r.forn)}</td><td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600">${brl(r.val)}</td></tr>`;
   const empty=t=>`<tr><td colspan="4" style="text-align:center;padding:16px;color:#9ca3af">Nenhuma ${t} neste dia</td></tr>`;
-  se('fdEntTbody',null);document.getElementById('fdEntTbody').innerHTML=entradas.length?entradas.map(r=>rowEnt(r)).join(''):empty('entrada');
+  se('fdEntTbody',null);document.getElementById('fdEntTbody').innerHTML=entradas.length?entradas.map(r=>row({...r,val:r.val})).join(''):empty('entrada');
   // Saídas table - show revision items
   const empShortFd={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
   const empClsFd={'ROSIL':'eR','RSL':'eS','LUCRO PRESUMIDO':'eL','PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
