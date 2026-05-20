@@ -403,8 +403,14 @@ function saveSelection(){
 function loadSelection(){
   try{
     const s=JSON.parse(localStorage.getItem('cp_sel')||'{}');
-    if(s.ids) s.ids.forEach(id=>ci.add(+id));
-    if(s.pv) Object.entries(s.pv).forEach(([k,v])=>pv[+k]=v);
+    if(s.ids) s.ids.forEach(id=>{
+      // Only restore if item still exists in D or avulsos
+      const exists=D.find(r=>r.id===+id)||(window._avulsosList||[]).find(a=>a.id===+id);
+      if(exists) ci.add(+id);
+    });
+    if(s.pv) Object.entries(s.pv).forEach(([k,v])=>{
+      if(ci.has(+k)) pv[+k]=v;
+    });
   }catch(e){}
 }
 // Save filters
