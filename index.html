@@ -254,7 +254,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       </table>
     </div>
     <div style="margin-top:16px;display:flex;justify-content:flex-end">
-      <button class="btn btn-sm" id="brExportRev" style="border-color:#e2e5ea;color:#6b7280">↓ Exportar CSV</button>
       <button class="btn btn-s" id="brAprovar2">✓ Aprovar pagamentos</button>
     </div>
   </div>
@@ -404,14 +403,8 @@ function saveSelection(){
 function loadSelection(){
   try{
     const s=JSON.parse(localStorage.getItem('cp_sel')||'{}');
-    if(s.ids) s.ids.forEach(id=>{
-      // Only restore if item still exists in D or avulsos
-      const exists=D.find(r=>r.id===+id)||(window._avulsosList||[]).find(a=>a.id===+id);
-      if(exists) ci.add(+id);
-    });
-    if(s.pv) Object.entries(s.pv).forEach(([k,v])=>{
-      if(ci.has(+k)) pv[+k]=v;
-    });
+    if(s.ids) s.ids.forEach(id=>ci.add(+id));
+    if(s.pv) Object.entries(s.pv).forEach(([k,v])=>pv[+k]=v);
   }catch(e){}
 }
 // Save filters
@@ -1030,13 +1023,21 @@ let fdSortCol='dts',fdSortDir=1;
 
 async function ensurePagosLoaded(){
   if(window._loadingPagos){
-    // Wait for ongoing load to finish
     await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingPagos){clearInterval(t);r();}},100);});
   }
   if(!pgLoaded) await loadPagos();
-  // Wait again if still loading
   if(window._loadingPagos){
     await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingPagos){clearInterval(t);r();}},100);});
+  }
+}
+
+async function ensureRecLoaded(){
+  if(window._loadingRec){
+    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingRec){clearInterval(t);r();}},100);});
+  }
+  if(!recLoaded) await loadRec();
+  if(window._loadingRec){
+    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingRec){clearInterval(t);r();}},100);});
   }
 }
 
@@ -1059,7 +1060,7 @@ async function ensureRecLoaded(){
 }
 
 async function renderFechamento(){
-  await ensurePagosLoaded();
+  await Promise.all([ensurePagosLoaded(), ensureRecLoaded()]);
   await ensureRecLoaded();
   const fdDataEl=document.getElementById('fdData');
   if(!fdDataEl)return;
@@ -1160,24 +1161,6 @@ window.addEventListener('DOMContentLoaded',function(){
     ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
   });
   document.getElementById('brAprovar2').addEventListener('click', doApprove);
-  document.getElementById('brExportRev').addEventListener('click',()=>{
-    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
-    const dItems=D.filter(r=>ci.has(r.id));
-    const items=[...dItems,...avItems];
-    if(!items.length){alert('Nenhum lançamento na revisão.');return;}
-    const rows=[['Empresa','Fornecedor','Vencimento','Status','Descrição','Valor Previsto','A Pagar']];
-    items.forEach(r=>{
-      const s=sta(r.dt);
-      const sl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':'A vencer';
-      const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
-      rows.push([r.emp,r.forn,r.dts,sl,r.dsc,r.val.toFixed(2).replace('.',','),vp.toFixed(2).replace('.',',')]);
-    });
-    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-    a.download='a_pagar_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
-    a.click();
-  });
 
   // Novo lançamento
   document.getElementById('bnovolcto').addEventListener('click',()=>{
