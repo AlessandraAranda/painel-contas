@@ -254,6 +254,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       </table>
     </div>
     <div style="margin-top:16px;display:flex;justify-content:flex-end">
+      <button class="btn btn-sm" id="brExportRev" style="border-color:#e2e5ea;color:#6b7280">↓ Exportar CSV</button>
       <button class="btn btn-s" id="brAprovar2">✓ Aprovar pagamentos</button>
     </div>
   </div>
@@ -1023,21 +1024,13 @@ let fdSortCol='dts',fdSortDir=1;
 
 async function ensurePagosLoaded(){
   if(window._loadingPagos){
+    // Wait for ongoing load to finish
     await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingPagos){clearInterval(t);r();}},100);});
   }
   if(!pgLoaded) await loadPagos();
+  // Wait again if still loading
   if(window._loadingPagos){
     await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingPagos){clearInterval(t);r();}},100);});
-  }
-}
-
-async function ensureRecLoaded(){
-  if(window._loadingRec){
-    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingRec){clearInterval(t);r();}},100);});
-  }
-  if(!recLoaded) await loadRec();
-  if(window._loadingRec){
-    await new Promise(r=>{const t=setInterval(()=>{if(!window._loadingRec){clearInterval(t);r();}},100);});
   }
 }
 
@@ -1060,7 +1053,7 @@ async function ensureRecLoaded(){
 }
 
 async function renderFechamento(){
-  await Promise.all([ensurePagosLoaded(), ensureRecLoaded()]);
+  await ensurePagosLoaded();
   await ensureRecLoaded();
   const fdDataEl=document.getElementById('fdData');
   if(!fdDataEl)return;
@@ -1072,20 +1065,14 @@ async function renderFechamento(){
   const entradas=DREC.filter(r=>r.dt>=dt&&r.dt<=dtFim);
   const totEnt=entradas.reduce((a,r)=>a+r.val,0);
 
-  // Saídas: se for hoje usa revisão, senão usa planilhas PG
-  const hoje2=new Date();hoje2.setHours(0,0,0,0);
-  const isToday=dt.getTime()===hoje2.getTime();
-  let saidas=[];
-  if(isToday){
-    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
-    const dItems=D.filter(r=>ci.has(r.id));
-    saidas=[...dItems,...avItems].map(r=>({
-      emp:r.emp,forn:r.forn,dsc:r.dsc,dts:r.dts,
-      val:pv[r.id]!==undefined?pv[r.id]:r.val
-    }));
-  } else {
-    saidas=DPG.filter(r=>r.dt>=dt&&r.dt<=dtFim);
-  }
+  // Saídas = lançamentos em revisão (À Pagar - Aprovação), usando valor "a pagar"
+  const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
+  const dItems=D.filter(r=>ci.has(r.id));
+  const revisaoItems=[...dItems,...avItems];
+  const saidas=revisaoItems.map(r=>({
+    emp:r.emp, forn:r.forn, dsc:r.dsc, dts:r.dts,
+    val: pv[r.id]!==undefined?pv[r.id]:r.val
+  }));
   const totSai=saidas.reduce((a,r)=>a+r.val,0);
   const saldoFinal=totEnt-totSai;
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -1101,8 +1088,8 @@ async function renderFechamento(){
   const rowEnt=r=>`<tr><td><span class="et ${empClsEnt[r.emp]||''}">${empShortEnt[r.emp]||r.emp}</span></td><td style="font-weight:500">${esc(r.forn)}</td><td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600;color:#059669">${brl(r.val)}</td></tr>`;
   const empty=t=>`<tr><td colspan="4" style="text-align:center;padding:16px;color:#9ca3af">Nenhuma ${t} neste dia</td></tr>`;
   se('fdEntTbody',null);document.getElementById('fdEntTbody').innerHTML=entradas.length?entradas.map(r=>rowEnt(r)).join(''):empty('entrada');
-  // Saídas table
-  const empShortFd={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO','ROSIL':'ROSIL','RSL':'RSL','LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
+  // Saídas table - show revision items
+  const empShortFd={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
   const empClsFd={'ROSIL':'eR','RSL':'eS','LUCRO PRESUMIDO':'eL','PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
   document.getElementById('fdSaiTbody').innerHTML=saidas.length?saidas.map(r=>`<tr>
     <td><span class="et ${empClsFd[r.emp]||''}">${r.emp==='LUCRO PRESUMIDO'?'LUCRO PRES.':r.emp}</span></td>
@@ -1167,6 +1154,24 @@ window.addEventListener('DOMContentLoaded',function(){
     ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
   });
   document.getElementById('brAprovar2').addEventListener('click', doApprove);
+  document.getElementById('brExportRev').addEventListener('click',()=>{
+    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
+    const dItems=D.filter(r=>ci.has(r.id));
+    const items=[...dItems,...avItems];
+    if(!items.length){alert('Nenhum lançamento na revisão.');return;}
+    const rows=[['Empresa','Fornecedor','Vencimento','Status','Descrição','Valor Previsto','A Pagar']];
+    items.forEach(r=>{
+      const s=sta(r.dt);
+      const sl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':'A vencer';
+      const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
+      rows.push([r.emp,r.forn,r.dts,sl,r.dsc,r.val.toFixed(2).replace('.',','),vp.toFixed(2).replace('.',',')]);
+    });
+    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+    a.download='a_pagar_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
+    a.click();
+  });
 
   // Novo lançamento
   document.getElementById('bnovolcto').addEventListener('click',()=>{
