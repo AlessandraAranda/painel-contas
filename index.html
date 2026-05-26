@@ -254,7 +254,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       </table>
     </div>
     <div style="margin-top:16px;display:flex;justify-content:flex-end">
-      <button class="btn btn-sm" id="brExportRev" style="border-color:#e2e5ea;color:#6b7280">↓ Exportar CSV</button>
       <button class="btn btn-s" id="brAprovar2">✓ Aprovar pagamentos</button>
     </div>
   </div>
@@ -339,7 +338,6 @@ function isMutuo(dsc){
     .replace(/\s+/g,' ').trim();
   // Variações: MUTUO, MÚTUO, MOUTU, MOUTO, MUTTUO, MUTTU, MUTOU, MUUTO
   if(/MU[TU]{1,2}[OUA][OUA]?/.test(s) || s.includes('MOUTO') || s.includes('MOUTU')) return true;
-  // Transferências entre bancos/empresas
   if(s.startsWith('TRANSF.') || s.startsWith('TRANSF ')) return true;
   return false;
 }
@@ -1068,14 +1066,20 @@ async function renderFechamento(){
   const entradas=DREC.filter(r=>r.dt>=dt&&r.dt<=dtFim);
   const totEnt=entradas.reduce((a,r)=>a+r.val,0);
 
-  // Saídas = lançamentos em revisão (À Pagar - Aprovação), usando valor "a pagar"
-  const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
-  const dItems=D.filter(r=>ci.has(r.id));
-  const revisaoItems=[...dItems,...avItems];
-  const saidas=revisaoItems.map(r=>({
-    emp:r.emp, forn:r.forn, dsc:r.dsc, dts:r.dts,
-    val: pv[r.id]!==undefined?pv[r.id]:r.val
-  }));
+  // Saídas: hoje = revisão (previsão), datas passadas = planilhas PG
+  const hoje2=new Date();hoje2.setHours(0,0,0,0);
+  const isToday=dt.getTime()===hoje2.getTime();
+  let saidas=[];
+  if(isToday){
+    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
+    const dItems=D.filter(r=>ci.has(r.id));
+    saidas=[...dItems,...avItems].map(r=>({
+      emp:r.emp,forn:r.forn,dsc:r.dsc,dts:r.dts,
+      val:pv[r.id]!==undefined?pv[r.id]:r.val
+    }));
+  } else {
+    saidas=DPG.filter(r=>r.dt>=dt&&r.dt<=dtFim);
+  }
   const totSai=saidas.reduce((a,r)=>a+r.val,0);
   const saldoFinal=totEnt-totSai;
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -1157,24 +1161,6 @@ window.addEventListener('DOMContentLoaded',function(){
     ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
   });
   document.getElementById('brAprovar2').addEventListener('click', doApprove);
-  document.getElementById('brExportRev').addEventListener('click',()=>{
-    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
-    const dItems=D.filter(r=>ci.has(r.id));
-    const items=[...dItems,...avItems];
-    if(!items.length){alert('Nenhum lançamento na revisão.');return;}
-    const rows=[['Empresa','Fornecedor','Vencimento','Status','Descrição','Valor Previsto','A Pagar']];
-    items.forEach(r=>{
-      const s=sta(r.dt);
-      const sl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':'A vencer';
-      const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
-      rows.push([r.emp,r.forn,r.dts,sl,r.dsc,r.val.toFixed(2).replace('.',','),vp.toFixed(2).replace('.',',')]);
-    });
-    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-    a.download='a_pagar_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
-    a.click();
-  });
 
   // Novo lançamento
   document.getElementById('bnovolcto').addEventListener('click',()=>{
