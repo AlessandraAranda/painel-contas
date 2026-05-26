@@ -340,7 +340,7 @@ function isMutuo(dsc){
   // Variações: MUTUO, MÚTUO, MOUTU, MOUTO, MUTTUO, MUTTU, MUTOU, MUUTO
   if(/MU[TU]{1,2}[OUA][OUA]?/.test(s) || s.includes('MOUTO') || s.includes('MOUTU')) return true;
   // Transferências entre bancos/empresas
-  if(s.startsWith('TRANSF.') || s.startsWith('TRANSF ') || s.includes('TRANSF. P/') || s.includes('TRANSF P/')) return true;
+  if(s.startsWith('TRANSF.') || s.startsWith('TRANSF ')) return true;
   return false;
 }
 
