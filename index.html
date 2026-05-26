@@ -338,7 +338,10 @@ function isMutuo(dsc){
     .normalize('NFD').replace(/[̀-ͯ]/g,'') // remove acentos
     .replace(/\s+/g,' ').trim();
   // Variações: MUTUO, MÚTUO, MOUTU, MOUTO, MUTTUO, MUTTU, MUTOU, MUUTO
-  return /MU[TU]{1,2}[OUA][OUA]?/.test(s) || s.includes('MOUTO') || s.includes('MOUTU');
+  if(/MU[TU]{1,2}[OUA][OUA]?/.test(s) || s.includes('MOUTO') || s.includes('MOUTU')) return true;
+  // Transferências entre bancos/empresas
+  if(s.startsWith('TRANSF.') || s.startsWith('TRANSF ') || s.includes('TRANSF. P/') || s.includes('TRANSF P/')) return true;
+  return false;
 }
 
 
