@@ -1065,14 +1065,20 @@ async function renderFechamento(){
   const entradas=DREC.filter(r=>r.dt>=dt&&r.dt<=dtFim);
   const totEnt=entradas.reduce((a,r)=>a+r.val,0);
 
-  // Saídas = lançamentos em revisão (À Pagar - Aprovação), usando valor "a pagar"
-  const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
-  const dItems=D.filter(r=>ci.has(r.id));
-  const revisaoItems=[...dItems,...avItems];
-  const saidas=revisaoItems.map(r=>({
-    emp:r.emp, forn:r.forn, dsc:r.dsc, dts:r.dts,
-    val: pv[r.id]!==undefined?pv[r.id]:r.val
-  }));
+  // Saídas: hoje = revisão (previsão), datas passadas = planilhas PG
+  const hoje2=new Date();hoje2.setHours(0,0,0,0);
+  const isToday=dt.getTime()===hoje2.getTime();
+  let saidas=[];
+  if(isToday){
+    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
+    const dItems=D.filter(r=>ci.has(r.id));
+    saidas=[...dItems,...avItems].map(r=>({
+      emp:r.emp,forn:r.forn,dsc:r.dsc,dts:r.dts,
+      val:pv[r.id]!==undefined?pv[r.id]:r.val
+    }));
+  } else {
+    saidas=DPG.filter(r=>r.dt>=dt&&r.dt<=dtFim);
+  }
   const totSai=saidas.reduce((a,r)=>a+r.val,0);
   const saldoFinal=totEnt-totSai;
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
