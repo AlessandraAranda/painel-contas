@@ -7,6 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:#f5f6f8;color:#1a1d23;min-height:100vh;font-size:15px}
@@ -1513,6 +1514,20 @@ async function handleLogin(){
 // All login event listeners
 window.addEventListener('DOMContentLoaded', function(){
   // Fechamento listeners
+  document.getElementById('fdDownloadImg').addEventListener('click',()=>{
+    const el=document.getElementById('fdCaptura');
+    if(!el){alert('Nada para capturar.');return;}
+    const btn=document.getElementById('fdDownloadImg');
+    btn.style.display='none';
+    html2canvas(el,{backgroundColor:'#f5f6f8',scale:2,useCORS:true}).then(canvas=>{
+      btn.style.display='';
+      const a=document.createElement('a');
+      const dateStr=document.getElementById('fdData').value||'fechamento';
+      a.download='fluxo_caixa_'+dateStr+'.png';
+      a.href=canvas.toDataURL('image/png');
+      a.click();
+    }).catch(()=>{btn.style.display='';alert('Erro ao gerar imagem.');});
+  });
   const fdDataEl = document.getElementById('fdData');
   if(fdDataEl){
     fdDataEl.addEventListener('change', renderFechamento);
@@ -1699,8 +1714,11 @@ window.addEventListener('DOMContentLoaded', function(){
       <span style="font-size:13px;font-weight:600;color:#1a1d23">📅 Data do fechamento:</span>
       <input type="date" id="fdData" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:6px 12px;outline:none;height:34px">
       <div id="fdStatus" style="font-size:12px;color:#9ca3af;margin-left:8px"></div>
+      <button id="fdDownloadImg" style="margin-left:auto;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#374151;font-family:Inter,sans-serif">📷 Baixar imagem</button>
     </div>
 
+    <!-- CAPTURA IMAGEM -->
+    <div id="fdCaptura">
     <!-- TÍTULO FECHAMENTO -->
     <div style="background:#1a1d23;border-radius:10px;padding:14px 20px;margin-bottom:16px;text-align:center">
       <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px">Fluxo de Caixa</div>
@@ -1751,6 +1769,8 @@ window.addEventListener('DOMContentLoaded', function(){
       <div style="font-size:16px;font-weight:600;color:#9ca3af">Saldo após pagamentos do dia</div>
       <div style="font-size:16px;font-weight:700;font-family:monospace;color:#fff" id="fdSaldoFinal">R$ 0,00</div>
     </div>
+
+    </div><!-- /fdCaptura -->
 
     <!-- PENDÊNCIAS (Atrasados - 60 dias) -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden;margin-bottom:16px">
