@@ -1187,7 +1187,7 @@ function renderAtrasados(){
   }
 
   const empCls={'ROSIL':'eR','RSL':'eS','LUCRO PRESUMIDO':'eL'};
-  const sorted=Object.values(grupos).sort((a,b)=>b.total-a.total);
+  const sorted=Object.values(grupos).sort((a,b)=>a.forn.localeCompare(b.forn,'pt-BR'));
 
   list.innerHTML=sorted.map((g,i)=>{
     const id='at_'+i;
