@@ -1131,7 +1131,7 @@ async function renderFechamento(){
   document.getElementById('fdPendTbody').innerHTML=pSort.length?pSort.map(r=>`<tr>
     <td><span class="et ${r.emp==='ROSIL'?'eR':r.emp==='RSL'?'eS':'eL'}">${esc(r.emp)}</span></td>
     <td style="font-weight:500">${esc(r.forn)}</td><td class="mn">${r.dts}</td>
-    <td style="font-size:12px;color:#6b7280;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.dsc)}</td>
+    <td style="font-size:12px;color:#6b7280;width:50%">${esc(r.dsc)}</td>
     <td class="mn" style="text-align:right;color:#dc2626;font-weight:600">${brl(r.val)}</td>
   </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:20px;color:#9ca3af">Nenhum lançamento atrasado nos últimos 60 dias</td></tr>';
   se('fdStatus','');
