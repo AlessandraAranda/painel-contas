@@ -7,11 +7,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:#f5f6f8;color:#1a1d23;min-height:100vh;font-size:15px}
-.hd{padding:14px 48px;background:#fff;border-bottom:1px solid #e8eaed;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:200;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.hd{padding:14px 28px;background:#fff;border-bottom:1px solid #e8eaed;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:200;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .hd h1{font-size:17px;font-weight:600;color:#1a1d23;display:flex;align-items:center;gap:8px}
 .hd h1::before{content:'';display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:2px}
 .hd p{font-size:12px;color:#6b7280;margin-top:2px}
@@ -23,26 +22,26 @@ body{font-family:'Inter',sans-serif;background:#f5f6f8;color:#1a1d23;min-height:
 .btn-s{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}.btn-s:hover{background:#d1fae5}
 .btn-d{background:#fef2f2;border-color:#fecaca;color:#991b1b}.btn-d:hover{background:#fee2e2}
 .btn-sm{padding:5px 10px;font-size:11px}
-.tabs{display:flex;border-bottom:1px solid #e8eaed;padding:0 48px;background:#fff}
+.tabs{display:flex;border-bottom:1px solid #e8eaed;padding:0 28px;background:#fff}
 .tab{padding:10px 14px;font-size:14px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
 .tab:hover{color:#374151}.tab.on{color:#3b82f6;border-bottom-color:#3b82f6}
-.fbar2{display:flex;gap:6px;flex-wrap:wrap;padding:8px 48px;background:#fff;border-bottom:1px solid #e8eaed}
+.fbar2{display:flex;gap:6px;flex-wrap:wrap;padding:8px 28px;background:#fff;border-bottom:1px solid #e8eaed}
 .ftag{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;background:#f9fafb;border:1px solid #e2e5ea;border-radius:5px;padding:3px 9px}
 .dot{display:inline-block;width:6px;height:6px;border-radius:50%}
 .dok{background:#10b981}.derr{background:#ef4444}
-.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;padding:16px 48px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;padding:16px 28px}
 .sc{background:#fff;border:1px solid #e8eaed;border-radius:8px;padding:8px 12px;transition:box-shadow .15s}
 .sc:hover{box-shadow:0 2px 8px rgba(0,0,0,.07)}
 .slb{font-size:12px;font-weight:500;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
 .sv{font-size:19px;font-weight:600;color:#1a1d23;font-family:monospace;letter-spacing:-.5px}
 .sv.r{color:#dc2626}.sv.a{color:#d97706}.sv.g{color:#059669}.sv.v{color:#3b82f6}
 .ssb{font-size:12px;color:#9ca3af;margin-top:3px}
-.fb{padding:10px 48px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e8eaed;border-top:1px solid #e8eaed}
+.fb{padding:10px 28px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e8eaed;border-top:1px solid #e8eaed}
 .fb input,.fb select{background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:'Inter',sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px;transition:border-color .15s}
 .fb input:focus,.fb select:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.1)}
 .fb input::placeholder{color:#9ca3af}
 .fsp{width:1px;height:18px;background:#e2e5ea;margin:0 2px}
-.tw{overflow-x:auto;padding:0 48px 90px}
+.tw{overflow-x:auto;padding:0 28px 90px}
 table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e8eaed}
 thead th{padding:9px 12px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e8eaed;white-space:nowrap;background:#f9fafb}
 thead th.st{cursor:pointer;user-select:none}thead th.st:hover{color:#374151;background:#f3f4f6}
@@ -64,7 +63,7 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 .vi{width:105px;background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:monospace;font-size:12px;padding:4px 8px;text-align:right;outline:none;transition:border-color .15s}
 .vi:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.1)}
 .mn{font-family:monospace;font-size:12px}
-.bb{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e8eaed;padding:10px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.05)}
+.bb{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e8eaed;padding:10px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.05)}
 .bif{font-size:12px;color:#6b7280;display:flex;gap:16px;flex-wrap:wrap}
 .bif b{color:#374151;font-weight:600}
 .bts{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
@@ -75,7 +74,7 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 .st8 h3{font-size:15px;font-weight:600;color:#1a1d23}.st8 p{font-size:13px;color:#6b7280;max-width:400px;line-height:1.6}
 .st8 code{font-family:monospace;background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;color:#374151}
 .etd{text-align:center;padding:2.5rem;color:#9ca3af;font-size:13px}
-.hw{padding:16px 48px 90px}
+.hw{padding:16px 28px 90px}
 .hh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .hh h2{font-size:15px;font-weight:600;color:#1a1d23}
 .he{background:#fff;border:1px solid #e8eaed;border-radius:10px;margin-bottom:8px;overflow:hidden}
@@ -100,7 +99,7 @@ input[type=checkbox]{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}
 .sp-titem-val{font-size:12px;font-family:monospace}
 tbody tr{cursor:pointer}
 tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
-@media(max-width:768px){.hd,.sum,.fb,.tw,.bb,.fbar2,.tabs,.hw{padding-left:16px;padding-right:16px}}
+@media(max-width:768px){.hd,.sum,.fb,.tw,.bb,.fbar2,.tabs,.hw{padding-left:14px;padding-right:14px}}
 .login-screen{position:fixed;inset:0;background:#f5f6f8;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
 .login-box{background:#fff;border:1px solid #e8eaed;border-radius:16px;padding:36px;max-width:380px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center}
 .login-logo{width:44px;height:44px;background:#3b82f6;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:20px}
@@ -176,7 +175,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   <div class="tab" data-tab="pg">Pagos</div>
   <div class="tab" data-tab="rec">Recebido</div>
   <div class="tab" data-tab="fd">Fechamento Diário</div>
-  <div class="tab" data-tab="at">Atrasados</div>
 </div>
 
 <div id="tp">
@@ -256,7 +254,6 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       </table>
     </div>
     <div style="margin-top:16px;display:flex;justify-content:flex-end">
-      <button class="btn btn-sm" id="brExportRev" style="border-color:#e2e5ea;color:#6b7280">↓ Exportar CSV</button>
       <button class="btn btn-s" id="brAprovar2">✓ Aprovar pagamentos</button>
     </div>
   </div>
@@ -340,9 +337,7 @@ function isMutuo(dsc){
     .normalize('NFD').replace(/[̀-ͯ]/g,'') // remove acentos
     .replace(/\s+/g,' ').trim();
   // Variações: MUTUO, MÚTUO, MOUTU, MOUTO, MUTTUO, MUTTU, MUTOU, MUUTO
-  if(/MU[TU]{1,2}[OUA][OUA]?/.test(s) || s.includes('MOUTO') || s.includes('MOUTU')) return true;
-  if(s.startsWith('TRANSF.') || s.startsWith('TRANSF ')) return true;
-  return false;
+  return /MU[TU]{1,2}[OUA][OUA]?/.test(s) || s.includes('MOUTO') || s.includes('MOUTU');
 }
 
 
@@ -685,16 +680,8 @@ function stab(t){
   se('bb',(t==='p'&&D.length)?'flex':'none');
   if(t==='r') renderRev();
   if(t==='pg') renderPagos();
-  if(t==='fd'){
-    // Só recarrega se dados tiverem mais de 5 minutos
-    const now=Date.now();
-    if(!window._pgLoadedAt||now-window._pgLoadedAt>5*60*1000){pgLoaded=false;}
-    if(!window._recLoadedAt||now-window._recLoadedAt>5*60*1000){recLoaded=false;}
-    renderFechamento();
-  }
+  if(t==='fd'){pgLoaded=false;recLoaded=false;renderFechamento();}
   if(t==='rec') renderRec();
-  se('tat',t==='at'?'block':'none');
-  if(t==='at') renderAtrasados();
 }
 document.querySelectorAll('.tab').forEach(x=>x.addEventListener('click',()=>stab(x.dataset.tab)));
 
@@ -918,7 +905,7 @@ async function loadPagos(){
       }
     }catch(e){console.warn('Erro ao carregar',emp,e);}
   }
-  pgLoaded=true;window._loadingPagos=false;window._pgLoadedAt=Date.now();
+  pgLoaded=true;window._loadingPagos=false;
   renderPagos();
 }
 
@@ -958,7 +945,7 @@ async function loadRec(){
       }
     }catch(e){console.warn('Erro ao carregar',emp,e);}
   }
-  recLoaded=true;window._loadingRec=false;window._recLoadedAt=Date.now();
+  recLoaded=true;window._loadingRec=false;
   renderRec();
 }
 
@@ -968,10 +955,12 @@ function renderRec(){
   if(!recEmpEl||!recTbodyEl)return;
   const empF=recEmpEl.value,per=recPerEl?recPerEl.value:'dia';
   const dtIni=document.getElementById('recDtIni').value,dtFim=document.getElementById('recDtFim').value;
+  const recSrch=(document.getElementById('recSearch')?.value||'').toLowerCase().trim();
   let filt=DREC;
   if(empF)filt=filt.filter(r=>r.emp===empF);
   if(dtIni)filt=filt.filter(r=>r.dt>=new Date(dtIni+'T00:00:00'));
   if(dtFim)filt=filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
+  if(recSrch)filt=filt.filter(r=>r.forn.toLowerCase().includes(recSrch)||r.dsc.toLowerCase().includes(recSrch));
   const tot=filt.reduce((a,r)=>a+r.val,0);
   if(recStatusEl)recStatusEl.textContent=filt.length+' recebimentos · Total: '+brl(tot);
   const empShortR={'ROSIL-REC':'ROSIL','RSL-REC':'RSL','LUCRO-REC':'LUCRO PRESUMIDO'};
@@ -1005,10 +994,12 @@ function renderPagos(){
   if(!pgEmpEl||!pgTbodyEl)return;
   const empF=pgEmpEl.value,per=pgPerEl?pgPerEl.value:'dia';
   const dtIni=document.getElementById('pgDtIni').value,dtFim=document.getElementById('pgDtFim').value;
+  const pgSrch=(document.getElementById('pgSearch')?.value||'').toLowerCase().trim();
   let filt=DPG;
   if(empF)filt=filt.filter(r=>r.emp===empF);
   if(dtIni)filt=filt.filter(r=>r.dt>=new Date(dtIni+'T00:00:00'));
   if(dtFim)filt=filt.filter(r=>r.dt<=new Date(dtFim+'T23:59:59'));
+  if(pgSrch)filt=filt.filter(r=>r.forn.toLowerCase().includes(pgSrch)||r.dsc.toLowerCase().includes(pgSrch));
   const tot=filt.reduce((a,r)=>a+r.val,0);
   if(pgStatusEl)pgStatusEl.textContent=filt.length+' pagamentos · Total: '+brl(tot);
   const byEmp=emp=>filt.filter(r=>r.emp===emp),sumEmp=emp=>byEmp(emp).reduce((a,r)=>a+r.val,0);
@@ -1077,20 +1068,14 @@ async function renderFechamento(){
   const entradas=DREC.filter(r=>r.dt>=dt&&r.dt<=dtFim);
   const totEnt=entradas.reduce((a,r)=>a+r.val,0);
 
-  // Saídas: hoje = revisão (previsão), datas passadas = planilhas PG
-  const hoje2=new Date();hoje2.setHours(0,0,0,0);
-  const isToday=dt.getTime()===hoje2.getTime();
-  let saidas=[];
-  if(isToday){
-    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
-    const dItems=D.filter(r=>ci.has(r.id));
-    saidas=[...dItems,...avItems].map(r=>({
-      emp:r.emp,forn:r.forn,dsc:r.dsc,dts:r.dts,
-      val:pv[r.id]!==undefined?pv[r.id]:r.val
-    }));
-  } else {
-    saidas=DPG.filter(r=>r.dt>=dt&&r.dt<=dtFim);
-  }
+  // Saídas = lançamentos em revisão (À Pagar - Aprovação), usando valor "a pagar"
+  const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
+  const dItems=D.filter(r=>ci.has(r.id));
+  const revisaoItems=[...dItems,...avItems];
+  const saidas=revisaoItems.map(r=>({
+    emp:r.emp, forn:r.forn, dsc:r.dsc, dts:r.dts,
+    val: pv[r.id]!==undefined?pv[r.id]:r.val
+  }));
   const totSai=saidas.reduce((a,r)=>a+r.val,0);
   const saldoFinal=totEnt-totSai;
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -1103,14 +1088,13 @@ async function renderFechamento(){
   const empClsEnt={'ROSIL-REC':'eR','RSL-REC':'eS','LUCRO-REC':'eL'};
   const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
   const empCls={'PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
-  const rowEnt=r=>`<tr><td><span class="et ${empClsEnt[r.emp]||''}">${empShortEnt[r.emp]||r.emp}</span></td><td style="font-weight:500">${esc(r.forn)}</td><td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600;color:#059669">${brl(r.val)}</td></tr>`;
+  const rowEnt=r=>`<tr><td style="font-weight:500">${esc(r.forn)}</td><td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600;color:#059669">${brl(r.val)}</td></tr>`;
   const empty=t=>`<tr><td colspan="4" style="text-align:center;padding:16px;color:#9ca3af">Nenhuma ${t} neste dia</td></tr>`;
   se('fdEntTbody',null);document.getElementById('fdEntTbody').innerHTML=entradas.length?entradas.map(r=>rowEnt(r)).join(''):empty('entrada');
   // Saídas table - show revision items
   const empShortFd={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
   const empClsFd={'ROSIL':'eR','RSL':'eS','LUCRO PRESUMIDO':'eL','PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
   document.getElementById('fdSaiTbody').innerHTML=saidas.length?saidas.map(r=>`<tr>
-    <td><span class="et ${empClsFd[r.emp]||''}">${r.emp==='LUCRO PRESUMIDO'?'LUCRO PRES.':r.emp}</span></td>
     <td style="font-weight:500">${esc(r.forn)}</td>
     <td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td>
     <td class="mn" style="text-align:right;font-weight:600;color:#dc2626">${brl(r.val)}</td>
@@ -1155,67 +1139,6 @@ async function renderFechamento(){
   if(fdTituloDataEl)fdTituloDataEl.textContent=dt.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 }
 
-function renderAtrasados(){
-  const empF=document.getElementById('atEmp')?.value||'';
-  const search=(document.getElementById('atSearch')?.value||'').toLowerCase().trim();
-  const ontem=new Date();ontem.setHours(0,0,0,0);ontem.setDate(ontem.getDate()-1);
-
-  const atrasados=D.filter(r=>r.dt&&r.dt<=ontem&&!r.pago);
-  let filtrados=atrasados;
-  if(empF)filtrados=filtrados.filter(r=>r.emp===empF);
-  if(search)filtrados=filtrados.filter(r=>r.forn.toLowerCase().includes(search)||r.dsc.toLowerCase().includes(search));
-
-  // Agrupar por fornecedor
-  const grupos={};
-  filtrados.forEach(r=>{
-    const k=r.emp+'||'+r.forn;
-    if(!grupos[k])grupos[k]={emp:r.emp,forn:r.forn,items:[],total:0};
-    grupos[k].items.push(r);
-    grupos[k].total+=r.val;
-  });
-
-  const totalGeral=filtrados.reduce((a,r)=>a+r.val,0);
-  const nForn=Object.keys(grupos).length;
-  const el=document.getElementById('atStatus');
-  if(el)el.textContent=nForn+' fornecedores · '+filtrados.length+' lançamentos · '+brl(totalGeral);
-
-  const list=document.getElementById('atList');
-  if(!list)return;
-  if(!Object.keys(grupos).length){
-    list.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af;background:#fff;border:1px solid #e8eaed;border-radius:10px">Nenhum lançamento em atraso.</div>';
-    return;
-  }
-
-  const empCls={'ROSIL':'eR','RSL':'eS','LUCRO PRESUMIDO':'eL'};
-  const sorted=Object.values(grupos).sort((a,b)=>a.forn.localeCompare(b.forn,'pt-BR'));
-
-  list.innerHTML=sorted.map((g,i)=>{
-    const id='at_'+i;
-    const itemsHtml=g.items.sort((a,b)=>a.dt-b.dt).map(r=>`
-      <div style="display:flex;align-items:center;gap:12px;padding:8px 16px 8px 48px;border-bottom:1px solid #f3f4f6">
-        <span class="mn" style="color:#9ca3af;min-width:70px">${r.dts}</span>
-        <span style="flex:1;font-size:13px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.dsc)}</span>
-        <span class="mn" style="color:#dc2626;font-weight:600">${brl(r.val)}</span>
-      </div>`).join('');
-    return `<div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;margin-bottom:8px;overflow:hidden">
-      <div onclick="const el=document.getElementById('${id}');const open=el.style.display==='none'||el.style.display==='';el.style.display=open?'block':'none';this.querySelector('.at-arrow').style.transform=open?'rotate(90deg)':'rotate(0)'"
-        style="display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .1s"
-        onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
-        <span class="at-arrow" style="color:#9ca3af;font-size:16px;transition:transform .2s;display:inline-block">›</span>
-        <span class="et ${empCls[g.emp]||'eR'}">${esc(g.emp)}</span>
-        <span style="font-weight:600;color:#1a1d23;flex:1">${esc(g.forn)}</span>
-        <span style="font-size:12px;color:#6b7280;margin-right:16px">${g.items.length} lançamento${g.items.length>1?'s':''}</span>
-        <span class="mn" style="font-weight:700;color:#dc2626;font-size:15px">${brl(g.total)}</span>
-      </div>
-      <div id="${id}" style="display:none;border-top:1px solid #f3f4f6">
-        <div class="on" style="">
-          ${itemsHtml}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
 window.addEventListener('DOMContentLoaded',function(){
   // Revision table sort
   document.addEventListener('click', e=>{
@@ -1227,35 +1150,12 @@ window.addEventListener('DOMContentLoaded',function(){
     renderRev();
   });
   // Revisão buttons
-  // Atrasados listeners
-  const atEmpEl=document.getElementById('atEmp');
-  if(atEmpEl)atEmpEl.addEventListener('change',renderAtrasados);
-  const atSearchEl=document.getElementById('atSearch');
-  if(atSearchEl)atSearchEl.addEventListener('input',renderAtrasados);
-  document.getElementById('bref').addEventListener('click',()=>{pgLoaded=false;recLoaded=false;window._pgLoadedAt=0;window._recLoadedAt=0;load();});
+  document.getElementById('bref').addEventListener('click',()=>{pgLoaded=false;recLoaded=false;load();});
   document.getElementById('brLimpar').addEventListener('click',()=>{
     if(!confirm('Limpar toda a seleção?'))return;
     ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
   });
   document.getElementById('brAprovar2').addEventListener('click', doApprove);
-  document.getElementById('brExportRev').addEventListener('click',()=>{
-    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
-    const dItems=D.filter(r=>ci.has(r.id));
-    const items=[...dItems,...avItems];
-    if(!items.length){alert('Nenhum lançamento na revisão.');return;}
-    const rows=[['Empresa','Fornecedor','Vencimento','Status','Descrição','Valor Previsto','A Pagar']];
-    items.forEach(r=>{
-      const s=sta(r.dt);
-      const sl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':'A vencer';
-      const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
-      rows.push([r.emp,r.forn,r.dts,sl,r.dsc,r.val.toFixed(2).replace('.',','),vp.toFixed(2).replace('.',',')]);
-    });
-    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-    a.download='a_pagar_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
-    a.click();
-  });
 
   // Novo lançamento
   document.getElementById('bnovolcto').addEventListener('click',()=>{
@@ -1591,20 +1491,6 @@ async function handleLogin(){
 // All login event listeners
 window.addEventListener('DOMContentLoaded', function(){
   // Fechamento listeners
-  document.getElementById('fdDownloadImg').addEventListener('click',()=>{
-    const el=document.getElementById('fdCaptura');
-    if(!el){alert('Nada para capturar.');return;}
-    const btn=document.getElementById('fdDownloadImg');
-    btn.style.display='none';
-    html2canvas(el,{backgroundColor:'#f5f6f8',scale:2,useCORS:true}).then(canvas=>{
-      btn.style.display='';
-      const a=document.createElement('a');
-      const dateStr=document.getElementById('fdData').value||'fechamento';
-      a.download='fluxo_caixa_'+dateStr+'.png';
-      a.href=canvas.toDataURL('image/png');
-      a.click();
-    }).catch(()=>{btn.style.display='';alert('Erro ao gerar imagem.');});
-  });
   const fdDataEl = document.getElementById('fdData');
   if(fdDataEl){
     fdDataEl.addEventListener('change', renderFechamento);
@@ -1636,17 +1522,23 @@ window.addEventListener('DOMContentLoaded', function(){
   });
   // Pagos listeners
   ['recPer','recEmp','recDtIni','recDtFim'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('change',renderRec);});
+  const recSearchEl=document.getElementById('recSearch');
+  if(recSearchEl)recSearchEl.addEventListener('input',renderRec);
   const recClearEl=document.getElementById('recClear');
   if(recClearEl)recClearEl.addEventListener('click',()=>{
     const e1=document.getElementById('recEmp');if(e1)e1.selectedIndex=0;
     ['recDtIni','recDtFim'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    const rs=document.getElementById('recSearch');if(rs)rs.value='';
     renderRec();
   });
   ['pgPer','pgEmp','pgDtIni','pgDtFim'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('change',renderPagos);});
+  const pgSearchEl=document.getElementById('pgSearch');
+  if(pgSearchEl)pgSearchEl.addEventListener('input',renderPagos);
   const pgClearEl=document.getElementById('pgClear');
   if(pgClearEl)pgClearEl.addEventListener('click',()=>{
     ['pgEmp'].forEach(id=>{const e=document.getElementById(id);if(e)e.selectedIndex=0;});
     ['pgDtIni','pgDtFim'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    const ps=document.getElementById('pgSearch');if(ps)ps.value='';
     renderPagos();
   });
   const pgExportEl=document.getElementById('pgExport');
@@ -1761,6 +1653,7 @@ window.addEventListener('DOMContentLoaded', function(){
       <input type="date" id="recDtIni" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
       <input type="date" id="recDtFim" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
       <button id="recClear" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#6b7280;font-family:Inter,sans-serif">Limpar</button>
+      <input type="text" id="recSearch" placeholder="Buscar fornecedor ou descrição..." style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px;width:260px">
     </div>
     <div id="recStatus" style="font-size:12px;color:#9ca3af;margin-bottom:12px"></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px">
@@ -1782,26 +1675,6 @@ window.addEventListener('DOMContentLoaded', function(){
   </div>
 </div>
 
-<!-- ATRASADOS TAB -->
-<div id="tat" style="display:none">
-  <div class="hw">
-    <div class="hh">
-      <h2>Lançamentos em atraso</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span style="font-size:13px;color:#6b7280" id="atStatus"></span>
-        <select id="atEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
-          <option value="">Todas as empresas</option>
-          <option value="ROSIL">ROSIL</option>
-          <option value="RSL">RSL</option>
-          <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
-        </select>
-        <input type="text" id="atSearch" placeholder="Buscar fornecedor..." style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px;width:200px">
-      </div>
-    </div>
-    <div id="atList"></div>
-  </div>
-</div>
-
 <!-- FECHAMENTO DIÁRIO -->
 <div id="tfd" style="display:none">
   <div class="hw">
@@ -1811,11 +1684,8 @@ window.addEventListener('DOMContentLoaded', function(){
       <span style="font-size:13px;font-weight:600;color:#1a1d23">📅 Data do fechamento:</span>
       <input type="date" id="fdData" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:6px 12px;outline:none;height:34px">
       <div id="fdStatus" style="font-size:12px;color:#9ca3af;margin-left:8px"></div>
-      <button id="fdDownloadImg" style="margin-left:auto;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#374151;font-family:Inter,sans-serif">📷 Baixar imagem</button>
     </div>
 
-    <!-- CAPTURA IMAGEM -->
-    <div id="fdCaptura">
     <!-- TÍTULO FECHAMENTO -->
     <div style="background:#1a1d23;border-radius:10px;padding:14px 20px;margin-bottom:16px;text-align:center">
       <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px">Fluxo de Caixa</div>
@@ -1838,7 +1708,7 @@ window.addEventListener('DOMContentLoaded', function(){
       <div style="overflow-x:auto">
         <table class="ht" style="margin:0">
           <thead><tr>
-            <th>Empresa</th><th>Fornecedor/Cliente</th><th>Descrição</th><th style="text-align:right">Valor</th>
+            <th>Fornecedor/Cliente</th><th>Descrição</th><th style="text-align:right">Valor</th>
           </tr></thead>
           <tbody id="fdEntTbody"><tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af">Selecione uma data</td></tr></tbody>
         </table>
@@ -1854,7 +1724,7 @@ window.addEventListener('DOMContentLoaded', function(){
       <div style="overflow-x:auto">
         <table class="ht" style="margin:0">
           <thead><tr>
-            <th>Empresa</th><th>Fornecedor</th><th>Descrição</th><th style="text-align:right">Valor</th>
+            <th>Fornecedor</th><th>Descrição</th><th style="text-align:right">Valor</th>
           </tr></thead>
           <tbody id="fdSaiTbody"><tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af">Selecione uma data</td></tr></tbody>
         </table>
@@ -1866,8 +1736,6 @@ window.addEventListener('DOMContentLoaded', function(){
       <div style="font-size:16px;font-weight:600;color:#9ca3af">Saldo após pagamentos do dia</div>
       <div style="font-size:16px;font-weight:700;font-family:monospace;color:#fff" id="fdSaldoFinal">R$ 0,00</div>
     </div>
-
-    </div><!-- /fdCaptura -->
 
     <!-- PENDÊNCIAS (Atrasados - 60 dias) -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden;margin-bottom:16px">
@@ -1935,6 +1803,7 @@ window.addEventListener('DOMContentLoaded', function(){
       <input type="date" id="pgDtIni" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
       <input type="date" id="pgDtFim" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
       <button id="pgClear" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#6b7280;font-family:Inter,sans-serif">Limpar</button>
+      <input type="text" id="pgSearch" placeholder="Buscar fornecedor ou descrição..." style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px;width:260px">
       <div style="flex:1"></div>
       <button id="pgExport" style="padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:#3b82f6;color:#fff;font-family:Inter,sans-serif">↓ Exportar CSV</button>
     </div>
