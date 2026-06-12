@@ -1088,7 +1088,7 @@ async function renderFechamento(){
   const empClsEnt={'ROSIL-REC':'eR','RSL-REC':'eS','LUCRO-REC':'eL'};
   const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
   const empCls={'PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
-  const rowEnt=r=>`<tr><td style="font-weight:500">${esc(r.forn)}</td><td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600;color:#059669">${brl(r.val)}</td></tr>`;
+  const rowEnt=r=>`<tr><td style="font-weight:500">${esc(r.forn)}</td><td style="font-size:12px;color:#6b7280;word-break:break-word">${esc(r.dsc)}</td><td class="mn" style="text-align:right;font-weight:600;color:#059669;white-space:nowrap">${brl(r.val)}</td></tr>`;
   const empty=t=>`<tr><td colspan="4" style="text-align:center;padding:16px;color:#9ca3af">Nenhuma ${t} neste dia</td></tr>`;
   se('fdEntTbody',null);document.getElementById('fdEntTbody').innerHTML=entradas.length?entradas.map(r=>rowEnt(r)).join(''):empty('entrada');
   // Saídas table - show revision items
@@ -1096,8 +1096,8 @@ async function renderFechamento(){
   const empClsFd={'ROSIL':'eR','RSL':'eS','LUCRO PRESUMIDO':'eL','PG-ROSIL':'eR','PG-RSL':'eS','PG-LUCRO PRESUMIDO':'eL'};
   document.getElementById('fdSaiTbody').innerHTML=saidas.length?saidas.map(r=>`<tr>
     <td style="font-weight:500">${esc(r.forn)}</td>
-    <td style="font-size:12px;color:#6b7280">${esc(r.dsc)}</td>
-    <td class="mn" style="text-align:right;font-weight:600;color:#dc2626">${brl(r.val)}</td>
+    <td style="font-size:12px;color:#6b7280;word-break:break-word">${esc(r.dsc)}</td>
+    <td class="mn" style="text-align:right;font-weight:600;color:#dc2626;white-space:nowrap">${brl(r.val)}</td>
   </tr>`).join(''):empty('saída selecionada — selecione lançamentos na aba Em Aberto');
   const hoje=new Date();hoje.setHours(23,59,59,999);
   const period=parseInt(document.getElementById('fdPendPeriod')?.value||'60');
@@ -1708,7 +1708,7 @@ window.addEventListener('DOMContentLoaded', function(){
       <div style="overflow-x:auto">
         <table class="ht" style="margin:0">
           <thead><tr>
-            <th>Fornecedor/Cliente</th><th>Descrição</th><th style="text-align:right">Valor</th>
+            <th style="width:35%">Fornecedor/Cliente</th><th style="width:50%">Descrição</th><th style="width:15%;text-align:right">Valor</th>
           </tr></thead>
           <tbody id="fdEntTbody"><tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af">Selecione uma data</td></tr></tbody>
         </table>
@@ -1724,7 +1724,7 @@ window.addEventListener('DOMContentLoaded', function(){
       <div style="overflow-x:auto">
         <table class="ht" style="margin:0">
           <thead><tr>
-            <th>Fornecedor</th><th>Descrição</th><th style="text-align:right">Valor</th>
+            <th style="width:35%">Fornecedor</th><th style="width:50%">Descrição</th><th style="width:15%;text-align:right">Valor</th>
           </tr></thead>
           <tbody id="fdSaiTbody"><tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af">Selecione uma data</td></tr></tbody>
         </table>
