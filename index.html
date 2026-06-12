@@ -599,12 +599,7 @@ function aev(){
 
 // SALVAR
 
-function saveAvulsos(){
-  const avulsos=D.filter(r=>r.avulso);
-  localStorage.setItem(AV_KEY,JSON.stringify(avulsos));
-  // Also save to Drive
-  if(avulsos.length > 0) apiPost('saveAvulsos', avulsos);
-}
+
 
 
 
@@ -842,7 +837,11 @@ function applyCustomFixos(D, ni, hoje){
 const AV_KEY='cp_avulsos';
 const AV_LIST_KEY='cp_avulsos_list';
 
-function saveAvulsos(){const avulsos=D.filter(r=>r.avulso);localStorage.setItem(AV_KEY,JSON.stringify(avulsos));}
+function saveAvulsos(){
+  const avulsos=D.filter(r=>r.avulso);
+  localStorage.setItem(AV_KEY,JSON.stringify(avulsos));
+  if(avulsos.length > 0) apiPost('saveAvulsos', avulsos);
+}
 function loadAvulsos(){try{const saved=JSON.parse(localStorage.getItem(AV_KEY)||'[]');if(saved.some(r=>r.avulso&&!r.manual))localStorage.removeItem(AV_KEY);}catch(e){}}
 function saveAvulsosLocal(){const toSave=(window._avulsosList||[]).map(a=>({...a,dt:a.dt?a.dt.toISOString():null}));localStorage.setItem(AV_LIST_KEY,JSON.stringify(toSave));}
 function loadAvulsosLocal(){try{const saved=JSON.parse(localStorage.getItem(AV_LIST_KEY)||'[]');window._avulsosList=saved.map(a=>({...a,dt:a.dt?new Date(a.dt):null}));}catch(e){window._avulsosList=[];}}
@@ -1322,8 +1321,13 @@ function setSyncStatus(msg,color){
 
 async function apiPost(action, dados){
   try {
-    const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados)) + '&t=' + Date.now();
-    const res = await fetch(url, {redirect:'follow'});
+    const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&t=' + Date.now();
+    const res = await fetch(url, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(dados)
+    });
     const txt = await res.text();
     return JSON.parse(txt);
   } catch(e){ console.warn('apiPost error:', e); return {error: e.toString()}; }
