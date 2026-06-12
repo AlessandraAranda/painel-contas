@@ -229,7 +229,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
 
 <div id="th2" style="display:none">
   <div class="hw">
-    <div class="hh"><h2>Histórico de aprovações</h2><div style="display:flex;gap:8px"><button class="btn btn-sm" id="bExpAllHist">↓ Exportar tudo (CSV)</button></div></div>
+    <div class="hh"><h2>Histórico de aprovações</h2><div style="display:flex;gap:8px"><button class="btn btn-sm" id="bExpAllHist">↓ Exportar tudo (Excel)</button></div></div>
     <div id="hl"></div>
   </div>
 </div>
@@ -255,7 +255,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       </table>
     </div>
     <div style="margin-top:16px;display:flex;justify-content:flex-end">
-      <button class="btn btn-sm" id="brExportRev" style="border-color:#e2e5ea;color:#6b7280">↓ Exportar CSV</button>
+      <button class="btn btn-sm" id="brExportRev" style="border-color:#e2e5ea;color:#6b7280">↓ Exportar Excel</button>
       <button class="btn btn-s" id="brAprovar2">✓ Aprovar pagamentos</button>
     </div>
   </div>
@@ -665,9 +665,7 @@ function xph(i){
   const e=H[i];
   const rows=[['Empresa','Fornecedor','Vencimento','Descrição','Valor Previsto','Valor a Pagar']];
   e.items.forEach(r=>rows.push([r.emp,r.forn,r.dts,r.dsc,r.vp.toFixed(2),r.va.toFixed(2)]));
-  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`${e.lb.replace(/[^a-zA-Z0-9À-ú ]/g,'_')}.csv`;a.click();
+  downloadXlsx(rows,`${e.lb.replace(/[^a-zA-Z0-9À-ú ]/g,'_')}.xlsx`);
 }
 function uhc(){document.getElementById('hc').textContent=H.length?`(${H.length})`:''}
 
@@ -1149,6 +1147,15 @@ async function renderFechamento(){
   if(fdTituloDataEl)fdTituloDataEl.textContent=dt.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 }
 
+
+// Helper: download as XLSX using SheetJS
+function downloadXlsx(rows, filename){
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Dados');
+  XLSX.writeFile(wb, filename);
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   // Revision table sort
   document.addEventListener('click', e=>{
@@ -1178,11 +1185,7 @@ window.addEventListener('DOMContentLoaded',function(){
       const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
       rows.push([r.emp,r.forn,r.dts,sl,r.dsc,r.val.toFixed(2).replace('.',','),vp.toFixed(2).replace('.',',')]);
     });
-    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-    a.download='a_pagar_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
-    a.click();
+    downloadXlsx(rows,'a_pagar_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xlsx');
   });
 
   // Novo lançamento
@@ -1589,8 +1592,7 @@ window.addEventListener('DOMContentLoaded', function(){
     const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
     const rows=[['Empresa','Fornecedor','Vencimento','Descrição','Valor']];
     [...DPG].sort((a,b)=>b.dt-a.dt).forEach(r=>rows.push([empShort[r.emp]||r.emp,r.forn,r.dts,r.dsc,r.val.toFixed(2).replace('.',',')]));
-    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
-    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='pagos_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';a.click();
+    downloadXlsx(rows,'pagos_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xlsx');
   });
   const loginBtn = document.getElementById('loginBtn');
   const loginPwd = document.getElementById('loginPwd');
@@ -1851,7 +1853,7 @@ window.addEventListener('DOMContentLoaded', function(){
       <button id="pgClear" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#6b7280;font-family:Inter,sans-serif">Limpar</button>
       <input type="text" id="pgSearch" placeholder="Buscar fornecedor ou descrição..." style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px;width:260px">
       <div style="flex:1"></div>
-      <button id="pgExport" style="padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:#3b82f6;color:#fff;font-family:Inter,sans-serif">↓ Exportar CSV</button>
+      <button id="pgExport" style="padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:#3b82f6;color:#fff;font-family:Inter,sans-serif">↓ Exportar Excel</button>
     </div>
     <div id="pgStatus" style="font-size:12px;color:#9ca3af;margin-bottom:12px"></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px">
