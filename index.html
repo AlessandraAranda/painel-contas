@@ -7,6 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:#f5f6f8;color:#1a1d23;min-height:100vh;font-size:15px}
@@ -254,6 +255,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
       </table>
     </div>
     <div style="margin-top:16px;display:flex;justify-content:flex-end">
+      <button class="btn btn-sm" id="brExportRev" style="border-color:#e2e5ea;color:#6b7280">↓ Exportar CSV</button>
       <button class="btn btn-s" id="brAprovar2">✓ Aprovar pagamentos</button>
     </div>
   </div>
@@ -337,7 +339,9 @@ function isMutuo(dsc){
     .normalize('NFD').replace(/[̀-ͯ]/g,'') // remove acentos
     .replace(/\s+/g,' ').trim();
   // Variações: MUTUO, MÚTUO, MOUTU, MOUTO, MUTTUO, MUTTU, MUTOU, MUUTO
-  return /MU[TU]{1,2}[OUA][OUA]?/.test(s) || s.includes('MOUTO') || s.includes('MOUTU');
+  if(/MU[TU]{1,2}[OUA][OUA]?/.test(s) || s.includes('MOUTO') || s.includes('MOUTU')) return true;
+  if(s.startsWith('TRANSF.') || s.startsWith('TRANSF ')) return true;
+  return false;
 }
 
 
@@ -1068,14 +1072,20 @@ async function renderFechamento(){
   const entradas=DREC.filter(r=>r.dt>=dt&&r.dt<=dtFim);
   const totEnt=entradas.reduce((a,r)=>a+r.val,0);
 
-  // Saídas = lançamentos em revisão (À Pagar - Aprovação), usando valor "a pagar"
-  const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
-  const dItems=D.filter(r=>ci.has(r.id));
-  const revisaoItems=[...dItems,...avItems];
-  const saidas=revisaoItems.map(r=>({
-    emp:r.emp, forn:r.forn, dsc:r.dsc, dts:r.dts,
-    val: pv[r.id]!==undefined?pv[r.id]:r.val
-  }));
+  // Saídas: hoje = revisão, datas passadas = planilhas PG
+  const hoje2=new Date();hoje2.setHours(0,0,0,0);
+  const isToday=dt.getTime()===hoje2.getTime();
+  let saidas=[];
+  if(isToday){
+    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
+    const dItems=D.filter(r=>ci.has(r.id));
+    saidas=[...dItems,...avItems].map(r=>({
+      emp:r.emp,forn:r.forn,dsc:r.dsc,dts:r.dts,
+      val:pv[r.id]!==undefined?pv[r.id]:r.val
+    }));
+  } else {
+    saidas=DPG.filter(r=>r.dt>=dt&&r.dt<=dtFim);
+  }
   const totSai=saidas.reduce((a,r)=>a+r.val,0);
   const saldoFinal=totEnt-totSai;
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -1156,6 +1166,24 @@ window.addEventListener('DOMContentLoaded',function(){
     ci=new Set();pv={};saveSelection();updateRev();renderRev();ren();
   });
   document.getElementById('brAprovar2').addEventListener('click', doApprove);
+  document.getElementById('brExportRev').addEventListener('click',()=>{
+    const avItems=(window._avulsosList||[]).filter(a=>ci.has(a.id));
+    const dItems=D.filter(r=>ci.has(r.id));
+    const items=[...dItems,...avItems];
+    if(!items.length){alert('Nenhum lançamento na revisão.');return;}
+    const rows=[['Empresa','Fornecedor','Vencimento','Status','Descrição','Valor Previsto','A Pagar']];
+    items.forEach(r=>{
+      const s=sta(r.dt);
+      const sl=s==='atrasado'?'Atrasado':s==='hoje'?'Hoje':'A vencer';
+      const vp=pv[r.id]!==undefined?pv[r.id]:r.val;
+      rows.push([r.emp,r.forn,r.dts,sl,r.dsc,r.val.toFixed(2).replace('.',','),vp.toFixed(2).replace('.',',')]);
+    });
+    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+    a.download='a_pagar_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.csv';
+    a.click();
+  });
 
   // Novo lançamento
   document.getElementById('bnovolcto').addEventListener('click',()=>{
@@ -1491,6 +1519,20 @@ async function handleLogin(){
 // All login event listeners
 window.addEventListener('DOMContentLoaded', function(){
   // Fechamento listeners
+  document.getElementById('fdDownloadImg').addEventListener('click',()=>{
+    const el=document.getElementById('fdCaptura');
+    if(!el){alert('Nada para capturar.');return;}
+    const btn=document.getElementById('fdDownloadImg');
+    btn.style.display='none';
+    html2canvas(el,{backgroundColor:'#f5f6f8',scale:2,useCORS:true}).then(canvas=>{
+      btn.style.display='';
+      const a=document.createElement('a');
+      const dateStr=document.getElementById('fdData').value||'fechamento';
+      a.download='fluxo_caixa_'+dateStr+'.png';
+      a.href=canvas.toDataURL('image/png');
+      a.click();
+    }).catch(()=>{btn.style.display='';alert('Erro ao gerar imagem.');});
+  });
   const fdDataEl = document.getElementById('fdData');
   if(fdDataEl){
     fdDataEl.addEventListener('change', renderFechamento);
@@ -1684,8 +1726,10 @@ window.addEventListener('DOMContentLoaded', function(){
       <span style="font-size:13px;font-weight:600;color:#1a1d23">📅 Data do fechamento:</span>
       <input type="date" id="fdData" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:13px;padding:6px 12px;outline:none;height:34px">
       <div id="fdStatus" style="font-size:12px;color:#9ca3af;margin-left:8px"></div>
+      <button id="fdDownloadImg" style="margin-left:auto;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e2e5ea;background:#fff;color:#374151;font-family:Inter,sans-serif">📷 Baixar imagem</button>
     </div>
 
+    <div id="fdCaptura">
     <!-- TÍTULO FECHAMENTO -->
     <div style="background:#1a1d23;border-radius:10px;padding:14px 20px;margin-bottom:16px;text-align:center">
       <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px">Fluxo de Caixa</div>
@@ -1736,6 +1780,8 @@ window.addEventListener('DOMContentLoaded', function(){
       <div style="font-size:16px;font-weight:600;color:#9ca3af">Saldo após pagamentos do dia</div>
       <div style="font-size:16px;font-weight:700;font-family:monospace;color:#fff" id="fdSaldoFinal">R$ 0,00</div>
     </div>
+
+    </div><!-- /fdCaptura -->
 
     <!-- PENDÊNCIAS (Atrasados - 60 dias) -->
     <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;overflow:hidden;margin-bottom:16px">
