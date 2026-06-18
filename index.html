@@ -176,6 +176,7 @@ tbody tr.active-row{background:#eff6ff!important;outline:2px solid #bfdbfe}
   <div class="tab" data-tab="pg">Pagos</div>
   <div class="tab" data-tab="rec">Recebido</div>
   <div class="tab" data-tab="fd">Fechamento Diário</div>
+  <div class="tab" data-tab="at">Atrasados</div>
 </div>
 
 <div id="tp">
@@ -599,6 +600,18 @@ function aev(){
 
 // SALVAR
 
+function saveAvulsos(){
+  const avulsos=D.filter(r=>r.avulso);
+  localStorage.setItem(AV_KEY,JSON.stringify(avulsos));
+  // Also save to Drive
+  if(avulsos.length > 0) apiPost('saveAvulsos', avulsos);
+}
+
+
+
+
+
+
 function csav(){
   const lb=document.getElementById('slb').value.trim()||`Pagamentos ${new Date().toLocaleDateString('pt-BR')}`;
   const selectedRows=D.filter(r=>ci.has(r.id));
@@ -628,7 +641,7 @@ function rh(){
         <div class="hem"><span>${e.dt}</span><span>${e.n} lançamentos</span><span style="color:#3b82f6;font-weight:600">${brl(e.tot)}</span></div>
       </div>
       <div style="display:flex;gap:7px;align-items:center">
-        <button class="btn btn-sm" onclick="event.stopPropagation();xph(${i})">↓ CSV</button>
+        <button class="btn btn-sm" onclick="event.stopPropagation();xph(${i})">↓ Excel</button>
         <span style="color:#9ca3af;font-size:20px;line-height:1;transition:transform .2s" id="ar${i}">›</span>
       </div>
     </div>
@@ -672,6 +685,8 @@ function stab(t){
   if(t==='pg') renderPagos();
   if(t==='fd'){pgLoaded=false;recLoaded=false;renderFechamento();}
   if(t==='rec') renderRec();
+  se('tat',t==='at'?'block':'none');
+  if(t==='at') renderAtrasados();
 }
 document.querySelectorAll('.tab').forEach(x=>x.addEventListener('click',()=>stab(x.dataset.tab)));
 
@@ -830,11 +845,7 @@ function applyCustomFixos(D, ni, hoje){
 const AV_KEY='cp_avulsos';
 const AV_LIST_KEY='cp_avulsos_list';
 
-function saveAvulsos(){
-  const avulsos=D.filter(r=>r.avulso);
-  localStorage.setItem(AV_KEY,JSON.stringify(avulsos));
-  if(avulsos.length > 0) apiPost('saveAvulsos', avulsos);
-}
+function saveAvulsos(){const avulsos=D.filter(r=>r.avulso);localStorage.setItem(AV_KEY,JSON.stringify(avulsos));}
 function loadAvulsos(){try{const saved=JSON.parse(localStorage.getItem(AV_KEY)||'[]');if(saved.some(r=>r.avulso&&!r.manual))localStorage.removeItem(AV_KEY);}catch(e){}}
 function saveAvulsosLocal(){const toSave=(window._avulsosList||[]).map(a=>({...a,dt:a.dt?a.dt.toISOString():null}));localStorage.setItem(AV_LIST_KEY,JSON.stringify(toSave));}
 function loadAvulsosLocal(){try{const saved=JSON.parse(localStorage.getItem(AV_LIST_KEY)||'[]');window._avulsosList=saved.map(a=>({...a,dt:a.dt?new Date(a.dt):null}));}catch(e){window._avulsosList=[];}}
@@ -1084,6 +1095,18 @@ async function renderFechamento(){
   se('fdEntTotal',brl(totEnt));se('fdSaiTotal',brl(totSai));
   const sfEl=document.getElementById('fdSaldoFinal');
   if(sfEl){sfEl.textContent=brl(saldoFinal);sfEl.style.color=saldoFinal>=0?'#34d399':'#f87171';}
+  // Resumo do dia
+  const saldoIni=DPG.filter(r=>r.dt<dt).reduce((a,r)=>r.tipo==='entrada'?a+r.val:a-r.val,0)
+                 +DREC.filter(r=>r.dt<dt).reduce((a,r)=>a+r.val,0)
+                 -DPG.filter(r=>r.dt<dt).reduce((a,r)=>r.tipo!=='entrada'?a+r.val:a,0);
+  // simpler: sum all REC before dt minus all PG before dt
+  const saldoIniCalc=DREC.filter(r=>r.dt<dt).reduce((a,r)=>a+r.val,0)-DPG.filter(r=>r.dt<dt).reduce((a,r)=>a+r.val,0);
+  const saldoDisp=saldoIniCalc+totEnt-totSai;
+  const sr=id=>document.getElementById(id);
+  if(sr('fdResumSaldoIni'))sr('fdResumSaldoIni').textContent=brl(saldoIniCalc);
+  if(sr('fdResumEnt')){sr('fdResumEnt').textContent=brl(totEnt);sr('fdResumEntN').textContent=entradas.length+' lançamentos';}
+  if(sr('fdResumSai')){sr('fdResumSai').textContent=brl(totSai);sr('fdResumSaiN').textContent=saidas.length+' lançamentos';}
+  if(sr('fdResumDisp')){sr('fdResumDisp').textContent=brl(saldoDisp);sr('fdResumDisp').style.color=saldoDisp>=0?'#1d4ed8':'#dc2626';}
   const empShortEnt={'ROSIL-REC':'ROSIL','RSL-REC':'RSL','LUCRO-REC':'LUCRO PRESUMIDO'};
   const empClsEnt={'ROSIL-REC':'eR','RSL-REC':'eS','LUCRO-REC':'eL'};
   const empShort={'PG-ROSIL':'ROSIL','PG-RSL':'RSL','PG-LUCRO PRESUMIDO':'LUCRO PRESUMIDO'};
@@ -1148,6 +1171,55 @@ function downloadXlsx(rows, filename){
   XLSX.writeFile(wb, filename);
 }
 
+function renderAtrasados(){
+  const empF=document.getElementById('atEmp')?.value||'';
+  const search=(document.getElementById('atSearch')?.value||'').toLowerCase().trim();
+  const ontem=new Date();ontem.setHours(0,0,0,0);ontem.setDate(ontem.getDate()-1);
+  const atrasados=D.filter(r=>r.dt&&r.dt<=ontem&&!r.pago);
+  let filtrados=atrasados;
+  if(empF)filtrados=filtrados.filter(r=>r.emp===empF);
+  if(search)filtrados=filtrados.filter(r=>r.forn.toLowerCase().includes(search)||r.dsc.toLowerCase().includes(search));
+  const grupos={};
+  filtrados.forEach(r=>{
+    const k=r.emp+'||'+r.forn;
+    if(!grupos[k])grupos[k]={emp:r.emp,forn:r.forn,items:[],total:0};
+    grupos[k].items.push(r);grupos[k].total+=r.val;
+  });
+  const totalGeral=filtrados.reduce((a,r)=>a+r.val,0);
+  const nForn=Object.keys(grupos).length;
+  const el=document.getElementById('atStatus');
+  if(el)el.textContent=nForn+' fornecedores · '+filtrados.length+' lançamentos · '+brl(totalGeral);
+  const list=document.getElementById('atList');
+  if(!list)return;
+  if(!Object.keys(grupos).length){
+    list.innerHTML='<div style="text-align:center;padding:40px;color:#9ca3af;background:#fff;border:1px solid #e8eaed;border-radius:10px">Nenhum lançamento em atraso.</div>';
+    return;
+  }
+  const empCls={'ROSIL':'eR','RSL':'eS','LUCRO PRESUMIDO':'eL'};
+  const sorted=Object.values(grupos).sort((a,b)=>a.forn.localeCompare(b.forn,'pt-BR'));
+  list.innerHTML=sorted.map((g,i)=>{
+    const id='at_'+i;
+    const itemsHtml=g.items.sort((a,b)=>a.dt-b.dt).map(r=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 16px 8px 48px;border-bottom:1px solid #f3f4f6">
+        <span class="mn" style="color:#9ca3af;min-width:70px">${r.dts}</span>
+        <span style="flex:1;font-size:13px;color:#6b7280">${esc(r.dsc)}</span>
+        <span class="mn" style="color:#dc2626;font-weight:600">${brl(r.val)}</span>
+      </div>`).join('');
+    return `<div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;margin-bottom:8px;overflow:hidden">
+      <div onclick="(function(el,btn){const open=el.style.display==='none'||!el.style.display;el.style.display=open?'block':'none';btn.style.transform=open?'rotate(90deg)':'rotate(0)'})(document.getElementById('${id}'),this.querySelector('.at-arrow'))"
+        style="display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .1s"
+        onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+        <span class="at-arrow" style="color:#9ca3af;font-size:16px;transition:transform .2s;display:inline-block">›</span>
+        <span class="et ${empCls[g.emp]||'eR'}">${esc(g.emp)}</span>
+        <span style="font-weight:600;color:#1a1d23;flex:1">${esc(g.forn)}</span>
+        <span style="font-size:12px;color:#6b7280;margin-right:16px">${g.items.length} lançamento${g.items.length>1?'s':''}</span>
+        <span class="mn" style="font-weight:700;color:#dc2626;font-size:15px">${brl(g.total)}</span>
+      </div>
+      <div id="${id}" style="display:none;border-top:1px solid #f3f4f6">${itemsHtml}</div>
+    </div>`;
+  }).join('');
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   // Revision table sort
   document.addEventListener('click', e=>{
@@ -1159,6 +1231,11 @@ window.addEventListener('DOMContentLoaded',function(){
     renderRev();
   });
   // Revisão buttons
+  // Atrasados listeners
+  const atEmpEl=document.getElementById('atEmp');
+  if(atEmpEl)atEmpEl.addEventListener('change',renderAtrasados);
+  const atSearchEl=document.getElementById('atSearch');
+  if(atSearchEl)atSearchEl.addEventListener('input',renderAtrasados);
   document.getElementById('bref').addEventListener('click',()=>{pgLoaded=false;recLoaded=false;load();});
   document.getElementById('brLimpar').addEventListener('click',()=>{
     if(!confirm('Limpar toda a seleção?'))return;
@@ -1314,13 +1391,8 @@ function setSyncStatus(msg,color){
 
 async function apiPost(action, dados){
   try {
-    const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&t=' + Date.now();
-    const res = await fetch(url, {
-      method: 'POST',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(dados)
-    });
+    const url = API_URL + '?action=' + action + '&token=' + SECRET_TOKEN + '&dados=' + encodeURIComponent(JSON.stringify(dados)) + '&t=' + Date.now();
+    const res = await fetch(url, {redirect:'follow'});
     const txt = await res.text();
     return JSON.parse(txt);
   } catch(e){ console.warn('apiPost error:', e); return {error: e.toString()}; }
@@ -1716,6 +1788,26 @@ window.addEventListener('DOMContentLoaded', function(){
   </div>
 </div>
 
+<!-- ATRASADOS TAB -->
+<div id="tat" style="display:none">
+  <div class="hw">
+    <div class="hh">
+      <h2>Lançamentos em atraso</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:13px;color:#6b7280" id="atStatus"></span>
+        <select id="atEmp" style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px">
+          <option value="">Todas as empresas</option>
+          <option value="ROSIL">ROSIL</option>
+          <option value="RSL">RSL</option>
+          <option value="LUCRO PRESUMIDO">LUCRO PRESUMIDO</option>
+        </select>
+        <input type="text" id="atSearch" placeholder="Buscar fornecedor..." style="background:#fff;border:1px solid #e2e5ea;border-radius:6px;color:#374151;font-family:Inter,sans-serif;font-size:12px;padding:5px 10px;outline:none;height:32px;width:200px">
+      </div>
+    </div>
+    <div id="atList"></div>
+  </div>
+</div>
+
 <!-- FECHAMENTO DIÁRIO -->
 <div id="tfd" style="display:none">
   <div class="hw">
@@ -1740,6 +1832,33 @@ window.addEventListener('DOMContentLoaded', function(){
       <span id="fdSaldoAnt">0</span><span id="fdSaldoAntDt">0</span>
       <span id="fdTotEnt">0</span><span id="fdEntN">0</span>
       <span id="fdTotSai">0</span><span id="fdSaiN">0</span>
+    </div>
+
+    <!-- RESUMO DO DIA -->
+    <div style="background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:16px 20px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;color:#1a1d23;margin-bottom:12px">📊 Resumo do dia</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px">
+        <div style="background:#f9fafb;border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;font-weight:500;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Saldo Inicial</div>
+          <div style="font-size:17px;font-weight:700;font-family:monospace;color:#1a1d23" id="fdResumSaldoIni">—</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:3px">acumulado até dia anterior</div>
+        </div>
+        <div style="background:#f0fdf4;border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;font-weight:500;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Entradas</div>
+          <div style="font-size:17px;font-weight:700;font-family:monospace;color:#059669" id="fdResumEnt">—</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:3px" id="fdResumEntN">0 lançamentos</div>
+        </div>
+        <div style="background:#fef2f2;border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;font-weight:500;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Saídas</div>
+          <div style="font-size:17px;font-weight:700;font-family:monospace;color:#dc2626" id="fdResumSai">—</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:3px" id="fdResumSaiN">0 lançamentos</div>
+        </div>
+        <div style="background:#eff6ff;border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;font-weight:500;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Saldo Disponível</div>
+          <div style="font-size:17px;font-weight:700;font-family:monospace" id="fdResumDisp">—</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:3px">saldo ini. + ent. - saídas</div>
+        </div>
+      </div>
     </div>
 
     <!-- ENTRADAS DO DIA -->
